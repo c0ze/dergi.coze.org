@@ -1,0 +1,65 @@
+# Topics for the tag cloud. `about` is what JEV is asked (English: JEV's strongest language);
+# `ad` is the Turkish label shown on the site.
+- slug: makine-dili
+  ad: "Makine dili / Assembler"
+  about: "Assembly language or machine code programming (makine dili, makine kodu), 6502/6510/68000 instructions, assemblers, monitors."
+- slug: basic
+  ad: "BASIC"
+  about: "Programming in BASIC (Commodore BASIC, AMOS, Blitz Basic, BASIC extensions)."
+- slug: diger-diller
+  ad: "C, Pascal ve diğer diller"
+  about: "Programming in C, Pascal, Logo, Forth, Modula or other languages that are not BASIC or assembly."
+- slug: programlama
+  ad: "Programlama teknikleri"
+  about: "General programming techniques, algorithms, ROM routines, interrupts, raster tricks, sprites from a programmer's view."
+- slug: grafik
+  ad: "Grafik ve çizim"
+  about: "Computer graphics, paint and drawing programs, pixel art, image formats, 3D graphics."
+- slug: muzik
+  ad: "Müzik ve ses"
+  about: "Computer music and sound, the SID chip, Paula, chip music, music programs, trackers, MIDI, samplers."
+- slug: demo
+  ad: "Demo sahnesi"
+  about: "The demoscene: demos, intros, cracktros, demo groups, demo parties and competitions, disk magazines."
+- slug: donanim
+  ad: "Donanım"
+  about: "Hardware: expansions, accelerators, cartridges, peripherals, repairs, power supplies, electronics projects."
+- slug: disk-kaset
+  ad: "Disket ve kaset"
+  about: "Disk drives, floppies, datasettes and tapes, loaders, fast loaders, copying, file systems."
+- slug: ofis
+  ad: "Ofis programları"
+  about: "Office and productivity software: word processors, spreadsheets, databases, accounting, printing."
+- slug: iletisim
+  ad: "Modem ve iletişim"
+  about: "Modems, BBSs, networks, the internet, terminal programs, data transfer between computers."
+- slug: video-dtp
+  ad: "Video ve masaüstü yayıncılık"
+  about: "Video, genlocks, titling, animation software, desktop publishing."
+- slug: oyun-inceleme
+  ad: "Oyun incelemesi"
+  about: "A review or preview of one or more computer games (graphics, sound and gameplay judged)."
+- slug: oyun-cozum
+  ad: "Oyun çözümü ve hileler"
+  about: "Game walkthroughs, maps, solutions, tips, cheats, POKEs and trainers."
+- slug: program-dokumu
+  ad: "Program dökümü"
+  about: "A type-in program listing for readers to enter, or instructions for one."
+- slug: kurs
+  ad: "Kurslar ve dersler"
+  about: "A tutorial or course, often a numbered series teaching a skill step by step."
+- slug: haber
+  ad: "Haberler ve fuarlar"
+  about: "News, new products, computer shows and fairs, the computer industry and companies."
+- slug: okur
+  ad: "Okur mektupları"
+  about: "Readers' letters, questions and answers, readers' corner."
+- slug: roportaj
+  ad: "Röportajlar"
+  about: "An interview with a person (programmer, musician, group member, company person)."
+- slug: emulator
+  ad: "Emülatörler ve PC"
+  about: "Emulators, using a PC to run or develop for the C64 or Amiga, cross-development tools."
+- slug: egitim-yazilimi
+  ad: "Eğitim yazılımları"
+  about: "Educational software for learning school subjects or languages."

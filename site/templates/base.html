@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{% endblock %} · dergi</title>
+<meta name="description" content="{% block description %}Türk retro bilgisayar dergileri arşivi: Commodore, 64'ler, Amiga Dünyası ve diğerleri. İndir, oku, ara.{% endblock %}">
+<script>try{var t=localStorage.getItem("dergi.theme"),z=localStorage.getItem("dergi.size");if(t&&t!=="auto")document.documentElement.dataset.theme=t;if(z&&z!=="m")document.documentElement.dataset.size=z}catch(e){}</script>
+<link rel="stylesheet" href="/static/style.css">
+{% block head %}{% endblock %}
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="site">
+  <a class="logo" href="/">dergi<span>.coze.org</span></a>
+  <nav aria-label="Ana menü">
+    <a href="/">Dergiler</a>
+    <a href="/konular/">Konular</a>
+    <a href="/oyunlar/">Oyunlar</a>
+    <a href="/yazarlar/">Yazarlar</a>
+    <a href="/ara/">Ara</a>
+    <a href="/hakkinda/">Hakkında</a>
+    <details class="prefs">
+      <summary aria-label="Görünüm ayarları" title="Görünüm">Aa</summary>
+      <form>
+        <fieldset>
+          <legend>Tema</legend>
+          <label><input type="radio" name="theme" value="auto"> Otomatik (sistem)</label>
+          <label><input type="radio" name="theme" value="light"> <span class="swatch" style="background:#f7f3ea"></span> Açık</label>
+          <label><input type="radio" name="theme" value="sepia"> <span class="swatch" style="background:#f4ecd8"></span> Sepya</label>
+          <label><input type="radio" name="theme" value="dark"> <span class="swatch" style="background:#16151a"></span> Koyu</label>
+        </fieldset>
+        <fieldset>
+          <legend>Yazı boyutu</legend>
+          <label><input type="radio" name="size" value="s"> Küçük</label>
+          <label><input type="radio" name="size" value="m"> Normal</label>
+          <label><input type="radio" name="size" value="l"> Büyük</label>
+          <label><input type="radio" name="size" value="xl"> Çok büyük</label>
+        </fieldset>
+      </form>
+    </details>
+  </nav>
+</header>
+<main id="icerik">
+{% block main %}{% endblock %}
+</main>
+<footer class="site">
+  <p>Reklamsız, izlemesiz bir arşiv. Dergiler eski sahiplerine ve yazarlarına aittir. <a href="/hakkinda/">Kaynaklar ve iletişim</a></p>
+</footer>
+<script src="/static/prefs.js" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} · {{ title.name }} {{ issue.number }}{% endblock %}
+{% block description %}{% for x in article.body if x.type == "p" %}{% if loop.first %}{{ x.text[:155] }}{% endif %}{% endfor %}{% endblock %}
+{% block main %}
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › <a href="/{{ title.slug }}/{{ issue.nn }}/">Sayı {{ issue.number }}</a></nav>
+<article class="prose" data-pagefind-body>
+  <header>
+    <h1 data-pagefind-meta="title">{{ article.title }}</h1>
+    {# Search metadata (attribute form, so it isn't indexed as text). #}
+    <span hidden data-pagefind-meta="source:{{ title.name }} · Sayı {{ issue.number }}{% if issue.human_date %} · {{ issue.human_date }}{% endif %}"></span>
+    <span hidden data-pagefind-meta="pages:s. {{ article.pages[0] }}{% if article.pages|length > 1 %}–{{ article.pages[-1] }}{% endif %}"></span>
+    <span hidden data-pagefind-meta="cover:{{ A }}/{{ title.slug }}/{{ issue.nn }}/thumbs/001.webp"></span>
+    {% if article.author %}<span hidden data-pagefind-meta="author:{{ article.author }}"></span>{% endif %}
+    <p class="byline">
+      {% if tags and tags.author %}<a href="{{ tags.author.url }}">{{ tags.author.name }}</a> · {% elif article.author %}<span>{{ article.author }}</span> · {% endif %}
+      <span data-pagefind-filter="dergi">{{ title.name }}</span> sayı {{ issue.number }}{% if issue.human_date %}, <span data-pagefind-filter="yıl:{{ issue.date[:4] }}">{{ issue.human_date }}</span>{% endif %}
+      · sayfa {% for p in article.pages %}<a href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ p }}/">{{ p }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+    </p>
+  </header>
+  {% if tags and (tags.author or tags.games or tags.topics) %}
+  <ul class="tags" data-pagefind-ignore aria-label="Etiketler">
+    {% for g in tags.games %}<li><a class="tag game" href="{{ g.url }}">{{ g.name }}</a></li>{% endfor %}
+    {% for t in tags.topics %}<li><a class="tag" href="{{ t.url }}">{{ t.name }}</a></li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% for x in article.body %}
+    {% if x.type == "p" %}<p>{{ x.text }}</p>
+    {% elif x.type == "h2" %}<h2>{{ x.text }}</h2>
+    {% elif x.type == "pre" %}<pre><code>{{ x.text }}</code></pre>
+    {% elif x.type == "caption" %}<p class="caption">{{ x.text }}</p>
+    {% elif x.type == "figure" %}<figure><img src="{{ A }}/{{ title.slug }}/{{ issue.nn }}/figures/{{ x.src }}" alt="" loading="lazy"></figure>
+    {% endif %}
+  {% endfor %}
+  <div class="folded" aria-hidden="true">{{ article|fold }}</div>
+</article>
+{% if programs %}{% with heading="Bu yazıdaki programlar", show_article=false %}{% include "_programs.html" %}{% endwith %}{% endif %}
+<aside class="source" data-pagefind-ignore>
+  <p>Bu metin dergi sayfalarından otomatik olarak çıkarıldı; yazı tanıma ve yazım hataları da otomatik düzeltildi, yine de hatalar olabilir. Asıl sayfalar için:
+  {% for p in article.pages %}<a href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ p }}/">s. {{ p }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.</p>
+</aside>
+<nav class="pager" aria-label="Bu sayıdaki diğer yazılar" data-pagefind-ignore>
+  {% if prev %}<a rel="prev" href="/{{ title.slug }}/{{ issue.nn }}/{{ prev.slug }}/">‹ {{ prev.title }}</a>{% else %}<span></span>{% endif %}
+  {% if next %}<a rel="next" href="/{{ title.slug }}/{{ issue.nn }}/{{ next.slug }}/">{{ next.title }} ›</a>{% endif %}
+</nav>
+{% endblock %}

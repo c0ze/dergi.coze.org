@@ -1,0 +1,25 @@
+[project]
+name = "dergi"
+version = "0.1.0"
+description = "Pipeline for dergi.coze.org: Turkish retro computer magazine archive"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pymupdf>=1.26",
+    "pillow>=10.2",
+    "pyyaml>=6",
+    "typesafe-sdk>=0.7.5",
+    "jinja2>=3.1.6",
+    "opencv-python-headless>=4.11.0.86",
+    "numpy>=2.5.4",
+    "requests>=2.34.2",
+    "rapidfuzz>=3.14.6",
+]
+
+[dependency-groups]
+ocr = [
+    "ocrmac>=1.0",
+    "surya-ocr>=0.17",
+]
+
+[tool.uv]
+package = false

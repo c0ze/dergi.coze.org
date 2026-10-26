@@ -1,0 +1,82 @@
+0:
+  date: 1995-06
+  chosen:
+    path: data/sources/nas/MegAmiga/Megamiga_say__305__0_Haziran_1995.pdf
+    kind: pdf
+    pages: 32
+    px: 1173
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/MegAmiga/MegAmiga-00.pdf
+    kind: pdf
+    pages: 32
+    px: 1165
+  extras: []
+1:
+  date: 1995-07
+  chosen:
+    path: data/sources/nas/MegAmiga/MegAmiga-01.pdf
+    kind: pdf
+    pages: 32
+    px: 1173
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: 1995-08
+  chosen:
+    path: data/sources/nas/MegAmiga/MegAmiga-02.pdf
+    kind: pdf
+    pages: 31
+    px: 1166
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/MegAmiga/meg2.pdf
+    kind: pdf
+    pages: 31
+    px: 1166
+  extras: []
+3:
+  date: 1995-09
+  chosen:
+    path: data/sources/nas/MegAmiga/MEG-AMIGA-SAYI_03.pdf
+    kind: pdf
+    pages: 44
+    px: 3240
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: 1995-10
+  chosen:
+    path: data/sources/nas/MegAmiga/MEG_AMIGA_04.pdf
+    kind: pdf
+    pages: 44
+    px: 3260
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: 1995-11
+  chosen:
+    path: data/sources/nas/MegAmiga/MEG_AMIGA_S05.pdf
+    kind: pdf
+    pages: 44
+    px: 3260
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: 1995-12
+  chosen:
+    path: data/sources/nas/MegAmiga/MegAmiga-06.pdf
+    kind: pdf
+    pages: 44
+    px: 1172
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/MegAmiga/Megamiga_say__305__6_Aral__305_k_1995.pdf
+    kind: pdf
+    pages: 44
+    px: 1172
+  extras: []

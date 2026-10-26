@@ -1,0 +1,19 @@
+{# Type-in programs: verified line by line against the magazine's checksums, tried in VICE. #}
+<section class="programs" data-pagefind-ignore aria-labelledby="programlar">
+  <h2 id="programlar">{{ heading }}</h2>
+  <p class="meta">Dergideki dökümlerden çıkarıldı. Her satırın kontrol toplamı doğrulandı ve program VICE emülatöründe denendi.
+  Emülatöre sürükleyip bırakabilir ya da gerçek bir C64'te <code>LOAD "AD",8,1</code> ile yükleyebilirsiniz.</p>
+  <ul>
+  {% for p in programs %}
+    <li>
+      {% if p.screenshot %}<img src="{{ A }}/{{ title.slug }}/{{ issue.nn }}/prg/{{ p.screenshot }}" alt="{{ p.name }} çalışırken (VICE ekran görüntüsü)" width="384" height="272" loading="lazy">{% endif %}
+      <div>
+        <strong>{{ p.name }}</strong>
+        {% if show_article %}<span class="meta"><a href="/{{ title.slug }}/{{ issue.nn }}/{{ p.article }}/">{{ p.article_title }}</a></span>{% endif %}
+        <p class="meta">{{ p.bytes }} bayt, {{ p.load }}–{{ p.end }} · {{ p.lines }} satır{% if p.start %} · çalıştırmak için <code>{{ p.start }}</code>{% endif %}</p>
+        <a class="button secondary" href="{{ A }}/{{ title.slug }}/{{ issue.nn }}/prg/{{ p.file }}" download>{{ p.file }} indir</a>
+      </div>
+    </li>
+  {% endfor %}
+  </ul>
+</section>

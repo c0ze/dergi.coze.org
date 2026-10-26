@@ -1,0 +1,88 @@
+1:
+  date: 2002-11
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_01.pdf
+    kind: pdf
+    pages: 17
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: 2003-03
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_02.pdf
+    kind: pdf
+    pages: 22
+    px: 191
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: 2003-09
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_03.pdf
+    kind: pdf
+    pages: 29
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: 2004-02
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_04.pdf
+    kind: pdf
+    pages: 28
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: 2004-07
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_05.pdf
+    kind: pdf
+    pages: 27
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: 2004-11
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_06.pdf
+    kind: pdf
+    pages: 25
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+7:
+  date: 2005-01
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_07.pdf
+    kind: pdf
+    pages: 24
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: 2005-10
+  chosen:
+    path: data/sources/nas/c64tr/c64tr_08.pdf
+    kind: pdf
+    pages: 18
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []

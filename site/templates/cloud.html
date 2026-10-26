@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }}{% endblock %}
+{% block description %}{{ lede }}{% endblock %}
+{% block main %}
+<h1>{{ heading }}</h1>
+<p class="lede">{{ lede }}</p>
+{% for section in sections %}
+<section class="cloud-section">
+  {% if section.title %}<h2>{{ section.title }}</h2>{% endif %}
+  <ul class="cloud">
+  {% for item in section["items"] %}
+    <li><a href="{{ item.url }}" style="--w: {{ item.weight }}">{{ item.name }}</a> <span class="count">{{ item.count }}</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% endblock %}

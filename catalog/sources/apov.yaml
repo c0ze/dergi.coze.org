@@ -1,0 +1,41 @@
+1:
+  date: null
+  chosen:
+    path: data/sources/nas/APoV/apov01remix.pdf
+    kind: pdf
+    pages: 70
+    px: 630
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: null
+  chosen:
+    path: data/sources/nas/APoV/apov02.pdf
+    kind: pdf
+    pages: 74
+    px: 826
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: null
+  chosen:
+    path: data/sources/nas/APoV/apov03.pdf
+    kind: pdf
+    pages: 124
+    px: 982
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: null
+  chosen:
+    path: data/sources/nas/APoV/APoV-04.pdf
+    kind: pdf
+    pages: 120
+    px: 978
+  supplements: []
+  alternatives: []
+  extras: []

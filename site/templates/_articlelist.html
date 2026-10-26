@@ -1,0 +1,12 @@
+{# A list of articles grouped by magazine, newest issue last within each magazine. #}
+{% for magazine, items in groups %}
+<section class="group">
+  <h2>{{ magazine }} <span class="meta">({{ items|length }})</span></h2>
+  <ul class="arts">
+  {% for a in items %}
+    <li><a href="{{ a.url }}">{{ a.title }}</a>
+      <span class="meta">Sayı {{ a.number }}{% if a.date %} · {{ a.date|human_date }}{% endif %} · s. {{ a.pages[0] }}{% if a.pages|length > 1 %}–{{ a.pages[-1] }}{% endif %}{% if show_author and a.author %} · {{ a.author }}{% endif %}</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endfor %}

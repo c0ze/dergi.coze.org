@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ title.name }}{% endblock %}
+{% block description %}{{ title.name }} dergisinin bütün sayıları: indir, oku, ara.{% endblock %}
+{% block main %}
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › {{ title.name }}</nav>
+<h1>{{ title.name }}</h1>
+<p class="lede">{{ title.years }}{% if title.publisher %} · {{ title.publisher }}{% endif %}</p>
+{% if title.aciklama %}<p class="intro">{{ title.aciklama }}</p>{% endif %}
+<ul class="issues">
+{% for i in title.issues_have %}
+  <li>
+    <a href="/{{ title.slug }}/{{ i.nn }}/">
+      <img src="{{ A }}/{{ title.slug }}/{{ i.nn }}/thumbs/001.webp" alt="" width="160" height="226" loading="lazy">
+      <strong>Sayı {{ i.number }}</strong>
+    </a>
+    <span class="meta">{{ i.human_date }} · {{ i.articles|length }} yazı</span>
+  </li>
+{% endfor %}
+</ul>
+{% if title.missing %}
+<section class="wanted">
+  <h2>Eksik sayılar</h2>
+  <p>Bu sayılar arşivde yok: {{ title.missing|join(", ") }}. Taramanız varsa <a href="/hakkinda/">bize yazın</a>.</p>
+</section>
+{% endif %}
+{% endblock %}

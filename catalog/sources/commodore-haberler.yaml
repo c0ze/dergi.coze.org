@@ -1,0 +1,42 @@
+5:
+  date: 1985-10
+  chosen:
+    path: data/sources/commodore-haberler/Commodore-Haberler/Commodore-Haberler 05.pdf
+    kind: pdf
+    pages: 48
+    px: 3230
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Commodore/Program Dokum Ekleri/Commodore_Haberler_Dergisi-Sayi_5-ekim_1985.djvu
+    kind: djvu
+    pages: 48
+    px: 3216
+  extras: []
+7:
+  date: 1986-01
+  chosen:
+    path: data/sources/nas/Commodore/Program Dokum Ekleri/Commodore_Haberler_Dergisi-Sayi_7-Ocak_1986.djvu
+    kind: djvu
+    pages: 48
+    px: 3162
+  supplements: []
+  alternatives:
+  - path: data/sources/commodore-haberler/Commodore-Haberler/Commodore-Haberler 07.pdf
+    kind: pdf
+    pages: 48
+    px: 3161
+  extras: []
+8:
+  date: 1986-03
+  chosen:
+    path: data/sources/commodore-haberler/Commodore-Haberler/Commodore-Haberler 08.pdf
+    kind: pdf
+    pages: 24
+    px: 3317
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Commodore/Program Dokum Ekleri/Commodore_Haberler_Dergisi-Sayi_8-Mart-Nisan_1986.djvu
+    kind: djvu
+    pages: 24
+    px: 3240
+  extras: []

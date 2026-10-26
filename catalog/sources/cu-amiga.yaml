@@ -1,0 +1,51 @@
+1992-09:
+  date: 1992-09
+  chosen:
+    path: data/sources/nas/CU Amiga/cuamiga_sept_1992.pdf
+    kind: pdf
+    pages: 158
+    px: 2338
+  supplements: []
+  alternatives: []
+  extras: []
+1993-02:
+  date: 1993-02
+  chosen:
+    path: data/sources/nas/CU Amiga/cuamiga_feb_1993.pdf
+    kind: pdf
+    pages: 175
+    px: 1736
+  supplements: []
+  alternatives: []
+  extras: []
+1993-05:
+  date: 1993-05
+  chosen:
+    path: data/sources/nas/CU Amiga/cuamiga_may_1993.pdf
+    kind: pdf
+    pages: 150
+    px: 1734
+  supplements: []
+  alternatives: []
+  extras: []
+1993-09:
+  date: 1993-09
+  chosen:
+    path: data/sources/nas/CU Amiga/cuamiga_sept_1993.pdf
+    kind: pdf
+    pages: 169
+    px: 2338
+  supplements: []
+  alternatives: []
+  extras: []
+_title:
+  date: null
+  chosen: null
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CU Amiga/cuamiga_sept_19920027.png
+  - data/sources/nas/CU Amiga/cuamiga_sept_19920028.png
+  - data/sources/nas/CU Amiga/cuamiga_sept_19920030.png
+  - data/sources/nas/CU Amiga/cuamiga_sept_19920031.png
+  - data/sources/nas/CU Amiga/cuamiga_sept_19920034.png

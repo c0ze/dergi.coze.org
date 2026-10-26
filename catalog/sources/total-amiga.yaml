@@ -1,0 +1,176 @@
+1:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_1.pdf
+    kind: pdf
+    pages: 18
+    px: 779
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_2.pdf
+    kind: pdf
+    pages: 18
+    px: 544
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_3.pdf
+    kind: pdf
+    pages: 20
+    px: 604
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_4.pdf
+    kind: pdf
+    pages: 21
+    px: 819
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_5.pdf
+    kind: pdf
+    pages: 21
+    px: 1059
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_6.pdf
+    kind: pdf
+    pages: 25
+    px: 836
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+7:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_7.pdf
+    kind: pdf
+    pages: 25
+    px: 702
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_8.pdf
+    kind: pdf
+    pages: 23
+    px: 468
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+9:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_9.pdf
+    kind: pdf
+    pages: 23
+    px: 1043
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+10:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_10.pdf
+    kind: pdf
+    pages: 23
+    px: 429
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+11:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_11.pdf
+    kind: pdf
+    pages: 25
+    px: 648
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+12:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_12.pdf
+    kind: pdf
+    pages: 23
+    px: 550
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+14:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_14.pdf
+    kind: pdf
+    pages: 27
+    px: 598
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+15:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_15.pdf
+    kind: pdf
+    pages: 27
+    px: 668
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+16:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_16.pdf
+    kind: pdf
+    pages: 27
+    px: 628
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []
+19:
+  date: null
+  chosen:
+    path: data/sources/nas/Total Amiga/totalamiga_19.pdf
+    kind: pdf
+    pages: 27
+    px: 573
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []

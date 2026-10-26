@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ name }}{% endblock %}
+{% block description %}{{ name }}: {{ total }} yazı, {{ groups|length }} dergide.{% endblock %}
+{% block main %}
+<nav class="crumbs" aria-label="Konum"><a href="{{ parent_url }}">{{ parent }}</a> › {{ name }}</nav>
+<h1>{{ name }}</h1>
+<p class="lede">{{ total }} yazı{% if extra %} · {{ extra }}{% endif %}</p>
+{% if platforms %}
+  {% for label, pgroups in platforms %}
+  <section class="platform">
+    <h2 class="platform-title">{{ name }} ({{ label }})</h2>
+    {% with groups=pgroups, show_author=true %}{% include "_articlelist.html" %}{% endwith %}
+  </section>
+  {% endfor %}
+{% else %}
+  {% with show_author=show_author %}{% include "_articlelist.html" %}{% endwith %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,187 @@
+# Where every scan of every title lives, and how to tell issues apart.
+# Used by pipeline/sources.py (best scan per issue, for the site) and pipeline/archive.py
+# (the personal archive). Paths are relative to the repo root.
+#
+#   name      archive and file name
+#   lang      OCR language for the archive's text layer (tur / eng)
+#   site      false for titles that are only in the personal archive (English titles)
+#   roots     folders searched recursively (PDF, CBR/CBZ, ZIP/RAR of images, DjVu, JPG folders)
+#   number    regexes tried in order on each path part, last part first; group 1 = issue number
+#   exclude   paths that belong to another title
+#   supplements  name: regex — scans of an insert, appended to their issue
+#   dates     first: [year, month] of issue `first_number` (default 1), monthly with no gaps;
+#             or an explicit {issue: "YYYY-MM"} map; or from_name: true to read "mon_year" names
+#   key       date: issues have no numbers, the date is the key (CU Amiga, Amiga Format, ...)
+#   extras    regex for files kept unchanged next to the issue (disk images)
+#   remakes   regex for PDFs that are OCR re-typesettings, not scans: used only when no real
+#             scan of the issue exists, otherwise kept next to the scan as an extra
+
+commodore-haberler:
+  name: Commodore Haberler
+  lang: tur
+  roots: [data/sources/commodore-haberler, "data/sources/nas/Commodore/Program Dokum Ekleri"]
+  number: ['(?i)commodore[-_ ]haberler(?:[-_ ]dergisi[-_]sayi_)?[ _-]*0*(\d+)']
+  dates: {5: "1985-10", 7: "1986-01", 8: "1986-03"}
+
+commodore:
+  name: Commodore
+  lang: tur
+  # Commodore PDE.rar (Downloads, Oct 2026): the Program Döküm Eki of every issue 1–78.
+  roots: [data/sources/commodore/Commodore, data/sources/nas/Commodore, "data/sources/commodore-pde/Commodore PDE"]
+  number:
+    - '(?i)^commodore pde - 0*(\d+)'
+    - '(?i)^(?:commodore|c-64)[ _-]*(?:say[ıi])?[ _-]*0*(\d+)'
+    - '(?i)^pde[ _-]*0*(\d+)'
+    - '^0*(\d+)_pde'
+  exclude: '(?i)haberler'
+  supplements: {pde: '(?i)pde', ek: '(?i)-ek\.'}
+  dates: {first: [1986, 3]}
+
+64ler:
+  name: 64'ler
+  lang: tur
+  roots: [data/sources/64ler/rar, data/sources/64ler/nas]
+  number: ['(?:64ler[ _-]+(?:sayi|sayu|sayı)?[ _-]*|64''ler sayı|64ler - )0*(\d+)']
+  supplements: {professional: '(?i)prof+es+ional', sega: '(?i)sega magazine'}
+  dates: {first: [1988, 4]}
+
+commodore-bilgisayar-magazin:
+  name: Commodore Bilgisayar Magazin
+  lang: tur
+  roots: [data/sources/nas]
+  number: ['(?i)^commodore_bilgisayar_magazin_sayi_+(\d+)']
+  dates: {1: "1991-09"}
+
+amiga-dunyasi:
+  name: Amiga Dünyası
+  lang: tur
+  roots: ["data/sources/nas/Amiga Dunyasi", "data/sources/nas/Amiga Dunyasi Jpegler"]
+  # The PDFs are ABBYY FineReader rebuilds in Word (retyped text, cut-out pictures).
+  remakes: '(?i)^amiga_dunyasi_\d+(_eski)?\.pdf$'
+  number:
+    - '(?i)^amiga[ _]dunyasi(?:[ _]dergisi-sayi)?[ _]0*(\d+)'
+    - '(?i)^amiga[_ ](?:dergis_)?say_+0*(\d+)'
+  dates: {first: [1990, 6]}
+
+amiga-dergisi:
+  name: Amiga Dergisi
+  lang: tur
+  roots: [data/sources/nas/Amiga]
+  number: ['(?i)^amiga[ _](?:dergisi[ _](?:say_+)?)?(?:say_+)?0*(\d+)']
+  # 2 = Mart 1993 and 8 = Ekim 1993 from the covers.
+  dates: {1: "1993-02", 2: "1993-03", 3: "1993-04", 4: "1993-05", 5: "1993-06", 6: "1993-07", 8: "1993-10", 10: "1993-12", 11: "1994-02", 12: "1994-03"}
+  # amiga_dergisi_demo.pdf (a promotional issue) goes in as-is: see extras_root.
+  extras_root: data/sources/nas
+  extras: '(?i)^amiga_dergisi_demo\.pdf$'
+
+megamiga:
+  name: MegAmiga
+  lang: tur
+  roots: [data/sources/nas/MegAmiga]
+  number:
+    - '(?i)say_+305_+0*(\d+)'
+    - '(?i)^meg[-_ ]?amiga[-_ ]+(?:sayi_)?s?0*(\d+)'
+    - '(?i)^meg(\d+)'
+  dates: {first: [1995, 6], first_number: 0}
+
+amiga-show:
+  name: Amiga Show
+  lang: tur
+  roots: [data/sources/nas]
+  number: ['(?i)^amiga_show_(\d+)_']
+  dates: {1: "1996-09", 2: "1996-10"}
+
+amigalife:
+  name: AmigaLife
+  lang: tur
+  roots: [data/sources/nas]
+  number: ['(?i)^amigalife_sayi0*(\d+)']
+
+c64-turkiye:
+  name: C64 Türkiye
+  lang: tur
+  roots: ["data/sources/c64-turkiye/C64 Türkiye", data/sources/nas/c64tr]
+  number: ['(?i)^(?:c64 türkiye - |c64tr_)0*(\d+)']
+  dates: {1: "2002-11", 2: "2003-03", 3: "2003-09", 4: "2004-02", 5: "2004-07", 6: "2004-11", 7: "2005-01", 8: "2005-10"}
+
+palladium:
+  name: Palladium
+  lang: tur
+  roots: [data/sources/nas/palladium]
+  extras: '(?i)\.d64$'
+  number: ['(?i)^palladium_0*(\d+)']
+
+egitimde-bilgisayar:
+  name: Eğitimde Bilgisayar
+  lang: tur
+  # Eğitimde bilgisayar.rar (Downloads, Oct 2026); not on the NAS.
+  roots: ["data/sources/egitimde-bilgisayar/Eğitimde bilgisayar"]
+  number: ['(?i)^e\S{1,3}itimde bilgisayar - 0*(\d+)']
+  dates: {first: [1985, 3], first_number: 6}
+
+# English titles: personal archive only.
+
+cu-amiga:
+  name: CU Amiga
+  lang: eng
+  site: false
+  roots: ["data/sources/nas/CU Amiga"]
+  key: date
+  number: ['(?i)^cuamiga_([a-z]+_\d{4})\.pdf$']
+  extras: '(?i)\.png$'
+
+amiga-format:
+  name: Amiga Format
+  lang: eng
+  site: false
+  roots: [data/sources/nas]
+  key: date
+  number: ['(?i)^amigaformat_([a-z]+_\d{4})\.pdf$']
+
+amiga-shopper:
+  name: Amiga Shopper
+  lang: eng
+  site: false
+  roots: [data/sources/nas]
+  key: date
+  number: ['(?i)^ashopper_([a-z]+_\d{4})\.pdf$']
+
+amigaworld-tech-journal:
+  name: AmigaWorld Tech Journal
+  lang: eng
+  site: false
+  roots: ["data/sources/nas/Amiga World Tech Journal"]
+  key: volume
+  number: ['(?i)_vol_(\d+_\d+)_']
+  extras: '(?i)\.zip$'
+
+total-amiga:
+  name: Total Amiga
+  lang: eng
+  site: false
+  roots: ["data/sources/nas/Total Amiga"]
+  number: ['(?i)^totalamiga_(\d+)']
+
+commodorefree:
+  name: CommodoreFree
+  lang: eng
+  site: false
+  roots: [data/sources/nas/CommodoreFree]
+  number: ['(?i)^(?:commodore_free_)?issue_?(\d+)']
+  extras: '(?i)\.(d64|zip)$'
+
+apov:
+  name: APoV
+  lang: eng
+  site: false
+  roots: [data/sources/nas/APoV]
+  number: ['(?i)^apov-?0*(\d+)']
+
+robot-lab:
+  name: Robot Lab (Şahap Pekçevik)
+  lang: tur
+  site: false
+  book: true
+  roots: [data/sources/nas]
+  key: single
+  number: ['(?i)^ekitap - .*robot lab\.djvu$']

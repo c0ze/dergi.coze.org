@@ -1,0 +1,20 @@
+1:
+  date: 1996-09
+  chosen:
+    path: data/sources/nas/Amiga_Show_1_Eylül_1996.PDF
+    kind: pdf
+    pages: 24
+    px: 2336
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: 1996-10
+  chosen:
+    path: data/sources/nas/Amiga_Show_2_Ekim_1996.PDF
+    kind: pdf
+    pages: 28
+    px: 2336
+  supplements: []
+  alternatives: []
+  extras: []

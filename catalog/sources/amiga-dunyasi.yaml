@@ -1,0 +1,431 @@
+1:
+  date: 1990-06
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_01.pdf
+    kind: pdf
+    pages: 87
+    px: 808
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: 1990-07
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_02.pdf
+    kind: pdf
+    pages: 89
+    px: 982
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: 1990-08
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_03.pdf
+    kind: pdf
+    pages: 90
+    px: 780
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: 1990-09
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_04.pdf
+    kind: pdf
+    pages: 104
+    px: 743
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: 1990-10
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_05.pdf
+    kind: pdf
+    pages: 84
+    px: 944
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: 1990-11
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_06.pdf
+    kind: pdf
+    pages: 86
+    px: 532
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+7:
+  date: 1990-12
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_07.pdf
+    kind: pdf
+    pages: 79
+    px: 474
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: 1991-01
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_08.pdf
+    kind: pdf
+    pages: 78
+    px: 409
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+9:
+  date: 1991-02
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_09.pdf
+    kind: pdf
+    pages: 75
+    px: 438
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+10:
+  date: 1991-03
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_10.pdf
+    kind: pdf
+    pages: 77
+    px: 494
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+11:
+  date: 1991-04
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_11.pdf
+    kind: pdf
+    pages: 78
+    px: 374
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+12:
+  date: 1991-05
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_12.pdf
+    kind: pdf
+    pages: 76
+    px: 419
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+13:
+  date: 1991-06
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_13.pdf
+    kind: pdf
+    pages: 76
+    px: 642
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+14:
+  date: 1991-07
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_14.pdf
+    kind: pdf
+    pages: 82
+    px: 587
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+15:
+  date: 1991-08
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_15.pdf
+    kind: pdf
+    pages: 86
+    px: 816
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+16:
+  date: 1991-09
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 16/Amiga_Dunyasi_Dergisi-Sayi_16_Eylul_1991-v2.djvu
+    kind: djvu
+    pages: 79
+    px: 3402
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_16.pdf
+    kind: pdf
+    pages: 78
+    px: 691
+    digital: true
+    remake: true
+  - path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 16
+    kind: jpg
+    pages: 79
+    px: 1744
+  - path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 16/Amiga_dergis_say__16_jpeg.rar
+    kind: cbr
+    pages: 79
+    px: 1744
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_16.pdf
+17:
+  date: 1991-10
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_17.pdf
+    kind: pdf
+    pages: 82
+    px: 664
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+18:
+  date: 1991-11
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_18.pdf
+    kind: pdf
+    pages: 94
+    px: 654
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+19:
+  date: 1991-12
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_19.pdf
+    kind: pdf
+    pages: 83
+    px: 482
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+20:
+  date: 1992-01
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga_Dunyasi_20_eski.pdf
+    kind: pdf
+    pages: 81
+    px: 943
+    digital: true
+    remake: true
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_20.pdf
+    kind: pdf
+    pages: 80
+    px: 747
+    digital: true
+    remake: true
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_20.pdf
+21:
+  date: 1992-02
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 21
+    kind: jpg
+    pages: 60
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_21.pdf
+    kind: pdf
+    pages: 82
+    px: 491
+    digital: true
+    remake: true
+  - path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 21/Amiga_say_21.zip
+    kind: cbr
+    pages: 60
+    px: 1744
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_21.pdf
+22:
+  date: 1992-03
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_22.pdf
+    kind: pdf
+    pages: 82
+    px: 1099
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+23:
+  date: 1992-04
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_23.pdf
+    kind: pdf
+    pages: 88
+    px: 466
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+24:
+  date: 1992-05
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_24.pdf
+    kind: pdf
+    pages: 74
+    px: 289
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+25:
+  date: 1992-06
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 25
+    kind: jpg
+    pages: 72
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_25.pdf
+    kind: pdf
+    pages: 72
+    px: 458
+    digital: true
+    remake: true
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_25.pdf
+26:
+  date: 1992-07
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_26.pdf
+    kind: pdf
+    pages: 81
+    px: 425
+    digital: true
+    remake: true
+  supplements: []
+  alternatives: []
+  extras: []
+27:
+  date: 1992-08
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 27
+    kind: jpg
+    pages: 69
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_27.pdf
+    kind: pdf
+    pages: 87
+    px: 303
+    digital: true
+    remake: true
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_27.pdf
+28:
+  date: 1992-09
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 28
+    kind: jpg
+    pages: 87
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_28.pdf
+    kind: pdf
+    pages: 90
+    px: 458
+    digital: true
+    remake: true
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_28.pdf
+29:
+  date: 1992-10
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 29
+    kind: jpg
+    pages: 76
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_29.pdf
+    kind: pdf
+    pages: 79
+    px: 133
+    digital: true
+    remake: true
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_29.pdf
+30:
+  date: 1992-11
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 30
+    kind: jpg
+    pages: 79
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_30.pdf
+    kind: pdf
+    pages: 78
+    px: 454
+    digital: true
+    remake: true
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_30.pdf
+31:
+  date: 1992-12
+  chosen:
+    path: data/sources/nas/Amiga Dunyasi Jpegler/Amiga Dunyasi 31
+    kind: jpg
+    pages: 77
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_31.pdf
+    kind: pdf
+    pages: 65
+    px: 464
+    digital: true
+    remake: true
+  extras:
+  - data/sources/nas/Amiga Dunyasi/Amiga_Dunyasi_31.pdf

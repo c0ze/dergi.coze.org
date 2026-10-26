@@ -1,0 +1,96 @@
+# Turkish Commodore/Amiga magazines. English titles are out of scope.
+# `issues` is the known run. `note` is internal; `aciklama` is the public Turkish description.
+
+- slug: commodore-haberler
+  name: Commodore Haberler
+  publisher: Teleteknik A.Ş.
+  years: 1985-1986
+  issues: [1, 2, 3, 4, 5, 6, 7, 8]
+  note: Free to Teleteknik customers; renamed Commodore in March 1986.
+
+- slug: commodore
+  name: Commodore
+  publisher: Teleteknik A.Ş.
+  years: 1986-1992
+  issues: {from: 1, to: 79}
+  supplements: Program Döküm Eki (78 issues had one)
+  aciklama: >-
+    Commodore 64 ve Amiga'yı Türkiye'ye getiren Teleteknik'in aylık dergisi. Program
+    dökümleri, donanım ve yazılım yazıları, oyun tanıtımları ve okur mektupları.
+
+- slug: 64ler
+  name: 64'ler
+  publisher: Safa Tanıtım Hizmetleri
+  years: 1988-1992
+  issues: {from: 1, to: 52}
+  supplements: Sega Magazine (with 45), 64'ler Professional (with 51)
+  note: >-
+    Monthly from April 1988 with no gaps (8 = Nov 1988, 52 = Jul 1992). The 2022 rar dates
+    45 as Nov 1991; the scanner's nfo and the sequence say Dec 1991. Sources and the chosen
+    scan per issue: catalog/sources/64ler.yaml.
+  aciklama: >-
+    Commodore 64 oyunlarının açıklamalarıyla tanınan aylık dergi: haritalar, ipuçları,
+    hileler ve oyun tanıtımları. Döneminin en çok satan bilgisayar dergilerinden biri.
+
+- slug: commodore-bilgisayar-magazin
+  name: Commodore Bilgisayar Magazin
+  years: 1991
+  issues: unknown
+
+- slug: amiga-dunyasi
+  name: Amiga Dünyası
+  publisher: Biyat Bilgisayar Yayıncılık
+  years: 1990-1992
+  issues: {from: 1, to: 31}
+  aciklama: >-
+    1990–1992 arasında çıkan aylık Amiga dergisi. Oyun tanıtımları, ipuçları, program ve donanım yazıları.
+    Çoğu sayı, dergiden yeniden dizilmiş (OCR ile yazıya dökülmüş) sürümlerden geliyor.
+
+- slug: amiga-dergisi
+  name: Amiga Dergisi
+  publisher: Moda Bilgisayar Sistemleri
+  years: 1993-1994
+  issues: {from: 1, to: 12}
+  aciklama: >-
+    Amiga oyunları, programlama ve donanım üzerine aylık dergi; bazı sayılarla birlikte disket
+    ve ek kitapçıklar verildi.
+
+- slug: megamiga
+  name: MegAmiga
+  years: 1995
+  issues: {from: 0, to: 6}
+  aciklama: >-
+    1995'te yayımlanan aylık Amiga dergisi: oyun tanıtımları, ipuçları ve haberler.
+
+- slug: amiga-show
+  name: Amiga Show
+  years: 1996
+  issues: [1, 2]
+
+- slug: amigalife
+  name: AmigaLife
+  issues: unknown
+
+- slug: c64-turkiye
+  name: C64 Türkiye
+  publisher: İsmail "Hades" Şahin (fanzine)
+  years: 2002-2005
+  issues: {from: 1, to: 8}
+  born_digital: true
+  note: PDF fanzine made in Word (QuarkXPress for issue 4); text is extractable, no OCR needed.
+  aciklama: >-
+    İnternetten ücretsiz dağıtılan, Word ile hazırlanıp PDF olarak yayımlanan bir fanzin.
+    Assembler kursları, demo efektleri, program dökümleri ve Türk C64 sahnesinden haberler.
+
+- slug: egitimde-bilgisayar
+  name: Eğitimde Bilgisayar
+  years: 1985-1987
+  issues: unknown
+  note: >-
+    From Eğitimde bilgisayar.rar (Oct 2026): 6 and 11–39, monthly from March 1985 (6) with no
+    gaps; the file name of 37 says "10-19867", the sequence says Oct 1987.
+
+- slug: palladium
+  name: Palladium
+  format: C64 disk magazine (D64)
+  issues: unknown

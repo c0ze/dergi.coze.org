@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Ara{% endblock %}
+{% block main %}
+<h1>Ara</h1>
+<p class="lede">Bütün sayılardaki yazıların içinde arayın. Sözcüklerin yanı sıra anlamca yakın yazılar da gelir: "assembler" araması "makine dili" yazılarını da bulur. Reklamlar aramaya dahil değil.</p>
+<form class="search" role="search" action="/ara/">
+  <label for="q" class="visually-hidden">Aranacak sözcükler</label>
+  <input id="q" name="q" type="search" autocomplete="off" placeholder="Ne arıyorsunuz? (ör. sprite, raster, Teleteknik)">
+  <div class="filters">
+    <label>Dergi <select name="dergi"><option value="">Hepsi</option></select></label>
+    <label>Yıl <select name="yil"><option value="">Hepsi</option></select></label>
+  </div>
+</form>
+<p class="search-status meta" role="status" aria-live="polite"></p>
+<ol class="results" data-assets="{{ A }}"></ol>
+<p><button type="button" class="button secondary more" hidden>Daha fazla sonuç</button></p>
+{% endblock %}
+{% block scripts %}<script src="/static/search.js" type="module"></script>{% endblock %}

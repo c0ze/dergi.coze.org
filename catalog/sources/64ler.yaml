@@ -1,0 +1,562 @@
+1:
+  date: 1988-04
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 01 (04-1988).pdf
+    kind: pdf
+    pages: 32
+    px: 2061
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_01.pdf
+    kind: pdf
+    pages: 32
+    px: 2061
+  extras: []
+2:
+  date: 1988-05
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 02 (05-1988).pdf
+    kind: pdf
+    pages: 36
+    px: 2075
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_02.pdf
+    kind: pdf
+    pages: 36
+    px: 2075
+  extras: []
+3:
+  date: 1988-06
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 03 (06-1988).pdf
+    kind: pdf
+    pages: 36
+    px: 2087
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_03.pdf
+    kind: pdf
+    pages: 36
+    px: 2087
+  extras: []
+4:
+  date: 1988-07
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 04 (07-1988).pdf
+    kind: pdf
+    pages: 36
+    px: 1589
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_04.pdf
+    kind: pdf
+    pages: 36
+    px: 1589
+  extras: []
+5:
+  date: 1988-08
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 05 (08-1988).pdf
+    kind: pdf
+    pages: 36
+    px: 1543
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_05.pdf
+    kind: pdf
+    pages: 36
+    px: 1543
+  extras: []
+6:
+  date: 1988-09
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 06 (09-1988).pdf
+    kind: pdf
+    pages: 52
+    px: 1267
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_06.pdf
+    kind: pdf
+    pages: 52
+    px: 1267
+  extras: []
+7:
+  date: 1988-10
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 07 (10-1988).pdf
+    kind: pdf
+    pages: 52
+    px: 1200
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_07.pdf
+    kind: pdf
+    pages: 52
+    px: 1200
+  extras: []
+8:
+  date: 1988-11
+  chosen:
+    path: data/sources/64ler/nas/64ler_-_sayi_08_-_Kasim_1988
+    kind: jpg
+    pages: 54
+    px: 3273
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 08 (11-1988).pdf
+    kind: pdf
+    pages: 52
+    px: 1236
+  - path: data/sources/64ler/nas/64ler_08.pdf
+    kind: pdf
+    pages: 54
+    px: 3272
+  extras: []
+9:
+  date: 1988-12
+  chosen:
+    path: data/sources/64ler/nas/64ler sayi 09 - Aralik 1988
+    kind: jpg
+    pages: 54
+    px: 3290
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 09 (12-1988).pdf
+    kind: pdf
+    pages: 52
+    px: 1249
+  - path: data/sources/64ler/nas/64ler_09.pdf
+    kind: pdf
+    pages: 54
+    px: 3289
+  extras: []
+10:
+  date: 1989-01
+  chosen:
+    path: data/sources/64ler/nas/64ler_10.pdf
+    kind: pdf
+    pages: 68
+    px: 3329
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 10 (01-1989).pdf
+    kind: pdf
+    pages: 68
+    px: 1259
+  - path: data/sources/64ler/nas/64ler sayi 10 Ocak_1989
+    kind: jpg
+    pages: 68
+    px: 3329
+  extras: []
+11:
+  date: 1989-02
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 11 (02-1989).pdf
+    kind: pdf
+    pages: 68
+    px: 1268
+  supplements: []
+  alternatives: []
+  extras: []
+12:
+  date: 1989-03
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 12 (03-1989).pdf
+    kind: pdf
+    pages: 70
+    px: 1260
+  supplements: []
+  alternatives: []
+  extras: []
+13:
+  date: 1989-04
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 13 (04-1989).pdf
+    kind: pdf
+    pages: 70
+    px: 1260
+  supplements: []
+  alternatives: []
+  extras: []
+14:
+  date: 1989-05
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 14 (05-1989).pdf
+    kind: pdf
+    pages: 68
+    px: 1200
+  supplements: []
+  alternatives: []
+  extras: []
+15:
+  date: 1989-06
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 15 (06-1989).pdf
+    kind: pdf
+    pages: 68
+    px: 2942
+  supplements: []
+  alternatives: []
+  extras: []
+16:
+  date: 1989-07
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 16 (07-1989).pdf
+    kind: pdf
+    pages: 68
+    px: 2942
+  supplements: []
+  alternatives: []
+  extras: []
+17:
+  date: 1989-08
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 17 (08-1989).pdf
+    kind: pdf
+    pages: 52
+    px: 2937
+  supplements: []
+  alternatives: []
+  extras: []
+18:
+  date: 1989-09
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 18 (09-1989).pdf
+    kind: pdf
+    pages: 52
+    px: 1661
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_18.pdf
+    kind: pdf
+    pages: 52
+    px: 1661
+  extras: []
+19:
+  date: 1989-10
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 19 (10-1989).pdf
+    kind: pdf
+    pages: 52
+    px: 1659
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_19.pdf
+    kind: pdf
+    pages: 52
+    px: 1659
+  extras: []
+20:
+  date: 1989-11
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 20 (11-1989).pdf
+    kind: pdf
+    pages: 68
+    px: 1663
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_20.pdf
+    kind: pdf
+    pages: 68
+    px: 1663
+  extras: []
+21:
+  date: 1989-12
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 21 (12-1989).pdf
+    kind: pdf
+    pages: 68
+    px: 1634
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_21.pdf
+    kind: pdf
+    pages: 68
+    px: 1634
+  extras: []
+22:
+  date: 1990-01
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 22 (01-1990).pdf
+    kind: pdf
+    pages: 67
+    px: 2918
+  supplements: []
+  alternatives: []
+  extras: []
+23:
+  date: 1990-02
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 23 (02-1990).pdf
+    kind: pdf
+    pages: 68
+    px: 2918
+  supplements: []
+  alternatives: []
+  extras: []
+26:
+  date: 1990-05
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 26 (05-1990).pdf
+    kind: pdf
+    pages: 68
+    px: 2912
+  supplements: []
+  alternatives: []
+  extras: []
+27:
+  date: 1990-06
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 27 (06-1990).pdf
+    kind: pdf
+    pages: 68
+    px: 2899
+  supplements: []
+  alternatives: []
+  extras: []
+28:
+  date: 1990-07
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 28 (07-1990).pdf
+    kind: pdf
+    pages: 68
+    px: 2912
+  supplements: []
+  alternatives: []
+  extras: []
+29:
+  date: 1990-08
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 29 (08-1990).pdf
+    kind: pdf
+    pages: 68
+    px: 2899
+  supplements: []
+  alternatives: []
+  extras: []
+30:
+  date: 1990-09
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 30 (09-1990).pdf
+    kind: pdf
+    pages: 84
+    px: 2902
+  supplements: []
+  alternatives: []
+  extras: []
+31:
+  date: 1990-10
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 31 (10-1990).pdf
+    kind: pdf
+    pages: 84
+    px: 2902
+  supplements: []
+  alternatives: []
+  extras: []
+32:
+  date: 1990-11
+  chosen:
+    path: data/sources/64ler/nas/64ler sayi 32 Kasim 90
+    kind: jpg
+    pages: 84
+    px: 1823
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 32 (11-1990).pdf
+    kind: pdf
+    pages: 84
+    px: 1822
+  - path: data/sources/64ler/nas/64ler sayi 32 Kasim 90/64ler sayu 32 Kasim 90.cbr
+    kind: cbr
+    pages: 84
+    px: 1823
+  - path: data/sources/64ler/nas/64ler_32.pdf
+    kind: pdf
+    pages: 84
+    px: 1822
+  extras: []
+33:
+  date: 1990-12
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 33 (12-1990).pdf
+    kind: pdf
+    pages: 84
+    px: 2902
+  supplements: []
+  alternatives: []
+  extras: []
+34:
+  date: 1991-01
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 34 (01-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 2977
+  supplements: []
+  alternatives: []
+  extras: []
+35:
+  date: 1991-02
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 35 (02-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 2977
+  supplements: []
+  alternatives: []
+  extras: []
+37:
+  date: 1991-04
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 37 (04-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 2945
+  supplements: []
+  alternatives: []
+  extras: []
+38:
+  date: 1991-05
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 38 (05-1991).pdf
+    kind: pdf
+    pages: 88
+    px: 2943
+  supplements: []
+  alternatives: []
+  extras: []
+39:
+  date: 1991-06
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 39 (06-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 2945
+  supplements: []
+  alternatives: []
+  extras: []
+40:
+  date: 1991-07
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 40 (07-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 1600
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler sayi 40 temmuz 91
+    kind: jpg
+    pages: 84
+    px: 1600
+  - path: data/sources/64ler/nas/64ler_40.pdf
+    kind: pdf
+    pages: 84
+    px: 1600
+  extras: []
+41:
+  date: 1991-08
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 41 (08-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 1623
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/nas/64ler_41.pdf
+    kind: pdf
+    pages: 84
+    px: 1623
+  extras: []
+42:
+  date: 1991-09
+  chosen:
+    path: data/sources/64ler/rar/64ler/64ler - 42 (09-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 2192
+  supplements: []
+  alternatives: []
+  extras: []
+43:
+  date: 1991-10
+  chosen:
+    path: data/sources/64ler/nas/64ler sayi 43 Ekim 91
+    kind: jpg
+    pages: 84
+    px: 1312
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 43 (10-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 1311
+  - path: data/sources/64ler/nas/64ler sayi 43 Ekim 91/64ler sayi 43 Ekim 91.cbr
+    kind: cbr
+    pages: 84
+    px: 1312
+  - path: data/sources/64ler/nas/64ler_43.pdf
+    kind: pdf
+    pages: 84
+    px: 1311
+  extras: []
+45:
+  date: 1991-12
+  chosen:
+    path: data/sources/64ler/nas/64ler sayi 45 Aralik 91
+    kind: jpg
+    pages: 84
+    px: 1600
+  supplements:
+  - path: data/sources/64ler/nas/64ler sayi 45 Aralik 91/sega magazine
+    kind: jpg
+    pages: 16
+    px: 1600
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 45 (11-1991).pdf
+    kind: pdf
+    pages: 84
+    px: 1599
+  - path: data/sources/64ler/nas/64ler_45.pdf
+    kind: pdf
+    pages: 84
+    px: 1599
+  extras: []
+51:
+  date: 1992-06
+  chosen:
+    path: data/sources/64ler/nas/64'ler sayı51.cbr
+    kind: cbr
+    pages: 84
+    px: 3238
+  supplements:
+  - path: data/sources/64ler/rar/64ler/64ler - 51 (06-1992 Professional Ek).pdf
+    kind: pdf
+    pages: 8
+    px: 3142
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 51 (06-1992).pdf
+    kind: pdf
+    pages: 84
+    px: 1393
+  extras: []
+52:
+  date: 1992-07
+  chosen:
+    path: data/sources/64ler/nas/64ler_52.pdf
+    kind: pdf
+    pages: 84
+    px: 3244
+  supplements: []
+  alternatives:
+  - path: data/sources/64ler/rar/64ler/64ler - 52 (07-1992).pdf
+    kind: pdf
+    pages: 84
+    px: 1384
+  - path: data/sources/64ler/nas/64ler sayi 52 Temmuz 92
+    kind: jpg
+    pages: 84
+    px: 3244
+  extras: []

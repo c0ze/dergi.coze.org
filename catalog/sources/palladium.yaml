@@ -1,0 +1,29 @@
+1:
+  date: null
+  chosen: null
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/palladium/palladium_01.d64
+2:
+  date: null
+  chosen: null
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/palladium/palladium_02_a.d64
+  - data/sources/nas/palladium/palladium_02_b.d64
+3:
+  date: null
+  chosen: null
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/palladium/palladium_03.d64
+4:
+  date: null
+  chosen: null
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/palladium/palladium_04.d64

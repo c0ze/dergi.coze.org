@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Hakkında{% endblock %}
+{% block main %}
+<article class="prose">
+  <h1>Hakkında</h1>
+  <p>dergi.coze.org, Türkiye'de 1985'ten bu yana çıkmış Commodore ve Amiga dergilerini bir arada tutan, reklamsız ve izlemesiz bir arşivdir. Her sayıyı indirebilir, sayfa sayfa okuyabilir, yazılarını düz metin olarak okuyabilir ve içinde arama yapabilirsiniz.</p>
+  <h2>Metinler nasıl çıkarıldı</h2>
+  <p>Taranmış sayfalar yazı tanıma (OCR) ile okunur. Hangi bölümün yazı, hangisinin reklam ya da sayfa başlığı olduğuna bir sınıflandırma modeli karar verir; emin olunamayan parçalar metinde bırakılır. Bu yüzden yazı görünümünde hatalar olabilir; asıl sayfalar her zaman bir tık uzaktadır.</p>
+  <h2>Arşivdeki dergiler</h2>
+  <ul>
+  {% for t in shelf %}<li><a href="/{{ t.slug }}/">{{ t.name }}</a> ({{ t.years }}): {{ t.issues_have|length }} sayı</li>{% endfor %}
+  </ul>
+  <h2>Hak sahipleri ve eksik sayılar</h2>
+  <p>Dergilerin hakları yayıncılarına ve yazarlarına aittir. Bir sayının kaldırılmasını istiyorsanız ya da elinizde eksik sayıların taraması varsa bize yazın: <a href="mailto:contact@coze.org">contact@coze.org</a>.</p>
+  <h2>Teşekkürler</h2>
+  <p>Bu sayıları yıllar önce tarayıp paylaşan herkese.</p>
+</article>
+{% endblock %}

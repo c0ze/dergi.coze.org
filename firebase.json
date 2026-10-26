@@ -1,0 +1,53 @@
+{
+  "hosting": {
+    "public": "data/site",
+    "ignore": [
+      "i/**",
+      "**/.*"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": true,
+    "headers": [
+      {
+        "source": "**/*.@(css|js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "pagefind/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "dergi-api",
+          "region": "us-central1"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,125 @@
+1:
+  date: 1993-02
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_01.pdf
+    kind: pdf
+    pages: 52
+    px: 1063
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: null
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_02.pdf
+    kind: pdf
+    pages: 52
+    px: 1230
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: null
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_03.pdf
+    kind: pdf
+    pages: 60
+    px: 1230
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: null
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_04.pdf
+    kind: pdf
+    pages: 84
+    px: 1234
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: null
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_05.pdf
+    kind: pdf
+    pages: 84
+    px: 1222
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: null
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_08.pdf
+    kind: pdf
+    pages: 51
+    px: 1744
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga/Amiga Dergisi 8
+    kind: jpg
+    pages: 51
+    px: 1744
+  - path: data/sources/nas/Amiga/Amiga Dergisi 8/Amiga_dergisi_say__8.rar
+    kind: cbr
+    pages: 51
+    px: 1744
+  extras: []
+10:
+  date: 1993-12
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_10.pdf
+    kind: pdf
+    pages: 84
+    px: 1215
+  review: 'a sharper copy has fewer pages: Amiga Dergisi 10 (56 p, 1744 px), Amiga_say__10.rar
+    (56 p, 1744 px)'
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga/Amiga Dergisi 10
+    kind: jpg
+    pages: 56
+    px: 1744
+  - path: data/sources/nas/Amiga/Amiga Dergisi 10/Amiga_say__10.rar
+    kind: cbr
+    pages: 56
+    px: 1744
+  extras: []
+11:
+  date: 1994-02
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_11.pdf
+    kind: pdf
+    pages: 52
+    px: 1209
+  review: 'a sharper copy has fewer pages: Amiga Dergisi 11 (38 p, 1744 px), Amiga_Say_11.rar
+    (38 p, 1744 px)'
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/Amiga/Amiga Dergisi 11
+    kind: jpg
+    pages: 38
+    px: 1744
+  - path: data/sources/nas/Amiga/Amiga Dergisi 11/Amiga_Say_11.rar
+    kind: cbr
+    pages: 38
+    px: 1744
+  extras: []
+12:
+  date: 1994-03
+  chosen:
+    path: data/sources/nas/Amiga/Amiga_Dergisi_12.pdf
+    kind: pdf
+    pages: 52
+    px: 1209
+  supplements: []
+  alternatives: []
+  extras: []
+_title:
+  date: null
+  chosen: null
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/amiga_dergisi_demo.pdf

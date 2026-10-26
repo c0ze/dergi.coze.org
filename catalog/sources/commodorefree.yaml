@@ -1,0 +1,143 @@
+4:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/commodore_free_issue_4.pdf
+    kind: pdf
+    pages: 33
+    px: 573
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue4.D64
+5:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/commodore_free_issue_5.pdf
+    kind: pdf
+    pages: 28
+    px: 731
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue5.D64
+6:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/commodore_free_issue_6.pdf
+    kind: pdf
+    pages: 31
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue6.D64
+7:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/commodore_free_issue_7.pdf
+    kind: pdf
+    pages: 33
+    px: 237
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue7.D64
+8:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/commodore_free_issue_8.pdf
+    kind: pdf
+    pages: 39
+    px: 603
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue8.D64
+9:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/issue9.pdf
+    kind: pdf
+    pages: 31
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue9.D64
+10:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/issue10.pdf
+    kind: pdf
+    pages: 31
+    px: 0
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue10.D64
+11:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/issue11.pdf
+    kind: pdf
+    pages: 31
+    px: 193
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue11.D64
+12:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/issue12.pdf
+    kind: pdf
+    pages: 29
+    px: 537
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue12.D64
+13:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/issue13.pdf
+    kind: pdf
+    pages: 30
+    px: 772
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue13.zip
+14:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/issue14.pdf
+    kind: pdf
+    pages: 30
+    px: 805
+    digital: true
+  supplements: []
+  alternatives: []
+  extras:
+  - data/sources/nas/CommodoreFree/issue14.zip
+20:
+  date: null
+  chosen:
+    path: data/sources/nas/CommodoreFree/issue20.pdf
+    kind: pdf
+    pages: 29
+    px: 890
+    digital: true
+  supplements: []
+  alternatives: []
+  extras: []

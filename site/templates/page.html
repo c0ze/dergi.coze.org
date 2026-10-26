@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ title.name }} {{ issue.number }}, sayfa {{ page }}{% endblock %}
+{% block head %}
+{% if page > 1 %}<link rel="prev" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ page - 1 }}/">{% endif %}
+{% if page < issue.pages %}<link rel="next" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ page + 1 }}/">{% endif %}
+{% endblock %}
+{% block main %}
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › <a href="/{{ title.slug }}/{{ issue.nn }}/">Sayı {{ issue.number }}</a> › Sayfa {{ page }}</nav>
+<div class="reader" data-page="{{ page }}" data-pages="{{ issue.pages }}"
+     data-page-url="/{{ title.slug }}/{{ issue.nn }}/sayfa/{n}/"
+     data-image-url="{{ A }}/{{ title.slug }}/{{ issue.nn }}/pages/{nnn}.webp"
+     data-alt="{{ title.name }} sayı {{ issue.number }}, sayfa {n}">
+  <nav class="reader-bar" aria-label="Sayfalar">
+    {% if page > 1 %}<a class="button secondary" data-nav="prev" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ page - 1 }}/">‹ Önceki</a>{% else %}<span class="button secondary" data-nav="prev" aria-disabled="true">‹ Önceki</span>{% endif %}
+    <span class="pos">Sayfa {{ page }} / {{ issue.pages }}</span>
+    {% if page < issue.pages %}<a class="button secondary" data-nav="next" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ page + 1 }}/">Sonraki ›</a>{% else %}<span class="button secondary" data-nav="next" aria-disabled="true">Sonraki ›</span>{% endif %}
+    <button type="button" class="button secondary spread-toggle" aria-pressed="false" hidden>Çift sayfa</button>
+  </nav>
+  <figure class="page">
+    <a href="{{ A }}/{{ title.slug }}/{{ issue.nn }}/pages/{{ '%03d' % page }}.webp" title="Tam boyutta aç">
+      <img src="{{ A }}/{{ title.slug }}/{{ issue.nn }}/pages/{{ '%03d' % page }}.webp"
+           alt="{{ title.name }} sayı {{ issue.number }}, sayfa {{ page }}" width="1131" height="1600">
+    </a>
+  </figure>
+  <div class="page-side">
+    <div class="articles-panel"{% if not page_articles %} hidden{% endif %}>
+      <h2>Bu sayfadaki yazılar</h2>
+      <ul class="page-articles">{% for a in page_articles %}<li><a href="/{{ title.slug }}/{{ issue.nn }}/{{ a.slug }}/">{{ a.title }}</a></li>{% endfor %}</ul>
+    </div>
+    {% if info.text or (facing and facing.text) %}
+    <details class="text-panel">
+      <summary>Sayfanın metni</summary>
+      <div class="page-texts">
+        <div class="page-text" data-page="{{ page }}"><h3>Sayfa {{ page }}</h3>{% for t in info.text %}<p>{{ t }}</p>{% else %}<p class="meta">Bu sayfada metin yok.</p>{% endfor %}</div>
+      </div>
+    </details>
+    {% endif %}
+    <p class="hint">Klavyeyle gezinmek için ← ve → tuşları.</p>
+  </div>
+  {% if facing %}
+  {# The facing page's text and articles, shown by reader.js in two-page mode. #}
+  <template id="facing">
+    <div class="page-text" data-page="{{ facing.page }}"><h3>Sayfa {{ facing.page }}</h3>{% for t in facing.text %}<p>{{ t }}</p>{% else %}<p class="meta">Bu sayfada metin yok.</p>{% endfor %}</div>
+    <ul>{% for a in facing.articles %}<li><a href="/{{ title.slug }}/{{ issue.nn }}/{{ a.slug }}/">{{ a.title }}</a></li>{% endfor %}</ul>
+  </template>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/reader.js" defer></script>{% endblock %}
