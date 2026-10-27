@@ -12,14 +12,13 @@
     <p class="lede">{{ issue.human_date }} · {{ issue.pages }} sayfa</p>
     <p class="actions">
       <a class="button" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/1/">Sayfaları oku</a>
-      <a class="button secondary" href="{{ A }}/{{ title.slug }}/{{ issue.nn }}/{{ issue.download }}" download>PDF indir</a>
     </p>
     <h2>Bu sayıda</h2>
     <ol class="toc">
     {% for a in issue.articles %}
       <li>
         <a href="/{{ title.slug }}/{{ issue.nn }}/{{ a.slug }}/">{{ a.title }}</a>
-        <span class="meta">{% if a.author %}{{ a.author }} · {% endif %}s. {{ a.pages[0] }}{% if a.pages|length > 1 %}–{{ a.pages[-1] }}{% endif %}</span>
+        <span class="meta">{% if a.author_name %}{{ a.author_name }} · {% endif %}s. {{ a.pages[0] }}{% if a.pages|length > 1 %}–{{ a.pages[-1] }}{% endif %}</span>
       </li>
     {% endfor %}
     </ol>

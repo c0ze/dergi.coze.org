@@ -47,6 +47,20 @@
           "serviceId": "dergi-api",
           "region": "us-central1"
         }
+      },
+      {
+        "source": "/mcp",
+        "run": {
+          "serviceId": "dergi-api",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/mcp/**",
+        "run": {
+          "serviceId": "dergi-api",
+          "region": "us-central1"
+        }
       }
     ]
   }

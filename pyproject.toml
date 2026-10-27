@@ -21,5 +21,12 @@ ocr = [
     "surya-ocr>=0.17",
 ]
 
+api = [
+    # api/main.py run locally (Cloud Run installs api/requirements.txt)
+    "mcp==2.3.0",
+    "google-auth>=2.62",
+    "uvicorn>=0.54",
+]
+
 [tool.uv]
 package = false

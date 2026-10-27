@@ -9,7 +9,7 @@
   alternatives: []
   extras: []
 2:
-  date: null
+  date: 1993-03
   chosen:
     path: data/sources/nas/Amiga/Amiga_Dergisi_02.pdf
     kind: pdf
@@ -19,7 +19,7 @@
   alternatives: []
   extras: []
 3:
-  date: null
+  date: 1993-04
   chosen:
     path: data/sources/nas/Amiga/Amiga_Dergisi_03.pdf
     kind: pdf
@@ -29,7 +29,7 @@
   alternatives: []
   extras: []
 4:
-  date: null
+  date: 1993-05
   chosen:
     path: data/sources/nas/Amiga/Amiga_Dergisi_04.pdf
     kind: pdf
@@ -39,7 +39,7 @@
   alternatives: []
   extras: []
 5:
-  date: null
+  date: 1993-06
   chosen:
     path: data/sources/nas/Amiga/Amiga_Dergisi_05.pdf
     kind: pdf
@@ -49,7 +49,7 @@
   alternatives: []
   extras: []
 8:
-  date: null
+  date: 1993-10
   chosen:
     path: data/sources/nas/Amiga/Amiga_Dergisi_08.pdf
     kind: pdf

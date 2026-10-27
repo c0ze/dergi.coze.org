@@ -44,7 +44,7 @@ def slugify(text: str) -> str:
     return fold(text).replace(" ", "-")[:60] or "x"
 
 
-ROLE_PREFIX = re.compile(r"^\s*(?:çev\.?|çeviren|hazırlayan|yazan|derleyen)\s*:?\s*", re.I)
+ROLE_PREFIX = re.compile(r"^\s*(?:çev\.?|çeviren|hazırlayan|yazan|derleyen|editör)\s*:?\s*", re.I)
 
 
 def tr_title(name: str) -> str:
@@ -61,7 +61,8 @@ def author_key(name: str) -> str:
     """Same person: same letters once case, Turkish letters, punctuation and a quoted
     nickname are set aside."""
     name = re.sub(r"[\"“”'‘’].*?[\"“”'‘’]", " ", ROLE_PREFIX.sub("", name))
-    return fold(name)
+    # Spaces too: OCR splits names ("CEM GENÇ ER", "ERDEM TAY LAN").
+    return fold(name).replace(" ", "")
 
 
 def game_key(name: str) -> str:
@@ -180,13 +181,15 @@ def read_yaml(path: Path) -> dict:
 def suggest(authors: dict) -> list[list[str]]:
     """Pairs of distinct authors whose names are close enough to be one person."""
     keys = list(authors)
+    names = {k: fold(ROLE_PREFIX.sub("", authors[k]["name"])) for k in keys}
     pairs = []
-    for i, k in enumerate(keys):
+    for i, k0 in enumerate(keys):
+        k = names[k0]
         for j in range(i + 1, len(keys)):
-            other = keys[j]
+            other = names[keys[j]]
             same_surname = k.split()[-1:] == other.split()[-1:] and k[:1] == other[:1]
             if fuzz.ratio(k, other) >= 85 or (same_surname and fuzz.token_set_ratio(k, other) >= 80):
-                pairs.append(sorted([authors[k]["name"], authors[other]["name"]]))
+                pairs.append(sorted([authors[k0]["name"], authors[keys[j]]["name"]]))
     return pairs
 
 

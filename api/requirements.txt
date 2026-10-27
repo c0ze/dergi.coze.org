@@ -1,5 +1,6 @@
-numpy==2.2.6
-starlette==0.47.2
-uvicorn==0.35.0
-google-auth==2.40.3
-requests==2.32.4
+mcp==2.3.0
+starlette==1.10.0
+uvicorn==0.54.0
+numpy==2.5.4
+google-auth==2.62.0
+requests==2.34.2

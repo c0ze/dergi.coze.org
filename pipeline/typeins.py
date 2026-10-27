@@ -21,7 +21,7 @@ import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from fsutil import write_json  # noqa: E402
+from fsutil import read_json, write_json  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 MULTIPLES = (17, 19, 23, 29, 31, 37, 41, 59)
@@ -84,6 +84,8 @@ def extract(issue: str) -> list[dict]:
     d = ROOT / "data" / "issues" / issue
     articles = json.loads((d / "articles.json").read_text())
     out_dir = d / "prg"
+    # VICE results (test_prg.py) carry over for a program whose bytes have not changed.
+    before = {e["file"]: e for e in read_json(out_dir / "prg.json") or []}
     found = []
     used = set()
     for p in scan_issue(articles):
@@ -101,7 +103,11 @@ def extract(issue: str) -> list[dict]:
                  "failed": p["failed"], "verified": not p["failed"], "format": "checksummer"}
         if entry["verified"]:
             out_dir.mkdir(exist_ok=True)
-            (out_dir / fname).write_bytes(p["load"].to_bytes(2, "little") + bytes(p["data"]))
+            data = p["load"].to_bytes(2, "little") + bytes(p["data"])
+            old = out_dir / fname
+            if old.exists() and old.read_bytes() == data and fname in before:
+                entry.update({k: before[fname][k] for k in ("tested", "screenshot", "start") if k in before[fname]})
+            old.write_bytes(data)
         found.append(entry)
     if found:
         out_dir.mkdir(exist_ok=True)

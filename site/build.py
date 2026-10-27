@@ -1,6 +1,6 @@
 """Phase 4: build the static site from the catalogue and the assembled issues.
 
-Output goes to data/site/ (git-ignored). Page images, figures and downloads are copied
+Output goes to data/site/ (git-ignored). Page images and figures are copied
 under /i/; in production they move to the CDN host and ASSET_BASE points there.
 
 Usage: build.py [--asset-base URL] [--only slug,slug]
@@ -189,6 +189,7 @@ def build(asset_base: str, only: set[str] | None) -> None:
     env.globals["A"] = asset_base.rstrip("/")
     env.filters["fold"] = fold
     env.filters["human_date"] = human_date
+    env.filters["sayi"] = lambda n: f"{n:,}".replace(",", ".")  # Turkish thousands: 11.833
     # Start from a clean tree (assets under i/ are kept and synced by copy()): pages for
     # removed articles, changed slugs or titles left out with --only must not linger and
     # end up in the search index or the next deploy.
@@ -219,7 +220,8 @@ def build(asset_base: str, only: set[str] | None) -> None:
 
         for issue in issues:
             d, base = issue["dir"], f"{t['slug']}/{issue['nn']}"
-            # Assets: reader pages, thumbnails, figures, and the download.
+            # Assets: reader pages, thumbnails and figures. The scans themselves are not offered
+            # for download (decided 2026-10-27).
             for sub in ("pages", "thumbs", "figures"):
                 for f in (d / sub).glob("*.webp") if (d / sub).exists() else []:
                     copy(f, OUT / "i" / base / sub / f.name)
@@ -227,9 +229,11 @@ def build(asset_base: str, only: set[str] | None) -> None:
                 for name in (prog["file"], prog.get("screenshot")):
                     if name:
                         copy(d / "prg" / name, OUT / "i" / base / "prg" / name)
-            issue["download"] = f"{t['slug']}-{issue['nn']}.pdf"
-            copy(Path(issue["source"]), OUT / "i" / base / issue["download"])
 
+            for a in issue["articles"]:
+                # The author's profile name ("Can Öztürk"), not the byline as printed ("CAN ÖZTÜRK").
+                tags = article_tags(f"/{base}/{a['slug']}/")
+                a["author_name"] = (tags and tags["author"] and tags["author"]["name"]) or a.get("author")
             render(base, "issue.html", title=t, issue=issue)
             arts = issue["articles"]
             for i, a in enumerate(arts):
@@ -258,7 +262,12 @@ def build(asset_base: str, only: set[str] | None) -> None:
     build_taxonomy(render, only)
     render("", "index.html", shelf=shelf)
     render("ara", "search.html")
-    render("hakkinda", "about.html", shelf=shelf)
+    issues = [i for t in shelf for i in t["issues_have"]]
+    stats = {"issues": len(issues), "pages": sum(i["pages"] for i in issues),
+             "articles": sum(len(i["articles"]) for i in issues),
+             "programs": sum(len(i["programs"]) for i in issues),
+             "authors": len(TAX["authors"]), "games": len(TAX["games"])}
+    render("hakkinda", "about.html", shelf=shelf, stats=stats)
     for f in (SITE / "static").iterdir():
         copy(f, OUT / "static" / f.name)
     print(f"built {OUT} ({sum(len(t['issues_have']) for t in shelf)} issues)")
@@ -266,7 +275,7 @@ def build(asset_base: str, only: set[str] | None) -> None:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--asset-base", default="/i", help="URL prefix for images and downloads")
+    ap.add_argument("--asset-base", default="/i", help="URL prefix for images")
     ap.add_argument("--only", help="comma-separated title slugs")
     args = ap.parse_args()
     build(args.asset_base, set(args.only.split(",")) if args.only else None)

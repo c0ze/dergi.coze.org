@@ -41,6 +41,48 @@ BYLINE_RE = re.compile(r"^\s*(HAZIRLAYAN|YAZAN|YAZAR)\s*:\s*(.+)$", re.I)
 # "İLETİŞİM : ..." (also misspelt "İLTİŞİM"), an e-mail line, or a ": value" continuation.
 CONTACT_RE = re.compile(r"^\s*(İLE?TİŞİM|E-?MAIL|MAIL)\b|^\s*:|^\s*\S+@\S+\s*$", re.I)
 TR_ASCII = str.maketrans("çğıöşüÇĞİÖŞÜâîûÂÎÛ", "cgiosuCGIOSUaiuAIU")
+RUNNING_TOP = 0.08  # a section label sits at the very top of the page (bbox y0, page = 1)
+RUNNING_PAGES = 3   # ... and repeats on this many pages of the issue
+# A name alone on an article's first line: "CAN ÖZTÜRK", "Mehmet Ali Şahin", "A. Vedat Hallaç".
+NAME_WORD = r"(?:[A-ZÇĞİÖŞÜ]\.|[A-ZÇĞİÖŞÜ][a-zçğıöşü]+|[A-ZÇĞİÖŞÜ]{2,})"
+NAME_RE = re.compile(rf"^\s*{NAME_WORD}(?:\s+{NAME_WORD}){{1,3}}\s*$")
+NOT_NAMES = {"amiga", "commodore", "oyun", "program", "basic", "bu", "bir", "ve", "yeni", "sayi",
+             "sayı", "evet", "merhaba", "giriş", "c64", "workbench", "dos", "the", "game", "over",
+             "çok", "space", "operatör", "işlem", "için", "nasıl", "ne", "en", "son"}
+
+
+def tidy_title(title: str) -> str:
+    """Undo letter-spacing and stray spaces from re-typeset titles: "N E D İ R BU" → "NEDİR BU",
+    "Ben , AMIGA'yım" → "Ben, AMIGA'yım"."""
+    title = re.sub(r"\b(?:\w ){2,}\w\b", lambda m: m.group().replace(" ", ""), title)
+    title = re.sub(r"\s+([,.:;!?])", r"\1", title)
+    return re.sub(r"\s+", " ", title).strip()
+
+
+def prose_tail(title: str) -> tuple[str, str]:
+    """A title with body text run into it ("SCULPT / ANIMATE4D can sıkıcı kısmın sonu"): the
+    title, and the prose (three or more words, mostly in lower case) that follows it."""
+    ws = title.split()
+    for i in range(1, len(ws) - 2):
+        tail = ws[i:]
+        if ws[i][:1].islower() and sum(w[:1].islower() for w in tail) > len(tail) / 2:
+            return " ".join(ws[:i]), " ".join(tail)
+    return title, ""
+
+
+def is_byline(line: str) -> bool:
+    lower = line.replace("İ", "i").replace("I", "ı").lower()  # Turkish casing: "BİR" → "bir"
+    return bool(NAME_RE.match(line)) and len(line.strip()) <= 32 and not any(
+        w.strip(".") in NOT_NAMES for w in lower.split())
+
+
+def top_label(block: dict) -> str | None:
+    """The compact text of a short one-line block at the very top of the page, else None."""
+    text = (block.get("text") or "").strip()
+    if (block.get("kind") == "figure" or "\n" in text or not text or len(text) > 30
+            or len(text.split()) > 4 or block["bbox"][1] > RUNNING_TOP):
+        return None
+    return compact(text) or None
 
 
 def slugify(text: str) -> str:
@@ -78,8 +120,8 @@ def title_clusters(texts: list[dict], labels: "Labels") -> tuple[dict[str, str],
         return b.get("rel_size") or 1
 
     def joinable(b, head):
-        if b is head or size(b) < max(2.0, 0.6 * size(head)):
-            return False
+        if b is head or size(b) < max(2.0, 0.6 * size(head)) or split_heading(b)[1]:
+            return False  # (a block with body text of its own is not part of a title)
         a = labels.img.get(f"role_{b['id']}")
         if a and a["choice"] in DROP_ROLES and a["confidence"] >= 0.9:
             return False
@@ -108,7 +150,7 @@ def title_clusters(texts: list[dict], labels: "Labels") -> tuple[dict[str, str],
                     grown = True
         if len(parts) > 1:
             parts.sort(key=lambda p: p["bbox"][1])
-            clusters[head["id"]] = " ".join(clean_text(p["text"].split("\n")) for p in parts)
+            clusters[head["id"]] = " ".join(split_heading(p)[0] for p in parts)
             absorbed |= {p["id"] for p in parts if p is not head}
     return clusters, absorbed
 
@@ -221,7 +263,11 @@ def attach_drop_caps(blocks: list[dict]) -> list[dict]:
                  and b["bbox"][0] >= x0 and b["bbox"][1] <= y1 and b["bbox"][3] >= y0]
         if right:
             target = min(right, key=lambda b: (b["bbox"][0] - x1) ** 2 + (b["bbox"][1] - y0) ** 2)
-            target["text"] = cap["text"].strip() + target["text"]
+            lines = target["text"].split("\n")
+            # The letter belongs to the paragraph, not to a byline above it ("CAN ÖZTÜRK" / "miga").
+            at = 1 if len(lines) > 1 and is_byline(lines[0]) else 0
+            lines[at] = cap["text"].strip() + lines[at]
+            target["text"] = "\n".join(lines)
             cap["text"] = ""
     return [b for b in blocks if b.get("kind") == "figure" or b.get("text")]
 
@@ -237,6 +283,12 @@ def split_heading(block: dict) -> tuple[str, list[str]]:
         rel = block.get("rel_size") or 1
         short = len(lines) <= 3 and all(len(l.strip()) <= 40 for l in lines)
         sizes = [rel] * len(lines) if rel >= 2.0 and short else [rel] + [1.0] * (len(lines) - 1)
+    big = max(sizes)
+    if sizes[0] < HEADING_REL and big >= 2.0:
+        # Re-typeset pages can put a display title in the middle of a text block ("içinde neler
+        # olduğunu…" / "CORRUPTION" / "Borsa odasında…"): the display lines are the heading.
+        head = [l for l, s in zip(lines, sizes) if s >= big * 0.8]
+        return clean_text(head), [l for l, s in zip(lines, sizes) if s < big * 0.8]
     n = 0
     while n < len(lines) and (sizes[n] >= HEADING_REL or not lines[n].strip()):
         n += 1
@@ -255,6 +307,7 @@ def assemble(issue: str) -> None:
 
     def start(title: str, page: int) -> dict:
         nonlocal current
+        title = tidy_title(title)
         # A title set in two blocks ("C64 İÇİN PC ÜZERİNDE" / "GELİŞTİRME") is one title.
         if current is not None and not current["body"] and current["pages"][-1] == page:
             current["title"] = f"{current['title']} {title}"
@@ -282,6 +335,16 @@ def assemble(issue: str) -> None:
                         lc = compact(line)
                         if (w := words(line)) and len(w) <= 6 and not (lc and lc in masthead):
                             toc.append((w, lc))
+
+    # Section labels repeated at the top of many pages ("GRAFİK", "MÜZİK") are page furniture:
+    # they never start an article, even where JEV took one for a title.
+    label_pages: dict[str, set[int]] = {}
+    for page in range(1, meta["pages"] + 1):
+        bfile = issue_dir / "blocks" / f"{page:03d}.json"
+        for b in json.loads(bfile.read_text())["blocks"] if bfile.exists() else []:
+            if lab := top_label(b):
+                label_pages.setdefault(lab, set()).add(page)
+    running = {lab for lab, pgs in label_pages.items() if len(pgs) >= RUNNING_PAGES}
 
     for page in range(1, meta["pages"] + 1):
         labels = Labels(issue_dir, page)
@@ -343,7 +406,7 @@ def assemble(issue: str) -> None:
             role, unsure = labels.role(b["id"])
             if b["id"] in clusters:
                 role, unsure = "content", False
-            if role in DROP_ROLES:
+            if role in DROP_ROLES or top_label(b) in running:
                 continue
             pages[page]["text"].append(b["text"])
             heading = labels.heading(b["id"])
@@ -353,6 +416,14 @@ def assemble(issue: str) -> None:
                 title, body_lines = split_heading(b)
                 if b["id"] in clusters:
                     title = clusters[b["id"]]
+                title, tail = prose_tail(title)
+                if tail:
+                    body_lines = [tail, *body_lines]
+            if (heading and heading[0] != "not_heading" and role == "content" and title[:1].islower()
+                    and sum(w[:1].islower() for w in title.split()) > len(title.split()) / 2):
+                # Running text set large by a re-typesetting ("içinde neler olduğunu…"), not a title.
+                heading, body_lines = None, b["text"].split("\n")
+            if heading and heading[0] != "not_heading" and role == "content":
                 starts = (
                     b["id"] == contents_title if kind == "contents"
                     else heading[0] == "article_title" and (
@@ -362,14 +433,16 @@ def assemble(issue: str) -> None:
                         # sure and it is set in display type (contents pages often list sections
                         # or highlights only).
                         or (not toc and (heading[1] >= ACCEPT or (b.get("rel_size") or 1) >= max(2.0, biggest)))
-                        or (heading[1] >= 0.9 and (b.get("rel_size") or 1) >= 2.0))
+                        or (heading[1] >= 0.9 and (b.get("rel_size") or 1) >= 2.0)
+                        # Display type Vision read cleanly (display.py) can be trusted a bit sooner.
+                        or (b.get("display") == "vision" and heading[1] >= 0.8 and (b.get("rel_size") or 1) >= 4.0))
                 )
                 if b["id"] == contents_title:
                     pass  # already started at the top of the contents page
                 elif starts or current is None:
                     start(title, page)
                 else:
-                    current["body"].append({"type": "h2", "text": title, "page": page})
+                    current["body"].append({"type": "h2", "text": tidy_title(title), "page": page})
             elif current is None:
                 start("İçindekiler" if kind == "contents" else "Giriş", page)
 
@@ -379,6 +452,10 @@ def assemble(issue: str) -> None:
                 current["review"] += 1
             if not body_lines:
                 continue
+            if (current["author"] is None and len(body_lines) > 1 and role == "content"
+                    and not any(x["type"] == "p" for x in current["body"]) and is_byline(body_lines[0])):
+                current["author"] = " ".join(body_lines[0].split())
+                body_lines = body_lines[1:]
             m = BYLINE_RE.match(body_lines[0])
             if m:
                 current["author"] = current["author"] or m.group(2).strip()

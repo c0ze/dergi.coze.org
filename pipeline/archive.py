@@ -3,8 +3,8 @@
 For every title in catalog/sources.yaml (English titles included), sources.py picks the best
 scan of each issue. Then:
 - Born-digital PDFs and re-typeset remakes keep their content; only metadata is set.
-- Scans are rebuilt page by page: the page image is cleaned (cleanup.py: scanner bed cropped,
-  tilt straightened; untouched pages keep their original bytes), each page is sized to A4
+- Scans are rebuilt page by page: the page image is cleaned (cleanup.py: tilt straightened,
+  no cropping; untouched pages keep their original bytes), each page is sized to A4
   height, and OCRmyPDF adds an invisible text layer (Turkish or English) without touching
   the images.
 - Supplements (inserts) are appended to their issue; disk images and remakes that lost to a
@@ -190,7 +190,7 @@ README = """Kişisel dergi arşivi — personal magazine archive
 One PDF per issue, built from the best available scan (most complete, then highest
 resolution) of every copy found on the NAS and in the downloaded collections.
 
-- Scans: scanner bed cropped and tilted pages straightened where clearly needed; pages that
+- Scans: tilted pages straightened where clearly needed (nothing is cropped); pages that
   needed nothing keep their original image bytes. Every scanned PDF has an invisible OCR
   text layer (Turkish or English), so it is searchable and copyable in any PDF viewer.
 - Born-digital issues (C64 Türkiye, Total Amiga, CommodoreFree, APoV, ...) are kept as made.

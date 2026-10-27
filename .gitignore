@@ -10,3 +10,4 @@ node_modules/
 *.pem
 *.p8
 *-key.json
+.wrangler/

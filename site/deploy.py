@@ -111,12 +111,15 @@ def main() -> None:
             r = s.post(f"{upload_url}/{h}", data=by_hash[h], headers={"Content-Type": "application/octet-stream"})
             if r.ok:
                 return
+            if r.status_code == 401:  # access tokens last an hour; a big upload can outlive one
+                s.headers["Authorization"] = f"Bearer {token()}"
             time.sleep(2 ** attempt)
         r.raise_for_status()
 
     with ThreadPoolExecutor(16) as pool:
         list(pool.map(put, need))
 
+    s.headers["Authorization"] = f"Bearer {token()}"
     r = s.patch(f"{API}/{version}?update_mask=status", json={"status": "FINALIZED"})
     r.raise_for_status()
     r = s.post(f"{API}/{site}/releases?versionName={version}", json={"message": "site/deploy.py"})

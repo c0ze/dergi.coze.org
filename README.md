@@ -1,7 +1,8 @@
 # dergi.coze.org
 
-An ad-free archive of Turkish retro computer magazines: downloads, online reading,
-searchable OCR text, clean article pages, and a public MCP endpoint.
+An ad-free archive of Turkish retro computer magazines: online reading, searchable OCR
+text, clean article pages, author/game/topic indexes, and a public MCP endpoint
+(https://dergi.coze.org/mcp). The scans themselves are not offered for download.
 The plan, costs and pilot log are in [docs/PLAN.md](docs/PLAN.md).
 
 ## Layout
@@ -13,15 +14,25 @@ pipeline/normalize.py   source PDF → page images, thumbnails, text blocks (bor
 pipeline/bakeoff.py     OCR engine comparison on scanned pages
 pipeline/classify.py    JEV labels: page kind, block roles (ad / content / ...), headings
 pipeline/ocr.py         Tesseract OCR for scanned issues → blocks in the same schema
+pipeline/display.py     Apple Vision re-reads display titles on scanned pages
 pipeline/assemble.py    blocks + labels → articles.json, pages.json, figure crops
 pipeline/batch.py       normalize → OCR → JEV → assemble over many issues, resumable
+pipeline/correct.py     OCR/spelling correction with a small LLM, guarded against rewrites
+pipeline/tags.py        JEV: author, games, platform and topics per article
+pipeline/taxonomy.py    authors (merges in catalog/authors.yaml), games, topics
+pipeline/embed.py       passage vectors for meaning search
+pipeline/export_api.py  catalogue (article texts, indexes) for the API and MCP server
 pipeline/typeins.py     type-in listings (CHECKSUMMER) → verified .prg files
 pipeline/test_prg.py    run each .prg in VICE on cachyos, keep a screenshot
-pipeline/cleanup.py     page cleanup for the archive (crop scanner bed, deskew)
+pipeline/cleanup.py     page cleanup for the archive (deskew; no cropping)
 pipeline/archive.py     personal archive: best scan per issue, cleaned, OCR text layer
 catalog/sources.yaml    where every title's scans live (used by sources.py and archive.py)
 site/build.py           static site → data/site (templates/ and static/ beside it)
 site/deploy.py          deploy data/site to Firebase Hosting (gcloud configuration `personal`)
+api/main.py             search API and public MCP server (https://dergi.coze.org/mcp), Cloud Run
+workers/img/            Cloudflare Worker: images on img.dergi.coze.org, only for the site's pages
+scripts/                add-titles.sh, refresh-site.sh, deploy.sh (site titles in common.sh),
+                        mcp_smoke.py, zip_archive.py
 data/                   sources and pipeline output (git-ignored; originals live on the NAS)
 ```
 
@@ -30,6 +41,7 @@ data/                   sources and pipeline output (git-ignored; originals live
 ```bash
 uv sync                  # base pipeline
 uv sync --group ocr      # + Apple Vision and Surya for OCR
+uv sync --group api      # + MCP SDK etc. to run api/main.py locally
 ```
 
 Tesseract needs the Turkish model in `data/tessdata/` (`tur.traineddata` from tessdata_best).
@@ -52,11 +64,13 @@ npx -y pagefind@1.3.0 --site data/site
 
 Heavy batches (OCR over many pages, Surya) go through `~/.local/bin/heavy-slot`.
 
-## Deploying
+## Adding titles, refreshing, deploying
 
 ```bash
-.venv/bin/python site/build.py --only c64-turkiye,commodore --asset-base https://storage.googleapis.com/dergi-coze-org-site/i
-npx -y pagefind@1.3.0 --site data/site
-gcloud --configuration=personal storage rsync -r data/site/i gs://dergi-coze-org-site/i --cache-control="public, max-age=86400"
-.venv/bin/python site/deploy.py
+~/.local/bin/heavy-slot nice -n 10 scripts/add-titles.sh <slug> [...]   # after adding to scripts/common.sh
+~/.local/bin/heavy-slot nice -n 10 scripts/refresh-site.sh              # after a pipeline change
+scripts/deploy.sh                                                        # site, images, API, MCP check
 ```
+
+Images are served by the Worker in `workers/img` (`wrangler deploy --config workers/img/wrangler.toml`);
+the image bucket is private and the Worker reads it with an HMAC key stored as Worker secrets.

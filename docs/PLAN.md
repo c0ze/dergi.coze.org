@@ -439,3 +439,25 @@ Not done: bucket sync doesn't delete remote assets that disappeared (low impact)
   `pipeline/gamelists.py`), grouped by platform. Site: /yazarlar, /oyunlar, /konular clouds,
   /yazar/, /oyun/, /konu/ pages, tags on articles.
 - Model names/prices checked against the Vertex model list and pricing page (Oct 2026).
+
+**2026-10-27 — Amiga titles, display titles, MCP, image protection**
+
+- Amiga Dünyası, Amiga Dergisi and MegAmiga on the site (six titles, 177 issues, 2,974 articles).
+- Assembly: running section labels at the top of many pages ("GRAFİK", "TANITIM") are page
+  furniture; a name alone on an article's first line is its byline; letter-spaced titles are
+  tidied; display lines inside a text block become the heading; prose run into a title goes back
+  to the body. Checked against nine Commodore/64'ler/C64 Türkiye issues: no regressions.
+- `pipeline/display.py`: Apple Vision re-reads the tall lines of scanned pages (Tesseract reads
+  stylised titles badly: "T FE CIAN" → "THE PATRICIAN"); changed pages are re-labelled by JEV.
+  Amiga Dergisi 90 → 184 articles, MegAmiga 42 → 144. Used on the scanned Amiga issues only.
+- Author matching ignores spaces inside names (OCR splits) and the "Editör" prefix; hand merges
+  in catalog/authors.yaml.
+- Public MCP server on the dergi-api Cloud Run service (MCP Python SDK 2.3.0, stateless
+  streamable HTTP, JSON responses): 11 read-only tools over a catalogue exported by
+  pipeline/export_api.py; 60 requests/min per client. Tested with the SDK client and the MCP
+  Inspector (scripts/mcp_smoke.py).
+- Scan downloads removed from the site. Images move behind a Cloudflare Worker
+  (img.dergi.coze.org) that serves only requests whose Referer is the site and sends
+  Cross-Origin-Resource-Policy: same-site; the image bucket is private (public access
+  prevention), the old PDF copies deleted.
+- About page: "Nasıl yapıldı", known problems, MCP note, and a graded assessment of each title.
