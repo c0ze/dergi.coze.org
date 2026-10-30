@@ -2,7 +2,7 @@
 {% block title %}{{ article.title }} · {{ title.name }} {{ issue.number }}{% endblock %}
 {% block description %}{% for x in article.body if x.type == "p" %}{% if loop.first %}{{ x.text[:155] }}{% endif %}{% endfor %}{% endblock %}
 {% block main %}
-<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › <a href="/{{ title.slug }}/{{ issue.nn }}/">Sayı {{ issue.number }}</a></nav>
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.corpus }}/">{{ title.corpus_ad }}</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › <a href="/{{ title.slug }}/{{ issue.nn }}/">Sayı {{ issue.number }}</a></nav>
 <article class="prose" data-pagefind-body>
   <header>
     <h1 data-pagefind-meta="title">{{ article.title }}</h1>
@@ -11,15 +11,17 @@
     <span hidden data-pagefind-meta="pages:s. {{ article.pages[0] }}{% if article.pages|length > 1 %}–{{ article.pages[-1] }}{% endif %}"></span>
     <span hidden data-pagefind-meta="cover:{{ A }}/{{ title.slug }}/{{ issue.nn }}/thumbs/001.webp"></span>
     {% if article.author %}<span hidden data-pagefind-meta="author:{{ article.author }}"></span>{% endif %}
+    <span hidden data-pagefind-filter="koleksiyon">{{ title.corpus_ad }}</span>
     <p class="byline">
       {% if tags and tags.author %}<a href="{{ tags.author.url }}">{{ tags.author.name }}</a> · {% elif article.author %}<span>{{ article.author }}</span> · {% endif %}
       <span data-pagefind-filter="dergi">{{ title.name }}</span> sayı {{ issue.number }}{% if issue.human_date %}, <span data-pagefind-filter="yıl:{{ issue.date[:4] }}">{{ issue.human_date }}</span>{% endif %}
       · sayfa {% for p in article.pages %}<a href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ p }}/">{{ p }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
     </p>
   </header>
-  {% if tags and (tags.author or tags.games or tags.topics) %}
+  {% if tags and (tags.author or tags.games or tags.bands or tags.topics) %}
   <ul class="tags" data-pagefind-ignore aria-label="Etiketler">
     {% for g in tags.games %}<li><a class="tag game" href="{{ g.url }}">{{ g.name }}</a></li>{% endfor %}
+    {% for b in tags.bands %}<li><a class="tag game" href="{{ b.url }}">{{ b.name }}</a></li>{% endfor %}
     {% for t in tags.topics %}<li><a class="tag" href="{{ t.url }}">{{ t.name }}</a></li>{% endfor %}
   </ul>
   {% endif %}

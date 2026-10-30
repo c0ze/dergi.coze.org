@@ -2,12 +2,21 @@ name = "dergi-img"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 account_id = "d0feb402fe8057e9050fce7450d85049"
-routes = [{ pattern = "img.dergi.coze.org", custom_domain = true }]
+routes = [
+  { pattern = "img.dergi.coze.org", custom_domain = true },
+  { pattern = "ozel.dergi.coze.org", custom_domain = true },
+]
 workers_dev = false
 
 [vars]
 BUCKET = "dergi-coze-org-site"
 ALLOWED_ORIGINS = "https://dergi.coze.org,https://dergi-coze-org.web.app,https://dergi-coze-org.firebaseapp.com,http://127.0.0.1:8642"
+# The private site (src/ozel.js). TEAM_DOMAIN and POLICY_AUD come from the Cloudflare Access
+# application for ozel.dergi.coze.org (Zero Trust › Access › Applications › the app › Overview:
+# "Application Audience (AUD) Tag"); while either is empty the private site answers 403.
+PRIVATE_HOST = "ozel.dergi.coze.org"
+TEAM_DOMAIN = "coze-org.cloudflareaccess.com"
+POLICY_AUD = "fd82e3d80dfe8cac4113d803a1608da4a6522cfccf8cf7545023567eb0052931"
 
 # Secrets (wrangler secret put): HMAC_ID, HMAC_SECRET — an HMAC key of the read-only service
 # account dergi-img@dergi-coze-org.iam.gserviceaccount.com.

@@ -3,7 +3,11 @@
 Output goes to data/site/ (git-ignored). Page images and figures are copied
 under /i/; in production they move to the CDN host and ASSET_BASE points there.
 
-Usage: build.py [--asset-base URL] [--only slug,slug]
+Titles marked `private: true` in catalog/titles.yaml are left out unless --private is given;
+the private build (all titles, noindex) goes to data/site-private and is served only behind
+Cloudflare Access (workers/ozel).
+
+Usage: build.py [--asset-base URL] [--only slug,slug] [--private]
 Then:  npx -y pagefind@1.3.0 --site data/site   (search index)
 """
 
@@ -43,6 +47,8 @@ def fold(article: dict) -> str:
 def human_date(date: str | None) -> str:
     if not date:
         return ""
+    if len(date) == 4:  # year only (Matematik Dünyası)
+        return date
     year, month = date.split("-")
     return f"{MONTHS[int(month) - 1]} {year}"
 
@@ -141,16 +147,34 @@ def build_taxonomy(render, only: set[str] | None) -> None:
            lede="Hakkında yazı çıkmış oyunlar, makineye göre: Turrican (C64) ile Turrican (Amiga) ayrı ayrı. Oyun sayfasında bütün dergilerdeki yazılar bir arada.",
            sections=sections)
 
+    bands = [(b, [x for x in b["articles"] if keep(x)]) for b in t["bands"].values()]
+    bands = [(b, arts) for b, arts in bands if arts]
+    for b, arts in bands:
+        render(f"grup/{taxonomy.slugify(b['name'])}", "tagpage.html", name=b["name"], parent="Gruplar",
+               parent_url="/gruplar/", total=len(arts), groups=grouped(arts), show_author=True, extra=None)
+    if bands:
+        render("gruplar", "cloud.html", heading="Gruplar",
+               lede="Metal fanzinlerinde röportajı, incelemesi ya da haberi çıkan gruplar ve müzisyenler.",
+               sections=[{"title": None, "items": cloud([(b["name"], f"/grup/{taxonomy.slugify(b['name'])}/", len(arts))
+                                                         for b, arts in bands])}])
+
     topics = [(tp, [x for x in tp["articles"] if keep(x)]) for tp in t["topics"].values()]
     for tp, arts in topics:
         if arts:
             render(f"konu/{tp['slug']}", "tagpage.html", name=tp["ad"], parent="Konular", parent_url="/konular/",
-                   total=len(arts), groups=grouped(arts), show_author=True, extra=None)
+                   total=len(arts), groups=grouped(arts), show_author=True,
+                   extra=CORPORA[tp.get("corpus", "retro")]["ad"])
+    sections = []
+    for c in CORPORA.values():
+        items = [(tp["ad"], f"/konu/{tp['slug']}/", len(arts)) for tp, arts in topics
+                 if arts and tp.get("corpus", "retro") == c["slug"]]
+        if items:
+            sections.append({"title": c["ad"], "items": cloud(items)})
     render("konular", "cloud.html", heading="Konular",
-           lede="Yazıların konuları: makine dilinden oyun hilelerine. Bir yazının birden çok konusu olabilir.",
-           sections=[{"title": None, "items": cloud([(tp["ad"], f"/konu/{tp['slug']}/", len(arts)) for tp, arts in topics if arts])}])
+           lede="Yazıların konuları, koleksiyonlara göre. Bir yazının birden çok konusu olabilir.", sections=sections)
 
 
+CORPORA = {c["slug"]: c for c in yaml.safe_load((ROOT / "catalog" / "corpora.yaml").read_text())}
 TAX = taxonomy.collect()
 BY_URL = {a["url"]: a for a in TAX["articles"]}
 TOPIC_NAMES = {k: v["ad"] for k, v in TAX["topics"].items()}
@@ -165,6 +189,7 @@ def article_tags(url: str) -> dict | None:
             "author_raw": a.get("author"),
             "games": [{"name": f"{n} ({taxonomy.PLATFORM_NAMES.get(p, p)})", "url": f"/oyun/{taxonomy.slugify(n)}/"}
                       for n, p in a["games"]],
+            "bands": [{"name": n, "url": f"/grup/{taxonomy.slugify(n)}/"} for n in a.get("bands", [])],
             "topics": [{"name": TOPIC_NAMES[s], "url": f"/konu/{s}/"} for s in a["topics"]]}
 
 
@@ -184,8 +209,13 @@ def without_byline(article: dict, tags: dict | None) -> dict:
     return {**article, "body": body}
 
 
-def build(asset_base: str, only: set[str] | None) -> None:
+def build(asset_base: str, only: set[str] | None, private: bool) -> None:
+    titles = yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())
+    titles = [t for t in titles if (not only or t["slug"] in only) and (private or not t.get("private"))]
+    only = {t["slug"] for t in titles}  # also filters authors, games, bands and topics
     env = Environment(loader=FileSystemLoader(SITE / "templates"), autoescape=select_autoescape())
+    env.globals["private_build"] = private
+    env.globals["bands_on"] = any(x["slug"] in only for b in TAX["bands"].values() for x in b["articles"])
     env.globals["A"] = asset_base.rstrip("/")
     env.filters["fold"] = fold
     env.filters["human_date"] = human_date
@@ -203,15 +233,14 @@ def build(asset_base: str, only: set[str] | None) -> None:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(env.get_template(template).render(**ctx))
 
-    titles = yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())
     shelf = []
     for t in titles:
-        if only and t["slug"] not in only:
-            continue
         have = sorted(p.name for p in (ISSUES / t["slug"]).glob("*") if (p / "issue.json").exists()) \
             if (ISSUES / t["slug"]).exists() else []
         if not have:
             continue
+        corpus = CORPORA[t.get("corpus", "retro")]
+        t["corpus"], t["corpus_ad"] = corpus["slug"], corpus["ad"]
         issues = [load_issue(t["slug"], nn) for nn in have]
         numbers = {i["number"] for i in issues}
         t["issues_have"] = issues
@@ -260,14 +289,19 @@ def build(asset_base: str, only: set[str] | None) -> None:
         render(t["slug"], "title.html", title=t)
 
     build_taxonomy(render, only)
-    render("", "index.html", shelf=shelf)
+    corpora = [{**c, "titles": [t for t in shelf if t["corpus"] == c["slug"]]} for c in CORPORA.values()]
+    corpora = [c for c in corpora if c["titles"]]
+    for c in corpora:
+        render(c["slug"], "corpus.html", corpus=c)
+    render("", "index.html", shelf=shelf, corpora=corpora)
     render("ara", "search.html")
     issues = [i for t in shelf for i in t["issues_have"]]
     stats = {"issues": len(issues), "pages": sum(i["pages"] for i in issues),
              "articles": sum(len(i["articles"]) for i in issues),
              "programs": sum(len(i["programs"]) for i in issues),
-             "authors": len(TAX["authors"]), "games": len(TAX["games"])}
-    render("hakkinda", "about.html", shelf=shelf, stats=stats)
+             "authors": sum(any(x["slug"] in only for x in a["articles"]) for a in TAX["authors"].values()),
+             "games": sum(any(x["slug"] in only for x in arts) for arts in TAX["games"].values())}
+    render("hakkinda", "about.html", shelf=shelf, corpora=corpora, stats=stats)
     for f in (SITE / "static").iterdir():
         copy(f, OUT / "static" / f.name)
     print(f"built {OUT} ({sum(len(t['issues_have']) for t in shelf)} issues)")
@@ -277,5 +311,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--asset-base", default="/i", help="URL prefix for images")
     ap.add_argument("--only", help="comma-separated title slugs")
+    ap.add_argument("--private", action="store_true", help="include private titles; output to data/site-private")
     args = ap.parse_args()
-    build(args.asset_base, set(args.only.split(",")) if args.only else None)
+    if args.private:
+        OUT = ROOT / "data" / "site-private"
+    build(args.asset_base, set(args.only.split(",")) if args.only else None, args.private)

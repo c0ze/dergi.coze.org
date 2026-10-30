@@ -25,12 +25,16 @@
 2:
   date: 1995-08
   chosen:
-    path: data/sources/nas/MegAmiga/MegAmiga-02.pdf
+    path: data/sources/ia/megamiga/Meg-Amiga-002-1995-Agustos.pdf
+    kind: pdf
+    pages: 32
+    px: 3170
+  supplements: []
+  alternatives:
+  - path: data/sources/nas/MegAmiga/MegAmiga-02.pdf
     kind: pdf
     pages: 31
     px: 1166
-  supplements: []
-  alternatives:
   - path: data/sources/nas/MegAmiga/meg2.pdf
     kind: pdf
     pages: 31

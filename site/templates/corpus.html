@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ corpus.ad }}{% endblock %}
+{% block description %}{{ corpus.aciklama }}{% endblock %}
+{% block main %}
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › {{ corpus.ad }}</nav>
+<h1>{{ corpus.ad }}</h1>
+<p class="lede">{{ corpus.aciklama }}</p>
+{% with titles=corpus.titles %}{% include "_shelf.html" %}{% endwith %}
+{% endblock %}

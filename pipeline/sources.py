@@ -14,6 +14,7 @@ Usage: sources.py <slug>|all [--build]
 """
 
 import argparse
+import io
 import re
 import shutil
 import statistics
@@ -55,6 +56,8 @@ def issue_date(cfg: dict, key) -> str | None:
 
 
 def parse_key(cfg: dict, raw: str):
+    if raw in (cfg.get("numbers") or {}):
+        return int(cfg["numbers"][raw])
     kind = cfg.get("key", "number")
     if kind == "date":  # "sept_1992" → "1992-09"
         mon, year = raw.lower().split("_")
@@ -72,7 +75,7 @@ def key_of(cfg: dict, rel: Path):
     for part in reversed(rel.parts):
         for rx in cfg["number"]:
             if m := re.search(rx, part):
-                return parse_key(cfg, m.group(1) if m.groups() else "")
+                return parse_key(cfg, m.group(1) if m.groups() else Path(part).stem)
     return None
 
 
@@ -310,12 +313,90 @@ def write_report(slug: str, plan: dict) -> None:
     (ROOT / "catalog" / "sources" / f"{slug}.yaml").write_text(yaml.safe_dump(out, allow_unicode=True, sort_keys=False))
 
 
-def append_images(doc: pymupdf.Document, files: list[Path]) -> None:
-    for f in files:
+def append_images(doc: pymupdf.Document, files: list[Path], turn_odd: bool = False) -> None:
+    for n, f in enumerate(files, 1):
         w, h = Image.open(f).size
-        # 300 dpi page size; the image goes in as stored, without re-encoding.
+        # 300 dpi page size; the image goes in as stored, without re-encoding (turned if need be).
         page = doc.new_page(width=w * 72 / 300, height=h * 72 / 300)
-        page.insert_image(page.rect, stream=f.read_bytes())
+        page.insert_image(page.rect, stream=f.read_bytes(), rotate=180 if turn_odd and n % 2 else 0)
+
+
+def insert_pages(out: Path, inserts: list[dict]) -> None:
+    """Pages the chosen copy lacks, taken from another one: {after: page in out, from: archive,
+    pages: [page numbers in it]}. Later inserts count the pages added before them."""
+    doc = pymupdf.open(out)
+    for ins in inserts:
+        files = image_files(unpack(ROOT / ins["from"]), recursive=True)
+        add = pymupdf.open()
+        append_images(add, [files[n - 1] for n in ins["pages"]])
+        doc.insert_pdf(add, start_at=ins["after"])
+    tmp = out.with_suffix(".tmp.pdf")
+    doc.save(tmp, garbage=3, deflate=True)
+    tmp.replace(out)
+
+
+def split_spreads(files: list[Path], work: Path) -> list[Path]:
+    """Two-page spreads cut into single pages, in reading order. The first spread is the
+    back cover (left) and the front cover (right): the front opens the issue, the back ends it."""
+    work.mkdir(parents=True, exist_ok=True)
+    pages, back = [], None
+    for i, f in enumerate(files):
+        img = Image.open(f).convert("RGB")
+        w, h = img.size
+        if w < 1.2 * h:  # already a single page
+            pages.append(f)
+            continue
+        halves = []
+        for side, box in (("a", (0, 0, w // 2, h)), ("b", (w // 2, 0, w, h))):
+            out = work / f"{f.stem}-{side}.jpg"
+            img.crop(box).save(out, quality=92)
+            halves.append(out)
+        if i == 0:
+            pages.append(halves[1])
+            back = halves[0]
+        else:
+            pages.extend(halves)
+    return pages + ([back] if back else [])
+
+
+def join_strips(src: Path) -> pymupdf.Document:
+    """A PDF whose scanner cut some pages into horizontal strips (one strip per PDF page, wider
+    than tall, all the same width): runs of such strips stacked back into one page each."""
+    doc, out = pymupdf.open(src), pymupdf.open()
+    run: list[Image.Image] = []
+
+    def flush() -> None:
+        if not run:
+            return
+        page = Image.new("RGB", (run[0].width, sum(i.height for i in run)), "white")
+        y = 0
+        for i in run:
+            page.paste(i, (0, y))
+            y += i.height
+        buf = io.BytesIO()
+        page.save(buf, "JPEG", quality=92)
+        p = out.new_page(width=page.width * 72 / 300, height=page.height * 72 / 300)
+        p.insert_image(p.rect, stream=buf.getvalue())
+        run.clear()
+
+    for n, page in enumerate(doc):
+        r = page.rect
+        if r.width > 1.2 * r.height and (not run or round(r.width) == round(doc[n - 1].rect.width)):
+            # At the embedded scan's own resolution: no resampling.
+            image_width = max((i[2] for i in page.get_images()), default=round(r.width))
+            scale = image_width / r.width
+            pix = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False)
+            run.append(Image.frombytes("RGB", (pix.width, pix.height), pix.samples))
+            continue
+        flush()
+        out.insert_pdf(doc, from_page=n, to_page=n)
+    flush()
+    return out
+
+
+def newest(path: Path) -> float:
+    """Modification time of a scan: a file, or the newest file in a folder of page images."""
+    return max([path.stat().st_mtime, *(f.stat().st_mtime for f in path.iterdir())]) if path.is_dir() else path.stat().st_mtime
 
 
 def build_best(slug: str, cfg: dict, plan: dict) -> None:
@@ -326,21 +407,38 @@ def build_best(slug: str, cfg: dict, plan: dict) -> None:
         if not p["chosen"] or not isinstance(key, int):
             continue
         date = p["date"]
-        stamp = f" ({date[5:7]}-{date[:4]})" if date else ""
+        stamp = (f" ({date[5:7]}-{date[:4]})" if len(date) > 4 else f" ({date})") if date else ""
         out = best_dir / f"{cfg['name']} - {key:02d}{stamp}.pdf"
         parts = [p["chosen"], *p["supplements"]]
-        if len(parts) == 1 and parts[0]["kind"] == "pdf":
-            shutil.copy2(parts[0]["path"], out)
+        # Rebuilding is not byte-identical, and a new hash makes normalize.py drop the issue's
+        # OCR and labels: keep a best PDF that is newer than every scan it was made from.
+        inserts = (cfg.get("inserts") or {}).get(key, [])
+        made_from = [Path(c["path"]) for c in parts] + [ROOT / i["from"] for i in inserts]
+        if out.exists() and out.stat().st_mtime > max(newest(f) for f in made_from):
             continue
-        doc = pymupdf.open()
-        for c in parts:
-            if c["kind"] == "pdf":
-                doc.insert_pdf(pymupdf.open(c["path"]))
-            elif c["kind"] == "djvu":
-                append_images(doc, djvu_images(c["path"]))
-            else:
-                append_images(doc, page_images(c))
-        doc.save(out, garbage=3, deflate=True)
+        if len(parts) == 1 and parts[0]["kind"] == "pdf" and cfg.get("join_strips"):
+            join_strips(parts[0]["path"]).save(out, garbage=3, deflate=True)
+        elif len(parts) == 1 and parts[0]["kind"] == "pdf":
+            shutil.copy2(parts[0]["path"], out)
+        else:
+            build_doc(cfg, key, parts, best_dir).save(out, garbage=3, deflate=True)
+        if inserts:
+            insert_pages(out, inserts)
+
+
+def build_doc(cfg: dict, key: int, parts: list[dict], best_dir: Path) -> pymupdf.Document:
+    """The scan and its supplements as one PDF, from PDF, DjVu or image candidates."""
+    doc = pymupdf.open()
+    for c in parts:
+        if c["kind"] == "pdf":
+            doc.insert_pdf(pymupdf.open(c["path"]))
+        elif c["kind"] == "djvu":
+            append_images(doc, djvu_images(c["path"]))
+        elif cfg.get("spreads"):
+            append_images(doc, split_spreads(page_images(c), best_dir / ".pages" / f"{key:02d}"))
+        else:
+            append_images(doc, page_images(c), bool(cfg.get("turn_odd") and re.search(cfg["turn_odd"], c["path"].name)))
+    return doc
 
 
 def main() -> None:

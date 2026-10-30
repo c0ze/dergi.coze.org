@@ -1,0 +1,90 @@
+1:
+  date: 1992-01
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-001-1992-Ocak.pdf
+    kind: pdf
+    pages: 52
+    px: 3160
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: 1992-02
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-002-1992-Subat.pdf
+    kind: pdf
+    pages: 52
+    px: 3192
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: 1992-03
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-003-1992-Mart.pdf
+    kind: pdf
+    pages: 52
+    px: 1613
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: 1992-04
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-004-1992-Nisan.pdf
+    kind: pdf
+    pages: 52
+    px: 3192
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: 1992-05
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-005-1992-Mayis.pdf
+    kind: pdf
+    pages: 52
+    px: 2126
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: 1992-06
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-006-1992-Haziran.pdf
+    kind: pdf
+    pages: 52
+    px: 3192
+  supplements: []
+  alternatives: []
+  extras: []
+7:
+  date: 1992-07
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-007-1992-Temmuz.pdf
+    kind: pdf
+    pages: 52
+    px: 3192
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: 1992-08
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-008-1992-Agustos.pdf
+    kind: pdf
+    pages: 52
+    px: 3192
+  supplements: []
+  alternatives: []
+  extras: []
+9:
+  date: 1992-09
+  chosen:
+    path: data/sources/ia/commodore-amiga/Commodore-Amiga-009-1992-Eylul.pdf
+    kind: pdf
+    pages: 52
+    px: 3192
+  supplements: []
+  alternatives: []
+  extras: []

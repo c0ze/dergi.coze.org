@@ -1,65 +1,163 @@
-# Topics for the tag cloud. `about` is what JEV is asked (English: JEV's strongest language);
-# `ad` is the Turkish label shown on the site.
+# Topics for the tag clouds, per corpus (catalog/corpora.yaml). `about` is what JEV is asked
+# (English: JEV's strongest language); `ad` is the Turkish label shown on the site. Slugs are
+# unique across corpora (they are the /konu/<slug>/ URLs).
 - slug: makine-dili
+  corpus: retro
   ad: "Makine dili / Assembler"
   about: "Assembly language or machine code programming (makine dili, makine kodu), 6502/6510/68000 instructions, assemblers, monitors."
 - slug: basic
+  corpus: retro
   ad: "BASIC"
   about: "Programming in BASIC (Commodore BASIC, AMOS, Blitz Basic, BASIC extensions)."
 - slug: diger-diller
+  corpus: retro
   ad: "C, Pascal ve diğer diller"
   about: "Programming in C, Pascal, Logo, Forth, Modula or other languages that are not BASIC or assembly."
 - slug: programlama
+  corpus: retro
   ad: "Programlama teknikleri"
   about: "General programming techniques, algorithms, ROM routines, interrupts, raster tricks, sprites from a programmer's view."
 - slug: grafik
+  corpus: retro
   ad: "Grafik ve çizim"
   about: "Computer graphics, paint and drawing programs, pixel art, image formats, 3D graphics."
 - slug: muzik
+  corpus: retro
   ad: "Müzik ve ses"
   about: "Computer music and sound, the SID chip, Paula, chip music, music programs, trackers, MIDI, samplers."
 - slug: demo
+  corpus: retro
   ad: "Demo sahnesi"
   about: "The demoscene: demos, intros, cracktros, demo groups, demo parties and competitions, disk magazines."
 - slug: donanim
+  corpus: retro
   ad: "Donanım"
   about: "Hardware: expansions, accelerators, cartridges, peripherals, repairs, power supplies, electronics projects."
 - slug: disk-kaset
+  corpus: retro
   ad: "Disket ve kaset"
   about: "Disk drives, floppies, datasettes and tapes, loaders, fast loaders, copying, file systems."
 - slug: ofis
+  corpus: retro
   ad: "Ofis programları"
   about: "Office and productivity software: word processors, spreadsheets, databases, accounting, printing."
 - slug: iletisim
+  corpus: retro
   ad: "Modem ve iletişim"
   about: "Modems, BBSs, networks, the internet, terminal programs, data transfer between computers."
 - slug: video-dtp
+  corpus: retro
   ad: "Video ve masaüstü yayıncılık"
   about: "Video, genlocks, titling, animation software, desktop publishing."
 - slug: oyun-inceleme
+  corpus: retro
   ad: "Oyun incelemesi"
   about: "A review or preview of one or more computer games (graphics, sound and gameplay judged)."
 - slug: oyun-cozum
+  corpus: retro
   ad: "Oyun çözümü ve hileler"
   about: "Game walkthroughs, maps, solutions, tips, cheats, POKEs and trainers."
 - slug: program-dokumu
+  corpus: retro
   ad: "Program dökümü"
   about: "A type-in program listing for readers to enter, or instructions for one."
 - slug: kurs
+  corpus: retro
   ad: "Kurslar ve dersler"
   about: "A tutorial or course, often a numbered series teaching a skill step by step."
 - slug: haber
+  corpus: retro
   ad: "Haberler ve fuarlar"
   about: "News, new products, computer shows and fairs, the computer industry and companies."
 - slug: okur
+  corpus: retro
   ad: "Okur mektupları"
   about: "Readers' letters, questions and answers, readers' corner."
 - slug: roportaj
+  corpus: retro
   ad: "Röportajlar"
   about: "An interview with a person (programmer, musician, group member, company person)."
 - slug: emulator
+  corpus: retro
   ad: "Emülatörler ve PC"
   about: "Emulators, using a PC to run or develop for the C64 or Amiga, cross-development tools."
 - slug: egitim-yazilimi
+  corpus: retro
   ad: "Eğitim yazılımları"
   about: "Educational software for learning school subjects or languages."
+
+# Bilim (Matematik Dünyası)
+- slug: geometri
+  corpus: bilim
+  ad: "Geometri"
+  about: "Geometry: plane and solid geometry, angles, polygons, constructions, non-Euclidean geometry."
+- slug: sayilar-cebir
+  corpus: bilim
+  ad: "Sayılar ve cebir"
+  about: "Number theory and algebra: primes, divisibility, groups, rings, equations, polynomials."
+- slug: analiz
+  corpus: bilim
+  ad: "Analiz"
+  about: "Analysis and calculus: limits, series, functions, derivatives, integrals, real numbers."
+- slug: mantik-kumeler
+  corpus: bilim
+  ad: "Mantık, kümeler ve temeller"
+  about: "Logic, set theory, infinity, axioms and the foundations of mathematics, proofs."
+- slug: olasilik
+  corpus: bilim
+  ad: "Olasılık ve kombinatorik"
+  about: "Probability, statistics, counting, combinatorics, graphs and games of chance."
+- slug: problemler
+  corpus: bilim
+  ad: "Problemler ve bulmacalar"
+  about: "Problems for readers, puzzles, olympiad questions and their solutions."
+- slug: matematik-tarihi
+  corpus: bilim
+  ad: "Matematik tarihi ve matematikçiler"
+  about: "History of mathematics, biographies of mathematicians, obituaries, interviews."
+- slug: matematik-egitimi
+  corpus: bilim
+  ad: "Matematik eğitimi"
+  about: "Teaching and learning mathematics, schools, curricula, exams in Turkey."
+- slug: bilimkurgu
+  corpus: bilim
+  ad: "Bilimkurgu ve edebiyat"
+  about: "Science fiction stories and literary pieces with mathematical themes."
+
+# Metal (Laneth)
+- slug: metal-roportaj
+  corpus: metal
+  ad: "Röportajlar"
+  about: "An interview with a band or musician."
+- slug: album-inceleme
+  corpus: metal
+  ad: "Albüm ve demo incelemeleri"
+  about: "Reviews of albums, demo tapes, EPs or singles."
+- slug: konser
+  corpus: metal
+  ad: "Konserler"
+  about: "Concert and festival reports, tour news, live shows."
+- slug: yerli-sahne
+  corpus: metal
+  ad: "Türkiye sahnesi"
+  about: "Turkish metal and rock bands, the scene in Turkey, local gigs and releases."
+- slug: yeralti
+  corpus: metal
+  ad: "Yeraltı ve fanzinler"
+  about: "The underground: demo tape trading, fanzines, small labels, pen pals and contacts."
+- slug: metal-haber
+  corpus: metal
+  ad: "Haberler"
+  about: "News about bands, line-up changes, new releases, labels."
+- slug: grup-tarihi
+  corpus: metal
+  ad: "Grup tarihçeleri"
+  about: "The history or biography of a band, its discography."
+- slug: metal-okur
+  corpus: metal
+  ad: "Okur mektupları"
+  about: "Readers' letters, readers' polls and charts, announcements by readers."
+- slug: sozler
+  corpus: metal
+  ad: "Şarkı sözleri"
+  about: "Song lyrics printed in the fanzine, or translations of lyrics."

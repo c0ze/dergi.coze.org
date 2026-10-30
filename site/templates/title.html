@@ -2,7 +2,7 @@
 {% block title %}{{ title.name }}{% endblock %}
 {% block description %}{{ title.name }} dergisinin bütün sayıları: oku, ara.{% endblock %}
 {% block main %}
-<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › {{ title.name }}</nav>
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.corpus }}/">{{ title.corpus_ad }}</a> › {{ title.name }}</nav>
 <h1>{{ title.name }}</h1>
 <p class="lede">{{ title.years }}{% if title.publisher %} · {{ title.publisher }}{% endif %}</p>
 {% if title.aciklama %}<p class="intro">{{ title.aciklama }}</p>{% endif %}

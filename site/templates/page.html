@@ -5,7 +5,7 @@
 {% if page < issue.pages %}<link rel="next" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/{{ page + 1 }}/">{% endif %}
 {% endblock %}
 {% block main %}
-<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › <a href="/{{ title.slug }}/{{ issue.nn }}/">Sayı {{ issue.number }}</a> › Sayfa {{ page }}</nav>
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.corpus }}/">{{ title.corpus_ad }}</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › <a href="/{{ title.slug }}/{{ issue.nn }}/">Sayı {{ issue.number }}</a> › Sayfa {{ page }}</nav>
 <div class="reader" data-page="{{ page }}" data-pages="{{ issue.pages }}"
      data-page-url="/{{ title.slug }}/{{ issue.nn }}/sayfa/{n}/"
      data-image-url="{{ A }}/{{ title.slug }}/{{ issue.nn }}/pages/{nnn}.webp"

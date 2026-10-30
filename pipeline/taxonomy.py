@@ -1,6 +1,7 @@
 """Authors, games and topics across all magazines, from the JEV tags (tags.py).
 
-- Authors: JEV's byline choice (confident), else the "Hazırlayan:" byline from assembly.
+- Authors: in a segmented issue (segments.json) the byline read from the page image; otherwise
+  JEV's byline choice (confident), else the "Hazırlayan:" byline from assembly.
   Spellings that differ only in case, Turkish letters, punctuation or a quoted nickname
   ("İsmail "Hades" Şahin" / "İSMAİL ŞAHİN") are one author. Other close matches are written
   to catalog/authors.yaml under `suggested`; entries under `merge` (edited by hand) join
@@ -8,7 +9,8 @@
 - Games: headings JEV calls a game name, matched against the known C64 and Amiga titles
   (catalog/games/*.txt) so OCR variants collapse ("TURRIİCAN" → "Turrican"); grouped by the
   article's platform.
-- Topics: catalog/topics.yaml, where JEV says yes with confidence.
+- Bands (metal corpus): headings JEV calls a band or musician, grouped by folded name.
+- Topics: catalog/topics.yaml (per corpus), where JEV says yes with confidence.
 
 `collect()` returns everything the site needs; run directly to refresh the author
 suggestions and print a summary.
@@ -29,6 +31,7 @@ from fsutil import read_json  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 AUTHOR_CONF = 0.6
 GAME_P = 0.7
+BAND_P = 0.7
 TOPIC_P = 0.6
 GAME_MATCH = 88
 PLATFORM_NAMES = {"c64": "C64", "amiga": "Amiga", "pc": "PC", "other_computer": "Diğer", "console": "Konsol"}
@@ -131,11 +134,14 @@ def collect() -> dict:
             if not t:
                 continue
             author = None
-            if t.get("author") and t["author"]["confidence"] >= AUTHOR_CONF:
+            if a.get("author") and (issue_dir / "segments.json").exists():
+                author = a["author"]  # read from the page image with the segmentation
+            elif t.get("author") and t["author"]["confidence"] >= AUTHOR_CONF:
                 author = t["author"]["name"]
             elif a.get("author"):
                 author = a["author"]
-            platform = t["platform"]["choice"]
+            corpus = titles[slug].get("corpus", "retro")
+            platform = (t.get("platform") or {}).get("choice")
             found = []
             game_article = max(t["topics"].get("oyun-inceleme", 0), t["topics"].get("oyun-cozum", 0)) >= TOPIC_P
             for i, g in enumerate(t["games"]):
@@ -144,8 +150,10 @@ def collect() -> dict:
                 sure = g["p"] >= GAME_P or (i == 0 and game_article and g["p"] >= 0.3)
                 if sure and (c := canonical_game(g["name"], platform, games, sure=g["p"] >= 0.9)):
                     found.append(c)
+            bands = list(dict.fromkeys(band_name(b["name"]) for b in t.get("bands", []) if b["p"] >= BAND_P))
             articles.append({
                 "url": f"/{slug}/{nn}/{a['slug']}/", "title": a["title"], "magazine": titles[slug]["name"],
+                "corpus": corpus, "bands": [b for b in bands if b],
                 "slug": slug, "number": meta["number"], "date": meta.get("date"), "pages": a["pages"],
                 "author": author, "platform": platform, "games": list(dict.fromkeys(found)),
                 "topics": [tp["slug"] for tp in topics if t["topics"].get(tp["slug"], 0) >= TOPIC_P],
@@ -170,8 +178,27 @@ def collect() -> dict:
     for art in articles:
         for name, platform in art["games"]:
             game_index[(name, platform)].append(art)
+    band_index: dict[str, dict] = {}
+    for art in articles:
+        for name in art["bands"]:
+            entry = band_index.setdefault(fold(name), {"names": Counter(), "articles": []})
+            entry["names"][name] += 1
+            entry["articles"].append(art)
+    bands = {}
+    for k, v in band_index.items():
+        name = v["names"].most_common(1)[0][0]
+        bands[slugify(name)] = {"name": name, "articles": v["articles"]}
     topic_index = {tp["slug"]: {**tp, "articles": [a for a in articles if tp["slug"] in a["topics"]]} for tp in topics}
-    return {"articles": articles, "authors": authors, "games": game_index, "topics": topic_index}
+    return {"articles": articles, "authors": authors, "games": game_index, "bands": bands, "topics": topic_index}
+
+
+def band_name(name: str) -> str | None:
+    """A heading tidied into a band name: "MORBID ANGEL" → "Morbid Angel" (all-caps words get
+    plain capitalisation, mixed case stays); too long or empty is not a band."""
+    words = name.replace("İ", "I").split()
+    if not words or len(words) > 5:
+        return None
+    return " ".join(w[:1].upper() + w[1:].lower().replace("ı", "i") if w.isupper() and len(w) > 1 else w for w in words)
 
 
 def read_yaml(path: Path) -> dict:

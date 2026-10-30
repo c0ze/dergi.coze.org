@@ -117,7 +117,12 @@ def state_for(meta: dict, page: int, blocks: list[dict], image: Image | None) ->
 
 def is_heading_candidate(b: dict) -> bool:
     short = len(b["text"]) <= 80
-    return b["kind"] == "title" or (short and b.get("bold") and (b.get("rel_size") or 0) >= 1.15)
+    # OCR knows no bold: a short line or two in capitals is a title set at body size
+    # ("DÜZLEM GEOMETRİDE AÇILAR VE ÖLÇÜLERİ" in Matematik Dünyası).
+    words = b["text"].split()
+    caps = (short and b["text"].count("\n") <= 1 and len(words) >= 2
+            and sum(c.isalpha() for c in b["text"]) >= 8 and b["text"] == b["text"].upper())
+    return b["kind"] == "title" or caps or (short and b.get("bold") and (b.get("rel_size") or 0) >= 1.15)
 
 
 def questions_for(blocks: list[dict], with_image: bool) -> dict:

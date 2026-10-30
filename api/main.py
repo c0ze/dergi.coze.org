@@ -104,7 +104,8 @@ def client_of(headers: dict[str, str], fallback: str) -> str:
     return (headers.get("x-forwarded-for") or fallback or "").split(",")[0].strip()
 
 
-def semantic(q: str, dergi: str | None, yil: str | None, limit: int) -> dict[str, tuple[float, int]]:
+def semantic(q: str, dergi: str | None, yil: str | None, limit: int,
+             koleksiyon: str | None = None) -> dict[str, tuple[float, int]]:
     """{article path: (score, best passage index)}, best first."""
     scores = VECTORS @ embed_query(q)
     best: dict[str, tuple[float, int]] = {}
@@ -113,7 +114,8 @@ def semantic(q: str, dergi: str | None, yil: str | None, limit: int) -> dict[str
         if s < MIN_SCORE:
             break
         p = PASSAGES[i]
-        if (dergi and p["dergi"] != dergi) or (yil and p["year"] != yil):
+        if (dergi and p["dergi"] != dergi) or (yil and p["year"] != yil) \
+                or (koleksiyon and p.get("koleksiyon") != koleksiyon):
             continue
         if p["url"] not in best:
             best[p["url"]] = (s, int(i))
@@ -122,7 +124,8 @@ def semantic(q: str, dergi: str | None, yil: str | None, limit: int) -> dict[str
     return best
 
 
-def keyword(q: str, dergi: str | None, yil: str | None, limit: int) -> dict[str, tuple[int, int]]:
+def keyword(q: str, dergi: str | None, yil: str | None, limit: int,
+            koleksiyon: str | None = None) -> dict[str, tuple[int, int]]:
     """{article path: (hits, best passage index)} for passages containing every query word."""
     terms = [f" {t} " for t in ascii_fold(q).split() if len(t) > 1]
     if not terms:
@@ -131,7 +134,8 @@ def keyword(q: str, dergi: str | None, yil: str | None, limit: int) -> dict[str,
     for i, text in enumerate(FOLDED):
         if all(t in text for t in terms):
             p = PASSAGES[i]
-            if (dergi and p["dergi"] != dergi) or (yil and p["year"] != yil):
+            if (dergi and p["dergi"] != dergi) or (yil and p["year"] != yil) \
+                    or (koleksiyon and p.get("koleksiyon") != koleksiyon):
                 continue
             n = sum(text.count(t) for t in terms)
             if p["url"] not in best or n > best[p["url"]][0]:
@@ -147,9 +151,10 @@ async def search_endpoint(request: Request) -> JSONResponse:
         return JSONResponse({"error": "too many requests"}, status_code=429, headers={"Retry-After": "60"})
     dergi = request.query_params.get("dergi") or None
     yil = request.query_params.get("yil") or None
+    koleksiyon = request.query_params.get("koleksiyon") or None
     limit = max(1, min(50, int(request.query_params.get("limit") or 20)))
     try:
-        best = semantic(q, dergi, yil, limit)
+        best = semantic(q, dergi, yil, limit, koleksiyon)
     except requests.RequestException:
         return JSONResponse({"error": "embedding unavailable"}, status_code=503)
     results = []
@@ -168,18 +173,25 @@ async def health(request: Request) -> JSONResponse:
 # ---------------------------------------------------------------------------------------------
 # MCP
 
+# Only the corpora that have magazines in this catalogue (titles waiting for permission are left
+# out of it by export_api.py).
+CORPUS_ABOUT = {"retro": "retro (Commodore 64 and Amiga magazines, 1985–2005)",
+                "bilim": "bilim (science and maths magazines)", "metal": "metal (heavy metal fanzines)"}
+LIVE_CORPORA = ", ".join(CORPUS_ABOUT.get(k, k) for k, c in CATALOG["corpora"].items() if c["magazines"])
+
 mcp = MCPServer(
     name="dergi.coze.org",
     title="Türk retro bilgisayar dergileri arşivi",
     website_url=SITE,
     instructions=(
-        "An archive of Turkish Commodore 64 and Amiga computer magazines (1985–2005): Commodore, "
-        "64'ler, Amiga Dünyası, Amiga Dergisi, MegAmiga and C64 Türkiye. Article texts are in Turkish, "
-        "read by OCR and proofread by a language model, so expect occasional OCR errors; the original "
-        "reader pages with the page scans are linked. Start with `search` (Turkish or English queries; it matches "
-        "words and meaning), then `get_article` to read. Browse with `list_magazines`, `list_issues`, "
-        "`get_issue`, `find_authors`/`get_author`, `find_games`/`get_game` and "
-        "`list_topics`/`get_topic`. Cite article URLs when you quote. Read-only; no login."),
+        f"An archive of old Turkish magazines and fanzines, in corpora (see `list_corpora`): {LIVE_CORPORA}. "
+        "Article texts are in Turkish, read by OCR and proofread by "
+        "a language model, so expect occasional OCR errors; each article links the reader pages that show "
+        "the original scans. Start with `search` (Turkish or English queries; it matches words and meaning; "
+        "`corpus` narrows it), then `get_article` to read. Browse with `list_corpora`, `list_magazines`, "
+        "`list_issues`, `get_issue`, `find_authors`/`get_author`, `find_games`/`get_game` (retro), "
+        "`find_bands`/`get_band` (metal) and `list_topics`/`get_topic`. Cite article URLs when you quote. "
+        "Read-only; no login."),
 )
 READ_ONLY = ToolAnnotations(read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
 MAGS = CATALOG["magazines"]
@@ -196,6 +208,16 @@ def magazine_slug(name: str | None) -> str | None:
     raise ToolError(f"unknown magazine {name!r}; known: " + ", ".join(m["name"] for m in MAGS.values()))
 
 
+def corpus_name(corpus: str | None) -> str | None:
+    """The corpus's Turkish name (as stored on passages) from its slug or name."""
+    if not corpus:
+        return None
+    for slug, c in CATALOG["corpora"].items():
+        if ascii_fold(corpus).strip() in (slug, ascii_fold(c["name"]).strip()):
+            return c["name"]
+    raise ToolError(f"unknown corpus {corpus!r}; known: " + ", ".join(CATALOG["corpora"]))
+
+
 def article_url(ref: str) -> str:
     """Full article URL from a URL, a path or "magazine/issue/slug"."""
     path = re.sub(r"^https?://[^/]+", "", ref.strip()).strip("/")
@@ -210,7 +232,8 @@ def article_url(ref: str) -> str:
 
 def summary(url: str) -> dict[str, Any]:
     a = CATALOG["articles"][url]
-    return {"url": url, "title": a["title"], "magazine": a["magazine_name"], "issue": a["issue"],
+    return {"url": url, "title": a["title"], "corpus": a.get("corpus", "retro"), "magazine": a["magazine_name"],
+            "issue": a["issue"],
             "date": a["date"], "pages": a["pages"], "author": a["author"]}
 
 
@@ -232,11 +255,13 @@ def matching(index: dict[str, dict], query: str | None, limit: int, count) -> li
 
 
 @mcp.tool(annotations=READ_ONLY)
-def search(query: str, magazine: str | None = None, year: str | None = None, limit: int = 10) -> dict[str, Any]:
+def search(query: str, corpus: str | None = None, magazine: str | None = None, year: str | None = None,
+           limit: int = 10) -> dict[str, Any]:
     """Search every article by words and by meaning (e.g. "assembler" also finds "makine dili").
 
-    query: Turkish or English, up to 200 characters. magazine: a magazine name or slug to stay
-    within. year: e.g. "1990". limit: 1–30 results. Each result has the article URL (pass it to
+    query: Turkish or English, up to 200 characters. corpus: "retro", "bilim" or "metal" (see
+    list_corpora). magazine: a magazine name or slug to stay within. year: e.g. "1990".
+    limit: 1–30 results. Each result has the article URL (pass it to
     get_article), title, magazine, issue, date, pages, author and a snippet of the best passage.
     """
     query = query.strip()
@@ -244,10 +269,11 @@ def search(query: str, magazine: str | None = None, year: str | None = None, lim
         raise ToolError("query must be 1–200 characters")
     slug = magazine_slug(magazine)
     dergi = MAGS[slug]["name"] if slug else None
+    koleksiyon = corpus_name(corpus)
     limit = max(1, min(30, limit))
-    words = keyword(query, dergi, year, 100)
+    words = keyword(query, dergi, year, 100, koleksiyon)
     try:
-        meaning = semantic(query, dergi, year, 100)
+        meaning = semantic(query, dergi, year, 100, koleksiyon)
     except (requests.RequestException, google.auth.exceptions.GoogleAuthError):
         meaning = {}  # the embedding service is unreachable: words only
     fused: dict[str, float] = defaultdict(float)
@@ -290,10 +316,20 @@ def get_article(url: str, offset: int = 0, max_chars: int = 12000) -> dict[str, 
 
 
 @mcp.tool(annotations=READ_ONLY)
-def list_magazines() -> dict[str, Any]:
-    """The magazines in the archive, with their years, publisher, description and issue numbers."""
-    return {"magazines": [{k: m[k] for k in ("slug", "name", "years", "publisher", "description", "url")}
-                          | {"issues": sorted(m["issues"])} for m in MAGS.values()]}
+def list_corpora() -> dict[str, Any]:
+    """The archive's corpora (retro computing, science, metal) and the magazines in each."""
+    return {"corpora": [{"slug": k} | c for k, c in CATALOG["corpora"].items() if c["magazines"]]}
+
+
+@mcp.tool(annotations=READ_ONLY)
+def list_magazines(corpus: str | None = None) -> dict[str, Any]:
+    """The magazines in the archive (optionally one corpus), with their corpus, years, publisher,
+    description and issue numbers."""
+    name = corpus_name(corpus)
+    wanted = {k for k, c in CATALOG["corpora"].items() if c["name"] == name} if name else None
+    return {"magazines": [{k: m.get(k) for k in ("slug", "name", "corpus", "years", "publisher", "description", "url")}
+                          | {"issues": sorted(m["issues"])} for m in MAGS.values()
+                          if not wanted or m.get("corpus") in wanted]}
 
 
 @mcp.tool(annotations=READ_ONLY)
@@ -362,10 +398,31 @@ def get_game(game: str, platform: str | None = None) -> dict[str, Any]:
 
 
 @mcp.tool(annotations=READ_ONLY)
-def list_topics() -> dict[str, Any]:
-    """Topics (assembly, BASIC, music, demoscene, hardware, game reviews…) with article counts."""
-    return {"topics": [{"slug": k, "name": t["name"], "about": t["about"], "articles": len(t["articles"]),
-                        "url": t["url"]} for k, t in CATALOG["topics"].items()]}
+def find_bands(query: str | None = None, limit: int = 30) -> dict[str, Any]:
+    """Bands and musicians covered by the metal fanzines, most covered first."""
+    found = matching(CATALOG["bands"], query, limit, lambda b: len(b["articles"]))
+    return {"bands": [{"slug": k, "name": b["name"], "articles": len(b["articles"]), "url": b["url"]} for k, b in found]}
+
+
+@mcp.tool(annotations=READ_ONLY)
+def get_band(band: str) -> dict[str, Any]:
+    """Articles about one band or musician (interviews, reviews, news). band: a name or slug."""
+    b = CATALOG["bands"].get(band) or next(iter(dict(matching(CATALOG["bands"], band, 1,
+                                                              lambda b: len(b["articles"]))).values()), None)
+    if not b:
+        raise ToolError(f"no band matches {band!r}; try find_bands")
+    return {"name": b["name"], "url": b["url"]} | pick(b["articles"])
+
+
+@mcp.tool(annotations=READ_ONLY)
+def list_topics(corpus: str | None = None) -> dict[str, Any]:
+    """Topics with article counts, per corpus: assembly, BASIC, game reviews (retro); geometry,
+    number theory, problems (bilim); interviews, album reviews, the Turkish scene (metal)."""
+    name = corpus_name(corpus)
+    wanted = {k for k, c in CATALOG["corpora"].items() if c["name"] == name} if name else None
+    return {"topics": [{"slug": k, "name": t["name"], "corpus": t.get("corpus", "retro"), "about": t["about"],
+                        "articles": len(t["articles"]), "url": t["url"]} for k, t in CATALOG["topics"].items()
+                       if not wanted or t.get("corpus", "retro") in wanted]}
 
 
 @mcp.tool(annotations=READ_ONLY)

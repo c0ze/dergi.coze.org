@@ -2,20 +2,24 @@
 {% block title %}Hakkında{% endblock %}
 {% block main %}
 <article class="prose">
+  {% set here = shelf|map(attribute="slug")|list %}
   <h1>Hakkında</h1>
-  <p>dergi.coze.org, Türkiye'de 1985'ten bu yana çıkmış Commodore ve Amiga dergilerini bir arada tutan, reklamsız ve izlemesiz bir arşivdir. Her sayıyı sayfa sayfa okuyabilir, yazılarını düz metin olarak okuyabilir ve içinde arama yapabilirsiniz. Taramaların kendisi indirilemiyor; kaynak dosyalara ihtiyacınız varsa <a href="mailto:contact@coze.org">contact@coze.org</a> adresine yazın.</p>
+  <p>dergi.coze.org, eski Türkçe dergileri ve fanzinleri bir arada tutan, reklamsız ve çerezsiz bir arşivdir. Ziyaretler Cloudflare Web Analytics ile yalnızca anonim olarak sayılıyor: çerez kullanılmıyor, kişisel veri toplanmıyor, kimse sayfadan sayfaya izlenmiyor. {% if corpora|length > 1 %}Dergiler koleksiyonlara ayrılmıştır: {% for c in corpora %}<a href="/{{ c.slug }}/">{{ c.ad }}</a>{% if c.slug == "retro" %} (1985'ten bu yana Commodore 64 ve Amiga dergileri){% endif %}{{ ", " if not loop.last and loop.revindex > 2 else (" ve " if not loop.last else "") }}{% endfor %}.{% else %}Şimdilik 1985'ten bu yana Türkiye'de çıkmış Commodore 64 ve Amiga dergileri burada.{% endif %} Her sayıyı sayfa sayfa okuyabilir, yazılarını düz metin olarak okuyabilir ve içinde arama yapabilirsiniz. Taramaların kendisi indirilemiyor; kaynak dosyalara ihtiyacınız varsa <a href="mailto:contact@coze.org">contact@coze.org</a> adresine yazın.</p>
 
   <h2>Arşivdeki dergiler</h2>
+  {% for c in corpora %}
+  <h3>{{ c.ad }}</h3>
   <ul>
-  {% for t in shelf %}<li><a href="/{{ t.slug }}/">{{ t.name }}</a> ({{ t.years }}): {{ t.issues_have|length }} sayı</li>{% endfor %}
+  {% for t in c.titles %}<li><a href="/{{ t.slug }}/">{{ t.name }}</a> ({{ t.years }}): {{ t.issues_have|length }} sayı</li>{% endfor %}
   </ul>
+  {% endfor %}
   <p>Toplam {{ stats.issues|sayi }} sayı, {{ stats.pages|sayi }} sayfa ve {{ stats.articles|sayi }} yazı; {{ stats.authors|sayi }} yazar, {{ stats.games|sayi }} oyun ve {{ stats.programs|sayi }} indirilebilir program.</p>
 
   <h2 id="nasil-yapildi">Nasıl yapıldı</h2>
   <p>Taranmış bir dergi sayfası, bilgisayar için yalnızca bir resimdir. Ondan okunabilir, aranabilir ve reklamsız bir yazı çıkarmak için her sayı aşağıdaki adımlardan geçti. Ağır işi yerel araçlar ve ucuz, küçük modeller yaptı. Hangi adımda ne kullanıldığı, hangi soruna nasıl çözüm bulunduğu ve neyin hâlâ düzgün çalışmadığı aşağıda. Kodun tamamı açık: <a href="https://github.com/c0ze/dergi.coze.org">github.com/c0ze/dergi.coze.org</a>.</p>
 
   <h3>1. En iyi taramayı seçmek</h3>
-  <p>Çoğu sayının birden çok taraması var: PDF, CBR, DjVu ya da JPG klasörü. Her sayı için önce sayfası en eksiksiz olan, sonra en keskin tarama seçildi. Daha keskin ama sayfası eksik kopyalar ayrıca not edildi. Commodore'un Program Döküm Ekleri gibi ekler kendi aralarında karşılaştırılıp sayının sonuna eklendi.</p>
+  <p>Çoğu sayının birden çok taraması var: PDF, CBR, DjVu ya da JPG klasörü. Her sayı için önce sayfası en eksiksiz olan, sonra en keskin tarama seçildi. Daha keskin ama sayfası eksik kopyalar ayrıca not edildi. Commodore'un Program Döküm Ekleri gibi ekler kendi aralarında karşılaştırılıp sayının sonuna eklendi. Bir kopyada eksik kalan sayfalar başka bir kopyadan tamamlandı (Amiga Dünyası 12'nin iki sayfası gibi); tek sayfaları ters saklanmış taramalar (Amiga Dergisi'nin Internet Archive kopyaları) düzeltildi.</p>
 
   <h3>2. Sayfadaki metni okumak</h3>
   <ul>
@@ -23,6 +27,7 @@
     <li><strong>İki sayfalık taramalar:</strong> 64'ler'in bazı sayılarında PDF'in her sayfası, iki sayfalık tek bir görüntünün yarısını gösteriyor. Görüntünün tamamını okumak metni iki kez çıkarıyordu; artık yalnızca görünen yarı kesilip okunuyor.</li>
     <li><strong>Dijital PDF'ler</strong> (C64 Türkiye): Metin doğrudan PDF'ten alındı. Bir sayıdaki bozuk karakter kodlaması (ý, þ, ð yerine ı, ş, ğ) düzeltildi; QuarkXPress'in gölgeli başlıklarında iki kez yazılmış harfler ayıklandı.</li>
     <li><strong>Süslü başlıklar:</strong> Tesseract gösterişli başlık yazılarını iyi okuyamıyor; "THE PATRICIAN" başlığını "T FE CIAN" olarak okudu. Taranmış Amiga sayılarında sayfadaki büyük yazılar Apple Vision ile yeniden okundu ({{ 2830|sayi }} başlık). C64 Türkiye'de resim olarak gömülmüş WordArt başlıklar da Apple Vision ile okundu.</li>
+    <li><strong>Boş görünen sayfalar ve kayıp satırlar:</strong> Tesseract'ın neredeyse hiç metin bulamadığı kolaj, harita ve resimli sayfalar (yaklaşık 480 sayfa) Apple Vision ile baştan okundu; böylece 63 bine yakın kelime geri geldi. Tesseract'ın sütun sonlarında atladığı 5.500 kadar satır da Apple Vision'ın okumasından tamamlandı.</li>
     <li><strong>Amiga Dünyası:</strong> Elimizdeki sayıların çoğu, derginin ABBYY FineReader ile yeniden dizilmiş, Word'e aktarılmış sürümleri. Metin bu sürümlerden geliyor; sayfa görüntüleri de bu yüzden düşük çözünürlüklü. Gerçek taraması bulunan sayılarda (16, 21 ve 25–31) tarama kullanıldı.</li>
   </ul>
 
@@ -31,18 +36,20 @@
 
   <h3>4. Yazıları bir araya getirmek</h3>
   <ul>
-    <li>Bir yazının nerede başladığına karar verirken sayının içindekiler sayfası esas alındı. İçindekilerde geçmeyen bir başlık, model çok emin değilse ara başlık sayıldı.</li>
-    <li>Birkaç satıra ya da bloğa bölünmüş başlıklar birleştirildi. Her sayfanın tepesinde tekrar eden bölüm etiketleri ("GRAFİK", "MÜZİK", "TANITIM") yeni yazı başlatmıyor.</li>
+    <li>Bir yazının nerede başlayıp bittiğine Anthropic'in Claude Haiku modeli karar verdi. Her sayı için bir Haiku ajanı sayının bütün sayfalarına görüntü olarak baktı ve okunan metin bloklarının listesiyle karşılaştırdı. Her yazı için başlığı sayfadan okuyarak, varsa basılı imzayı ve yazının başladığı bloğu yazdı; araya başka bir yazı girip sonra devam eden yazıların devam ettiği yeri de işaretledi. Böylece bir inceleme bölümündeki her oyun kendi yazısı oldu; ara başlıklar ve sayfaların tepesinde tekrar eden bölüm etiketleri ("GRAFİK", "MÜZİK", "TANITIM") yeni yazı başlatmıyor.</li>
+    <li>Her sayı bölündükten sonra eski ve yeni metin karşılaştırıldı: Eski metindeki her altı kelimelik dizinin yeni yazılarda bir yerde bulunması gerekiyor. Böylece bölme sırasında hiçbir paragraf kaybolmadı.</li>
     <li>Satır sonunda tireyle bölünmüş kelimeler ("oy-" / "namışınızdır") ve sütun ya da sayfa sonunda kesilen paragraflar birleştirildi. Büyük harfle yazılmış kelimeler tirelerini koruyor ("GHOST-BUSTERS").</li>
-    <li>Paragraf başındaki büyük süs harfi yerine kondu. "Hazırlayan:" satırları ve yazının başında tek başına duran isimler, yazının yazarı olarak alındı.</li>
+    <li>Paragraf başındaki büyük süs harfi yerine kondu. Çevirilerde imzayı çeviren atıyor, o yüzden yazar olarak çevirmen gösteriliyor.</li>
     <li>Resimler sayfadan kesilip metindeki yerlerine kondu; program dökümleri eşit aralıklı yazıyla gösteriliyor.</li>
   </ul>
 
   <h3>5. Yazım ve OCR hatalarını düzeltmek</h3>
-  <p>Yazıların metni parça parça Google'ın Gemini 3.1 Flash Lite modeline (Vertex AI) gönderildi. Modelden yalnızca OCR hatalarını (ı/i, ş/s, ğ/g karışıklıkları, 0/O, "rn"/"m", yanlış bölünmüş ya da bitişmiş kelimeler) ve bariz yazım hatalarını düzeltmesi istendi. Cümleleri yeniden yazması, kısaltması ya da bir şey eklemesi yasak. Bunu denetlemek için her düzeltme ölçülüyor: Metnin %20'sinden fazlasını değiştiren ya da uzunluğunu %15'ten fazla oynatan düzeltme reddediliyor ve özgün metin kullanılıyor. Yaklaşık 91 bin parçanın 43 bininde düzeltme yapıldı, 3 bine yakın düzeltme reddedildi. OCR'ın ham metni her parça için saklanıyor; program dökümlerine hiç dokunulmadı.</p>
+  <p>Yazıların metni parça parça Google'ın Gemini 3.1 Flash Lite modeline (Vertex AI) gönderildi. Modelden yalnızca OCR hatalarını (ı/i, ş/s, ğ/g karışıklıkları, 0/O, "rn"/"m", yanlış bölünmüş ya da bitişmiş kelimeler) ve bariz yazım hatalarını düzeltmesi istendi. Cümleleri yeniden yazması, kısaltması ya da bir şey eklemesi yasak. Bunu denetlemek için her düzeltme ölçülüyor: Metnin %20'sinden fazlasını değiştiren ya da uzunluğunu %15'ten fazla oynatan düzeltme reddediliyor ve özgün metin kullanılıyor. Yaklaşık 97 bin paragrafın 47 bininde düzeltme yapıldı; metni fazla değiştiren birkaç bin öneri reddedildi. OCR'ın ham metni her parça için saklanıyor; program dökümlerine hiç dokunulmadı.</p>
 
   <h3>6. Yazarlar, oyunlar ve konular</h3>
-  <p>Her yazının yazarı, hangi oyunlar hakkında olduğu, platformu (C64, Amiga, PC…) ve konuları yine JEV ile belirlendi. Oyun adları Wikipedia'nın C64 ve Amiga oyun listeleriyle ve oyun koleksiyonlarındaki adlarla karşılaştırıldı. Böylece "TURRIİCAN" gibi OCR hataları "Turrican" altında toplanıyor ve aynı oyunun C64 ve Amiga sürümleri ayrı tutuluyor. Yazar adlarındaki büyük/küçük harf, Türkçe karakter, boşluk ve takma ad farkları (İsmail "Hades" Şahin) tek profilde birleşiyor. Birbirine çok benzeyen ama aynı kişi olduğu kesin olmayan adlar elle karar verilerek birleştiriliyor.</p>
+  <p>Her yazının hangi oyunlar hakkında olduğu, platformu (C64, Amiga, PC…) ve konuları yine JEV ile belirlendi; yazarı, Haiku'nun sayfada okuduğu imzadan, imza yoksa JEV'den geliyor. Oyun adları Wikipedia'nın C64 ve Amiga oyun listeleriyle ve oyun koleksiyonlarındaki adlarla karşılaştırıldı. Böylece "TURRIİCAN" gibi OCR hataları "Turrican" altında toplanıyor ve aynı oyunun C64 ve Amiga sürümleri ayrı tutuluyor. Yazar adlarındaki büyük/küçük harf, Türkçe karakter, boşluk ve takma ad farkları (İsmail "Hades" Şahin) tek profilde birleşiyor. Birbirine çok benzeyen ama aynı kişi olduğu kesin olmayan adlar elle karar verilerek birleştiriliyor.</p>
+
+  {% if corpora|length > 1 %}<p>Her koleksiyonun kendi konuları var ve yazım düzeltmesi de koleksiyona göre ayarlanıyor: Bilim dergilerinde formüllere ve gösterimlere dokunulmuyor, metal fanzinlerinde grup, albüm ve şarkı adları, İngilizce sözler ve fanzinin gündelik dili olduğu gibi kalıyor. Metal koleksiyonunda oyunların yerini gruplar alıyor.</p>{% endif %}
 
   <h3>7. Arama</h3>
   <p>Arama iki yoldan çalışıyor. Kelime araması tarayıcınızda Pagefind ile yapılıyor; Türkçe karakterler eşleştirildiği için "sayi" yazınca "sayı" da bulunuyor. Anlam araması için her yazı yaklaşık 1.200 karakterlik parçalara bölündü ve Google'ın gemini-embedding-001 modeliyle sayısal vektörlere çevrildi. Aramanız da aynı modelle çevriliyor ve ona en yakın parçalar bulunuyor: "assembler" araması "makine dili" geçen yazıları da getiriyor. İki sonuç listesi birleştirilip birlikte sıralanıyor.</p>
@@ -55,6 +62,7 @@
     <tbody>
       <tr><th scope="row">Sayfa okuma</th><td>Tesseract 5.5 (Türkçe), Apple Vision</td></tr>
       <tr><th scope="row">Reklam ayrımı, etiketler</th><td>TypeSafe JEV (jev-1.14.0)</td></tr>
+      <tr><th scope="row">Yazı sınırları, başlıklar, imzalar</th><td>Anthropic Claude Haiku</td></tr>
       <tr><th scope="row">Yazım düzeltme</th><td>Google Gemini 3.1 Flash Lite</td></tr>
       <tr><th scope="row">Anlam araması</th><td>Google gemini-embedding-001</td></tr>
       <tr><th scope="row">Kelime araması</th><td>Pagefind</td></tr>
@@ -63,7 +71,7 @@
       <tr><th scope="row">Kod</th><td>Python; Claude Code (Anthropic) yardımıyla yazıldı</td></tr>
     </tbody>
   </table>
-  <p>Bütün sayıları işlemek, modeller ve bulut kullanımı dahil 12 dolar civarına mal oldu. Sitenin aylık barındırma maliyeti 1 doların altında.</p>
+  <p>Bütün sayıları işlemek, Google ve TypeSafe modelleri ve bulut kullanımı dahil 15 dolar civarına mal oldu; yazıları ayıran Claude Haiku ajanları bu hesaba dahil değil. Sitenin aylık barındırma maliyeti 1 doların altında.</p>
 
   <h2 id="mcp">Yapay zekâ asistanları için (MCP)</h2>
   <p>Arşiv, Claude, ChatGPT ya da Cursor gibi MCP destekleyen asistanlara doğrudan bağlanabilir. Sunucu adresi:</p>
@@ -74,9 +82,9 @@
 
   <h2 id="sorunlar">Hâlâ sorunlu olanlar</h2>
   <ul>
-    <li>Bazı yazılar komşusuyla birleşmiş ya da ikiye bölünmüş; özellikle başlığı resim gibi dizilmiş yazılarda ve oyun tanıtımlarında.</li>
-    <li>Süslü başlıkların bir kısmı hâlâ yanlış okunuyor (Hannibal yerine "HANNRA") ya da iki parçaya ayrılıyor ("AMIGA'nın" / "YARINLARI").</li>
-    <li>64'ler'deki yazılarda imza çoğunlukla yok; bu yüzden 64'ler yazarlarının çoğu yazar sayfalarında görünmüyor.</li>
+    <li>Yazı sınırları artık sayfa görüntülerine bakılarak çiziliyor, ama yer yer iki yazı birleşmiş ya da bir yazı bölünmüş olabilir; özellikle OCR'ın birkaç yazıyı tek blok olarak okuduğu sayfalarda.</li>
+    <li>Süslü başlıklar sayfadan okunuyor, ama ara başlıkların bir kısmı hâlâ yanlış okunuyor (Hannibal yerine "HANNRA").</li>
+    <li>Aynı yazarın farklı yazılışları (kısaltılmış ad, OCR hatası) elle birleştiriliyor; gözden kaçanlar olabilir.</li>
     <li>Amiga Dünyası'nın yeniden dizilmiş sayılarında metin FineReader'ın okumasından geliyor; sayfa görüntüleri düşük çözünürlüklü ve bazı resimler eksik.</li>
     <li>Yazım düzeltmesi zaman zaman doğru bir kelimeyi de "düzeltebiliyor". Asıl sayfa her yazının yanında, bir tık uzakta.</li>
     <li>Oyun ve konu etiketleri otomatik; yanlış ya da eksik etiketler olabilir.</li>
@@ -88,35 +96,47 @@
   <p><em>Merhaba, ben Claude. Bir süredir bu derlem üzerinde çalışıyorum: her sayfasını taradım, okuttum, sınıflandırdım, birleştirdim, düzelttim. Aşağıda her kaynak hakkındaki düşüncelerimi ve en çok ne işe yaradığını bulacaksınız.</em> Notlar benim kanaatim; dayandığım ölçümler (tarama çözünürlüğü, OCR güveni, düzeltme oranı, konu dağılımı) bu derlemi işlerken çıkan sayılar.</p>
 
   <h3>Commodore (1986–1992) — 9/10</h3>
-  <p>Arşivin omurgası. 79 sayı, 5.351 sayfa ve 1,6 milyon kelimeyle en büyük kaynak; Teleteknik'in yayını olduğu için Commodore'un Türkiye'deki hikâyesini içeriden anlatıyor. Oyun incelemelerinin yanında haberler ve fuarlar (188 yazı), kurslar (182), BASIC (107), program dökümleri (104) ve donanım (101) dengeli biçimde var. Son yıllarında Amiga'ya da geniş yer veriyor (162 yazı). Taramalar iyi (çoğu 3.000 pikselin üstünde), OCR güveni %93 ile en yüksek olanlardan; düzeltme modeli parçaların %41'ine dokundu.</p>
+  <p>Arşivin omurgası. 79 sayı, 5.351 sayfa ve 1,6 milyon kelimeyle en büyük kaynak; Teleteknik'in yayını olduğu için Commodore'un Türkiye'deki hikâyesini içeriden anlatıyor. 2.014 yazının neredeyse yarısı oyun incelemesi ve çözümü, ama yanında kurslar (238 yazı), haberler ve fuarlar (223), program dökümleri (214), BASIC (167), makine dili (125) ve donanım (110) dengeli biçimde var. Son yıllarında Amiga'ya da geniş yer veriyor (357 yazı). Taramalar iyi, OCR güveni %92,6 ile en yükseklerden; düzeltme modeli paragrafların %48'ine dokundu. Yazıların %44'ü imzalı.</p>
   <p><strong>En iyi olduğu iş:</strong> Türkiye'de ev bilgisayarı tarihinin kendisi; BASIC ve programlama kursları; dönemin piyasası, mağazaları, fuarları. <strong>Eksiği:</strong> program dökümleri henüz çalıştırılabilir programa çevrilmedi; uzun kurs dizileri sayılara dağınık.</p>
 
-  <h3>64'ler (1988–1992) — 7,5/10</h3>
-  <p>Saf oyun dergisi. 465 yazının neredeyse tamamı oyun incelemesi (323) ya da çözüm ve hile (172): haritalar, POKE'lar, bölüm bölüm anlatımlar. Programlama ilgilenenler için ince (makine dili yalnızca 10 yazı). Yoğun ve renkli sayfa düzeni OCR'ı en çok zorlayan kaynak oldu: düzeltme modeli parçaların %55'ini değiştirdi, en yüksek oran bu. İmzalar çoğunlukla yok (465 yazıdan 62'si imzalı), 52 sayının 43'ü elimizde.</p>
-  <p><strong>En iyi olduğu iş:</strong> Commodore 64 oyun kültürü ve nostalji; bir oyunu bitirmek için gerçekten işe yarayan çözümler; o yılların Türkiye'ye ulaşan oyun listesi (205 oyun). <strong>Eksiği:</strong> 9 eksik sayı ve yazarların büyük ölçüde isimsiz kalması.</p>
+  <h3>64'ler (1988–1992) — 8/10</h3>
+  <p>Saf oyun dergisi. 1.511 yazının büyük çoğunluğu oyun incelemesi (1.097) ya da çözüm ve hile (520): haritalar, POKE'lar, bölüm bölüm anlatımlar. Programlama ilgilenenler için ince (makine dili yalnızca 34 yazı). Yoğun ve renkli sayfa düzeni OCR'ı en çok zorlayanlardan oldu: Düzeltme modeli paragrafların %61'ini değiştirdi, en yüksek oran bu. Yazıları sayfa görüntülerinden yeniden ayırınca imzalar da ortaya çıktı: Yazıların %70'i imzalı. 52 sayının 43'ü elimizde.</p>
+  <p><strong>En iyi olduğu iş:</strong> Commodore 64 oyun kültürü ve nostalji; bir oyunu bitirmek için gerçekten işe yarayan çözümler; o yıllarda Türkiye'ye ulaşan oyunların listesi (yaklaşık 1.000 oyun). <strong>Eksiği:</strong> 9 eksik sayı (24–25, 36, 44 ve 46–50).</p>
 
   <h3>Amiga Dünyası (1990–1992) — metin 8/10, görüntü 4/10</h3>
-  <p>31 sayının tamamı elimizde ve sayı başına en çok metni (46 bin kelime) veren kaynak. Ama elimizdeki sayıların çoğu taramanın kendisi değil, derginin ABBYY FineReader ile yeniden dizilmiş sürümleri: metin bol ve okunaklı, sayfa görüntüleri ise düşük çözünürlüklü (ortalama 740 piksel), reklamlar ve özgün sayfa düzeni çoğunlukla kayıp. İçerikte kurslar (191), grafik ve çizim (134; Deluxe Paint, animasyon, masaüstü yayıncılık) ve makine dili (60) güçlü.</p>
-  <p><strong>En iyi olduğu iş:</strong> Amiga'yı öğrenmek: Workbench, CLI, AmigaBASIC ve grafik programları üzerine adım adım anlatımlar; Amiga'nın Türkiye'deki ilk yılları. <strong>Eksiği:</strong> derginin nasıl göründüğünü ve reklamlarıyla dönemin piyasasını görmek isteyen için zayıf; gerçek taraması olan dokuz sayı bu açığı kısmen kapatıyor.</p>
+  <p>31 sayının tamamı elimizde ve sayı başına en çok metni (44 bin kelime) veren kaynak. Ama elimizdeki sayıların çoğu taramanın kendisi değil, haydar_abi'nin derginin sayfalarını ABBYY FineReader ile okutup Word'de yeniden dizdiği sürümler: Metin bol ve okunaklı, sayfa görüntüleri ise düşük çözünürlüklü (ortalama 740 piksel), reklamlar ve özgün sayfa düzeni çoğunlukla kayıp. İçerikte oyun incelemeleri (592) kadar kurslar (282), grafik ve çizim (141; Deluxe Paint, animasyon, masaüstü yayıncılık) ve makine dili (50) güçlü.</p>
+  <p><strong>En iyi olduğu iş:</strong> Amiga'yı öğrenmek: Workbench, CLI, AmigaBASIC ve grafik programları üzerine adım adım anlatımlar; Amiga'nın Türkiye'deki ilk yılları. <strong>Eksiği:</strong> Derginin nasıl göründüğünü ve reklamlarıyla dönemin piyasasını görmek isteyen için zayıf; gerçek taraması olan dokuz sayı bu açığı kısmen kapatıyor.</p>
 
-  <h3>Amiga Dergisi (1993–1994) — 6/10</h3>
-  <p>A1200 dönemine ait 9 sayı (12'nin 9'u). Sayfaların %29'u reklam; bu, bir arşiv için kusur değil, bilgi: 1993'te İstanbul'da Amiga satan dükkânlar, hızlandırıcı kartlar ve fiyatlar burada. Süslü başlıklar Tesseract'ı en çok zorlayan kaynak oldu (OCR güveni %88,6, en düşük); başlıkları Apple Vision ile yeniden okuttum ama bazıları hâlâ kusurlu. Taramalar orta çözünürlükte.</p>
-  <p><strong>En iyi olduğu iş:</strong> 1993–94 Türkiye Amiga piyasası ve ilanları; dönemin oyun incelemeleri (78) ve FRP köşesi. <strong>Eksiği:</strong> düşük çözünürlük, eksik sayılar ve yer yer bölünmüş yazılar.</p>
+  <h3>Commodore Amiga (1992) — 7/10</h3>
+  <p>Commodore dergisinin içinde bir buçuk yıl "AMIGA Bülteni" olarak çıktıktan sonra Ocak 1992'de bağımsız, tamamen renkli bir dergiye dönüştü; dokuz sayı yaşadı ve Eylül 1992'de, Commodore'un veda sayısıyla aynı ay kapandı. 9 sayı, 468 sayfa, 157 yazı. Ağırlık oyun tanıtımlarında (81 yazı), ama AmigaDOS ve ARexx dizileri, Imagine, Scala ve MIDI üzerine yazılar, bir Amiga terimleri sözlüğü ve teknik servis köşesi de var. Korsan yazılıma karşı başyazıları ("Kopyaya Hayır!", "Çalınan Emekler") ve okurlarla bu konuda yaptığı tartışma dönemin en ilginç belgelerinden. Gerçek taramalar ve keskin; OCR güveni %93,2 ile arşivin en yükseği. Yazıların yarısından fazlası imzalı.</p>
+  <p><strong>En iyi olduğu iş:</strong> A500 Plus, A600 ve CDTV'nin geldiği 1992'de Amiga'nın Türkiye'de oyun makinesinden iş ve yaratıcılık makinesine dönme çabası; kopya tartışması. <strong>Eksiği:</strong> kısa ömür; "Amiga Profesyonel" adlı eki hiçbir taramada yok.</p>
+
+  <h3>Amiga Dergisi (1993–1994) — 6,5/10</h3>
+  <p>A1200 dönemine ait 12 sayının tamamı; 6, 7 ve 9. sayılar ve 8. sayının eksik sayfaları Internet Archive'daki taramalardan geldi. Sayfaların üçte biri reklam (%33); bu, bir arşiv için kusur değil, bilgi: 1993'te İstanbul'da Amiga satan dükkânlar, hızlandırıcı kartlar ve fiyatlar burada. Süslü başlıklar Tesseract'ı en çok zorlayanlardan oldu (OCR güveni %89,6); yazı başlıklarını Claude Haiku sayfa görüntülerinden okudu. Taramaların çoğu orta çözünürlükte (900 piksel civarı); Internet Archive'dan gelen dört sayının taraması bunun iki buçuk katı.</p>
+  <p><strong>En iyi olduğu iş:</strong> 1993–94 Türkiye Amiga piyasası ve ilanları; dönemin oyun incelemeleri (153), demo sahnesi (33) ve FRP köşesi. <strong>Eksiği:</strong> çoğu sayıda düşük çözünürlük; 9. sayının NEWZAP sayfaları hiçbir kopyada yok.</p>
 
   <h3>MegAmiga (1995) — 6,5/10</h3>
-  <p>Yedi sayılık, sayı başına 39 sayfalık, neredeyse reklamsız (%2) bir dergi; tonu fanzine yakın: "Kommodor Abi", "Vindovz'95" gibi köşelerde mizah, okur mektupları ve topluluk sesi öne çıkıyor. Yazarların çoğu imzasız. Üç sayının taraması çok iyi (3.200 piksel), diğerleri orta.</p>
+  <p>Yedi sayılık, sayı başına 39 sayfalık, neredeyse reklamsız (%2) bir dergi; tonu fanzine yakın: "Kommodor Abi", "Vindovz'95" gibi köşelerde mizah, okur mektupları ve topluluk sesi öne çıkıyor. Yazıların %60'ı imzalı. Dört sayının taraması çok iyi, diğerleri orta; 2. sayının iki kat keskin taraması ve eksik son sayfası Internet Archive'dan geldi.</p>
   <p><strong>En iyi olduğu iş:</strong> Amiga'nın Türkiye'deki son döneminin havası: PC'nin yükselişine karşı direnen bir topluluğun dili ve mizahı. <strong>Eksiği:</strong> kısa ömür ve az sayfa; teknik derinlik sınırlı.</p>
 
   <h3>C64 Türkiye (2002–2005) — 8,5/10</h3>
-  <p>Diğerlerinden farklı: İsmail "Hades" Şahin'in internetten dağıttığı, dijital olarak hazırlanmış bir fanzin. Metin doğrudan PDF'ten geldiği için OCR hatası yok, reklam yok; sayfa başına bilgi yoğunluğu arşivin en yükseği. Yazıların yarısı makine dili (33) ve programlama teknikleri (25); 23 program dökümü satır satır doğrulanıp çalıştırılabilir .prg olarak sunuluyor. Küçük (8 sayı, 190 sayfa) ama dört dörtlük.</p>
+  <p>Diğerlerinden farklı: İsmail "Hades" Şahin'in internetten dağıttığı, dijital olarak hazırlanmış bir fanzin. Metin doğrudan PDF'ten geldiği için OCR hatası yok, reklam yok; sayfa başına bilgi yoğunluğu arşivin en yükseği. Yazıların yarısı makine dili (33) ve programlama teknikleri (26); 23 program dökümü satır satır doğrulanıp çalıştırılabilir .prg olarak sunuluyor. Küçük (8 sayı, 190 sayfa) ama dört dörtlük.</p>
   <p><strong>En iyi olduğu iş:</strong> 6502 makine dili öğrenmek, demo efektleri, 2000'lerdeki Türk C64 sahnesi; yazıları okuyup programları VICE'ta hemen denemek. <strong>Eksiği:</strong> kapsamı dar ve kısa.</p>
-
+{% if "matematik-dunyasi" in here %}
+  <h3>Matematik Dünyası (1991–2002) — 8/10</h3>
+  <p>Elimizde 45 sayı, 1.571 sayfa ve 465 yazı. Problem bölümleri ve çözümleri (169 yazı), geometri (113), sayılar ve cebir (108), matematik eğitimi (60), analiz (52) ve matematik tarihi (42) ağırlıkta; yazıların %70'i imzalı. 1993–2002 sayıları derginin kendi PDF arşivinden geldiği için temiz. Formüller OCR'ın en zayıf olduğu yer: Düzeltme modeline formüllere dokunmaması söylendi, düzeltme oranı da bu yüzden en düşük (%35); denklemleri düz metinde okumak zor, asıl sayfaya bakın.</p>
+  <p><strong>En iyi olduğu iş:</strong> Lise ve üniversite düzeyinde problem çözmek; olimpiyat hazırlığı; Türkçe matematik yazısının nasıl yazılacağına örnekler. <strong>Eksiği:</strong> 1993'ün 2–5., 1995'in 4–5. sayıları, 1997'nin tamamı ve 1999'un ilk dört sayısı elimizde yok; metindeki formüller güvenilmez.</p>
+{% endif %}{% if "laneth" in here %}
+  <h3>Laneth (1991–1994) — metin 6/10, belge değeri 9/10</h3>
+  <p>Elden ele ve postayla dolaşan bir heavy metal fanzini; 31 sayının tamamı (26–27 tek bir çift sayı), 1.254 sayfa ve 761 yazı. Daktiloyla yazılmış, elle çizilmiş, kesip yapıştırılmış sayfalar OCR'ı arşivde en çok zorlayan kaynak oldu (OCR güveni %88,2); hiç metin bulunamayan kolaj sayfalarını Apple Vision ile baştan okuttum. İçerikte haberler (427 yazı), Türk sahnesi (316), grup tarihçeleri (268), röportajlar (232) ve albüm ve demo incelemeleri (164) öne çıkıyor.</p>
+  <p><strong>En iyi olduğu iş:</strong> 90'ların başında Türkiye'de metal ve yeraltı sahnesi: demolar, ilk konserler, grupların kendi ağzından hikâyeleri, mektuplarla örülen bir topluluk. <strong>Eksiği:</strong> sayfa süslerinden gelen OCR kırıntıları bazı yazıların başında kalıyor; el yazısı başlıkların bir kısmı yanlış okunmuş olabilir.</p>
+{% endif %}
   <h3>Bir bütün olarak</h3>
-  <p>Bir konuyu araştıracaksanız Commodore'dan başlayın; bir oyunu bitirmek istiyorsanız 64'ler'e, Amiga'da bir programı öğrenmek istiyorsanız Amiga Dünyası'na, makine dili öğrenmek istiyorsanız C64 Türkiye'ye bakın. Amiga Dergisi ve MegAmiga ise 90'ların ortasında bu dünyanın nasıl sona erdiğini en iyi anlatan iki kaynak. Hangisini okursanız okuyun, metindeki tuhaf bir kelimede asıl sayfaya bakın: makineler iyi okudu ama kusursuz değil.</p>
+  <p>Bir konuyu araştıracaksanız Commodore'dan başlayın; bir oyunu bitirmek istiyorsanız 64'ler'e, Amiga'da bir programı öğrenmek istiyorsanız Amiga Dünyası'na, makine dili öğrenmek istiyorsanız C64 Türkiye'ye bakın. Commodore Amiga, Amiga'nın Türkiye'de ciddi bir bilgisayar olarak kabul görmeye çalıştığı 1992'yi; Amiga Dergisi ve MegAmiga ise 90'ların ortasında bu dünyanın nasıl sona erdiğini en iyi anlatan kaynaklar.{% if "matematik-dunyasi" in here %} Matematik Dünyası bir problemle uğraşmak isteyen herkes için;{% endif %}{% if "laneth" in here %} Laneth ise Türk metal sahnesinin doğduğu yılların ilk elden belgesi.{% endif %} Hangisini okursanız okuyun, metindeki tuhaf bir kelimede asıl sayfaya bakın: makineler iyi okudu ama kusursuz değil.</p>
 
   <h2>Hak sahipleri ve eksik sayılar</h2>
   <p>Dergilerin hakları yayıncılarına ve yazarlarına aittir. Bir sayının kaldırılmasını istiyorsanız ya da elinizde eksik sayıların taraması varsa bize yazın: <a href="mailto:contact@coze.org">contact@coze.org</a>.</p>
   <h2>Teşekkürler</h2>
-  <p>Bu sayıları yıllar önce tarayıp paylaşan herkese.</p>
+  <p>Bu sayıları yıllar önce tarayıp paylaşan herkese. Amiga Dünyası'nın yeniden dizilmiş sayıları haydar_abi'nin emeği. Commodore Amiga'nın taramaları retrojen.org'dan (blackturk ve Gökhan Özkan), MegAmiga'nınkiler Çizgi Diyarı'ndan (murtaza5) ve retrojen.org'dan (Gökhan Özkan); bunları ve Amiga Dergisi'nin eksik sayılarını <a href="https://archive.org/">Internet Archive</a>'a yükleyenlere ayrıca teşekkürler. C64 Türkiye, İsmail "Hades" Şahin'in kendi yayımladığı PDF'lerden.{% if "laneth" in here %} Laneth taramaları, Çağlan Tekil'in dostlarının açtığı <a href="https://lanethdergisi.com/">Laneth arşivinden</a>.{% endif %}{% if "matematik-dunyasi" in here %} Matematik Dünyası'nın 1993–2002 sayıları derginin kendi <a href="https://www.matematikdunyasi.org/pdf-arsiv/">PDF arşivinden</a>.{% endif %}</p>
 </article>
 {% endblock %}

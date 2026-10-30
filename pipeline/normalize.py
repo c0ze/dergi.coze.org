@@ -34,7 +34,7 @@ THUMB_HEIGHT = 320
 # A page with fewer extractable characters than this is treated as a scan.
 MIN_TEXT_CHARS = 200
 
-NAME_RE = re.compile(r" - (\d+)(?: \((\d{2})-(\d{4})\))?\.pdf$", re.I)
+NAME_RE = re.compile(r" - (\d+)(?: \((?:(\d{2})-)?(\d{4})\))?\.pdf$", re.I)  # "(MM-YYYY)" or "(YYYY)"
 
 # Turkish text set in fonts that use the Windows-1252 layout instead of Windows-1254
 # comes out with Icelandic letters in their place. None of these occur in Turkish.
@@ -46,7 +46,7 @@ def parse_name(path: Path) -> tuple[int, str | None]:
     if not m:
         raise SystemExit(f"cannot parse issue number from {path.name!r}")
     number, month, year = m.groups()
-    return int(number), (f"{year}-{month}" if year else None)
+    return int(number), (f"{year}-{month}" if month else year)
 
 
 

@@ -1,0 +1,300 @@
+1:
+  date: 1991-05
+  chosen:
+    path: data/sources/laneth/web/Laneth01
+    kind: jpg
+    pages: 30
+    px: 2284
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: 1991-06
+  chosen:
+    path: data/sources/laneth/web/Laneth02
+    kind: jpg
+    pages: 30
+    px: 2284
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: 1991-07
+  chosen:
+    path: data/sources/laneth/web/Laneth03
+    kind: jpg
+    pages: 34
+    px: 1432
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: 1991-08
+  chosen:
+    path: data/sources/laneth/web/Laneth04
+    kind: jpg
+    pages: 32
+    px: 1397
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: 1991-09
+  chosen:
+    path: data/sources/laneth/web/Laneth05
+    kind: jpg
+    pages: 32
+    px: 1365
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: 1991-10
+  chosen:
+    path: data/sources/laneth/web/Laneth06
+    kind: jpg
+    pages: 32
+    px: 1371
+  supplements: []
+  alternatives: []
+  extras: []
+7:
+  date: 1991-11
+  chosen:
+    path: data/sources/laneth/web/Laneth07
+    kind: jpg
+    pages: 32
+    px: 1392
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: 1991-12
+  chosen:
+    path: data/sources/laneth/web/Laneth08
+    kind: jpg
+    pages: 32
+    px: 1383
+  supplements: []
+  alternatives: []
+  extras: []
+9:
+  date: 1992-01
+  chosen:
+    path: data/sources/laneth/web/Laneth09
+    kind: jpg
+    pages: 32
+    px: 1348
+  supplements: []
+  alternatives: []
+  extras: []
+10:
+  date: 1992-02
+  chosen:
+    path: data/sources/laneth/web/Laneth10
+    kind: jpg
+    pages: 32
+    px: 1333
+  supplements: []
+  alternatives: []
+  extras: []
+11:
+  date: 1992-03
+  chosen:
+    path: data/sources/laneth/web/Laneth11
+    kind: jpg
+    pages: 36
+    px: 1378
+  supplements: []
+  alternatives: []
+  extras: []
+12:
+  date: 1992-04
+  chosen:
+    path: data/sources/laneth/web/Laneth12
+    kind: jpg
+    pages: 36
+    px: 1362
+  supplements: []
+  alternatives: []
+  extras: []
+13:
+  date: 1992-05
+  chosen:
+    path: data/sources/laneth/web/Laneth13
+    kind: jpg
+    pages: 36
+    px: 1383
+  supplements: []
+  alternatives: []
+  extras: []
+14:
+  date: 1992-06
+  chosen:
+    path: data/sources/laneth/web/Laneth14
+    kind: jpg
+    pages: 36
+    px: 1387
+  supplements: []
+  alternatives: []
+  extras: []
+15:
+  date: 1992-07
+  chosen:
+    path: data/sources/laneth/web/Laneth15
+    kind: jpg
+    pages: 36
+    px: 1391
+  supplements: []
+  alternatives: []
+  extras: []
+16:
+  date: 1992-08
+  chosen:
+    path: data/sources/laneth/web/Laneth16
+    kind: jpg
+    pages: 36
+    px: 1414
+  supplements: []
+  alternatives: []
+  extras: []
+17:
+  date: 1992-09
+  chosen:
+    path: data/sources/laneth/web/Laneth17
+    kind: jpg
+    pages: 36
+    px: 1393
+  supplements: []
+  alternatives: []
+  extras: []
+18:
+  date: 1992-10
+  chosen:
+    path: data/sources/laneth/web/Laneth18
+    kind: jpg
+    pages: 52
+    px: 1386
+  supplements: []
+  alternatives: []
+  extras: []
+19:
+  date: 1992-11
+  chosen:
+    path: data/sources/laneth/web/Laneth19
+    kind: jpg
+    pages: 52
+    px: 1361
+  supplements: []
+  alternatives: []
+  extras: []
+20:
+  date: 1992-12
+  chosen:
+    path: data/sources/laneth/web/Laneth20
+    kind: jpg
+    pages: 52
+    px: 1382
+  supplements: []
+  alternatives: []
+  extras: []
+21:
+  date: 1993-01
+  chosen:
+    path: data/sources/laneth/web/Laneth21
+    kind: jpg
+    pages: 46
+    px: 1361
+  supplements: []
+  alternatives: []
+  extras: []
+22:
+  date: 1993-02
+  chosen:
+    path: data/sources/laneth/web/Laneth22
+    kind: jpg
+    pages: 52
+    px: 1380
+  supplements: []
+  alternatives: []
+  extras: []
+23:
+  date: 1993-03
+  chosen:
+    path: data/sources/laneth/web/Laneth23
+    kind: jpg
+    pages: 52
+    px: 1382
+  supplements: []
+  alternatives: []
+  extras: []
+24:
+  date: 1993-04
+  chosen:
+    path: data/sources/laneth/web/Laneth24
+    kind: jpg
+    pages: 52
+    px: 1383
+  supplements: []
+  alternatives: []
+  extras: []
+25:
+  date: 1993-05
+  chosen:
+    path: data/sources/laneth/web/Laneth25
+    kind: jpg
+    pages: 50
+    px: 1349
+  supplements: []
+  alternatives: []
+  extras: []
+26:
+  date: 1993-06
+  chosen:
+    path: data/sources/laneth/web/Laneth26-27
+    kind: jpg
+    pages: 68
+    px: 1394
+  supplements: []
+  alternatives: []
+  extras: []
+28:
+  date: 1993-08
+  chosen:
+    path: data/sources/laneth/web/Laneth28
+    kind: jpg
+    pages: 52
+    px: 1393
+  supplements: []
+  alternatives: []
+  extras: []
+29:
+  date: '1993'
+  chosen:
+    path: data/sources/laneth/web/Laneth29
+    kind: jpg
+    pages: 52
+    px: 1365
+  supplements: []
+  alternatives: []
+  extras: []
+30:
+  date: 1994-07
+  chosen:
+    path: data/sources/laneth/web/Laneth30
+    kind: jpg
+    pages: 52
+    px: 1372
+  supplements: []
+  alternatives: []
+  extras: []
+31:
+  date: 1994-10
+  chosen:
+    path: data/sources/laneth/web/Laneth31
+    kind: jpg
+    pages: 52
+    px: 1480
+  supplements: []
+  alternatives: []
+  extras: []

@@ -1,0 +1,450 @@
+1:
+  date: '1991'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1991_1.pdf
+    kind: pdf
+    pages: 30
+    px: 1624
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: '1991'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1991_2.pdf
+    kind: pdf
+    pages: 36
+    px: 1643
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: '1991'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1991_3.pdf
+    kind: pdf
+    pages: 32
+    px: 1655
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: '1991'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1991_4.pdf
+    kind: pdf
+    pages: 32
+    px: 1614
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: '1991'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1992_5_I.pdf
+    kind: pdf
+    pages: 33
+    px: 1608
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: '1992'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1992_1.pdf
+    kind: pdf
+    pages: 32
+    px: 1625
+  supplements: []
+  alternatives: []
+  extras: []
+7:
+  date: '1992'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1992_2.pdf
+    kind: pdf
+    pages: 31
+    px: 1727
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: '1992'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1992_3.pdf
+    kind: pdf
+    pages: 29
+    px: 1608
+  supplements: []
+  alternatives: []
+  extras: []
+9:
+  date: '1992'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1992_4.pdf
+    kind: pdf
+    pages: 32
+    px: 1609
+  supplements: []
+  alternatives: []
+  extras: []
+10:
+  date: '1992'
+  chosen:
+    path: data/sources/matematik-dunyasi/nas/1992_5_II.pdf
+    kind: pdf
+    pages: 33
+    px: 1607
+  supplements: []
+  alternatives: []
+  extras: []
+11:
+  date: '1993'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1993-1.pdf
+    kind: pdf
+    pages: 36
+    px: 2891
+  supplements: []
+  alternatives: []
+  extras: []
+12:
+  date: '1994'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1994-1.pdf
+    kind: pdf
+    pages: 36
+    px: 2789
+  supplements: []
+  alternatives: []
+  extras: []
+13:
+  date: '1994'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1994-2.pdf
+    kind: pdf
+    pages: 36
+    px: 2995
+  supplements: []
+  alternatives: []
+  extras: []
+14:
+  date: '1994'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1994-3.pdf
+    kind: pdf
+    pages: 36
+    px: 2878
+  supplements: []
+  alternatives: []
+  extras: []
+15:
+  date: '1994'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1994-4.pdf
+    kind: pdf
+    pages: 36
+    px: 2600
+  supplements: []
+  alternatives: []
+  extras: []
+16:
+  date: '1994'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1994-5.pdf
+    kind: pdf
+    pages: 36
+    px: 2882
+  supplements: []
+  alternatives: []
+  extras: []
+17:
+  date: '1995'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1995-1.pdf
+    kind: pdf
+    pages: 36
+    px: 2905
+  supplements: []
+  alternatives: []
+  extras: []
+18:
+  date: '1995'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1995-2.pdf
+    kind: pdf
+    pages: 36
+    px: 2935
+  supplements: []
+  alternatives: []
+  extras: []
+19:
+  date: '1995'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1995-3.pdf
+    kind: pdf
+    pages: 36
+    px: 2912
+  supplements: []
+  alternatives: []
+  extras: []
+20:
+  date: '1996'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1996-1.pdf
+    kind: pdf
+    pages: 36
+    px: 2931
+  supplements: []
+  alternatives: []
+  extras: []
+21:
+  date: '1996'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1996-2.pdf
+    kind: pdf
+    pages: 36
+    px: 2980
+  supplements: []
+  alternatives: []
+  extras: []
+22:
+  date: '1996'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1996-3.pdf
+    kind: pdf
+    pages: 36
+    px: 2648
+  supplements: []
+  alternatives: []
+  extras: []
+23:
+  date: '1996'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1996-4.pdf
+    kind: pdf
+    pages: 36
+    px: 2828
+  supplements: []
+  alternatives: []
+  extras: []
+24:
+  date: '1996'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1996-5.pdf
+    kind: pdf
+    pages: 36
+    px: 2924
+  supplements: []
+  alternatives: []
+  extras: []
+25:
+  date: '1998'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1998-1.pdf
+    kind: pdf
+    pages: 36
+    px: 2793
+  supplements: []
+  alternatives: []
+  extras: []
+26:
+  date: '1998'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1998-2.pdf
+    kind: pdf
+    pages: 36
+    px: 2833
+  supplements: []
+  alternatives: []
+  extras: []
+27:
+  date: '1998'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1998-3.pdf
+    kind: pdf
+    pages: 36
+    px: 2601
+  supplements: []
+  alternatives: []
+  extras: []
+28:
+  date: '1998'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1998-4.pdf
+    kind: pdf
+    pages: 36
+    px: 2814
+  supplements: []
+  alternatives: []
+  extras: []
+29:
+  date: '1998'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1998-5.pdf
+    kind: pdf
+    pages: 36
+    px: 2924
+  supplements: []
+  alternatives: []
+  extras: []
+30:
+  date: '1999'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/1999-5.pdf
+    kind: pdf
+    pages: 34
+    px: 2772
+  supplements: []
+  alternatives: []
+  extras: []
+31:
+  date: '2000'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2000-1.pdf
+    kind: pdf
+    pages: 36
+    px: 2928
+  supplements: []
+  alternatives: []
+  extras: []
+32:
+  date: '2000'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2000-2.pdf
+    kind: pdf
+    pages: 36
+    px: 2844
+  supplements: []
+  alternatives: []
+  extras: []
+33:
+  date: '2000'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2000-3.pdf
+    kind: pdf
+    pages: 36
+    px: 2898
+  supplements: []
+  alternatives: []
+  extras: []
+34:
+  date: '2000'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2000-4.pdf
+    kind: pdf
+    pages: 36
+    px: 2956
+  supplements: []
+  alternatives: []
+  extras: []
+35:
+  date: '2000'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2000-5.pdf
+    kind: pdf
+    pages: 36
+    px: 2725
+  supplements: []
+  alternatives: []
+  extras: []
+36:
+  date: '2001'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2001-1.pdf
+    kind: pdf
+    pages: 36
+    px: 3233
+  supplements: []
+  alternatives: []
+  extras: []
+37:
+  date: '2001'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2001-2.pdf
+    kind: pdf
+    pages: 36
+    px: 3007
+  supplements: []
+  alternatives: []
+  extras: []
+38:
+  date: '2001'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2001-3.pdf
+    kind: pdf
+    pages: 36
+    px: 2962
+  supplements: []
+  alternatives: []
+  extras: []
+39:
+  date: '2001'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2001-4.pdf
+    kind: pdf
+    pages: 36
+    px: 2753
+  supplements: []
+  alternatives: []
+  extras: []
+40:
+  date: '2001'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2001-5.pdf
+    kind: pdf
+    pages: 36
+    px: 2994
+  supplements: []
+  alternatives: []
+  extras: []
+41:
+  date: '2002'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2002-1.pdf
+    kind: pdf
+    pages: 34
+    px: 3223
+  supplements: []
+  alternatives: []
+  extras: []
+42:
+  date: '2002'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2002-2.pdf
+    kind: pdf
+    pages: 36
+    px: 3283
+  supplements: []
+  alternatives: []
+  extras: []
+43:
+  date: '2002'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2002-3.pdf
+    kind: pdf
+    pages: 36
+    px: 2722
+  supplements: []
+  alternatives: []
+  extras: []
+44:
+  date: '2002'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2002-4.pdf
+    kind: pdf
+    pages: 36
+    px: 3139
+  supplements: []
+  alternatives: []
+  extras: []
+45:
+  date: '2002'
+  chosen:
+    path: data/sources/matematik-dunyasi/web/2002-5.pdf
+    kind: pdf
+    pages: 36
+    px: 3240
+  supplements: []
+  alternatives: []
+  extras: []

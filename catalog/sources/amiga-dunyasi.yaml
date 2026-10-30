@@ -142,6 +142,9 @@
   supplements: []
   alternatives: []
   extras: []
+  inserted:
+  - data/sources/ia/dergi-amiga-dunyasi/Amiga-Dunyasi-012-1991.cbr pages 36-37 after
+    page 35
 13:
   date: 1991-06
   chosen:

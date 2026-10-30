@@ -1,8 +1,10 @@
-# Turkish Commodore/Amiga magazines. English titles are out of scope.
+# Turkish magazines, grouped into corpora (catalog/corpora.yaml). English titles are archive-only.
 # `issues` is the known run. `note` is internal; `aciklama` is the public Turkish description.
+# `private: true` keeps a title off the public site, search API and MCP (private site only).
 
 - slug: commodore-haberler
   name: Commodore Haberler
+  corpus: retro
   publisher: Teleteknik A.Ş.
   years: 1985-1986
   issues: [1, 2, 3, 4, 5, 6, 7, 8]
@@ -10,6 +12,7 @@
 
 - slug: commodore
   name: Commodore
+  corpus: retro
   publisher: Teleteknik A.Ş.
   years: 1986-1992
   issues: {from: 1, to: 79}
@@ -20,6 +23,7 @@
 
 - slug: 64ler
   name: 64'ler
+  corpus: retro
   publisher: Safa Tanıtım Hizmetleri
   years: 1988-1992
   issues: {from: 1, to: 52}
@@ -34,11 +38,13 @@
 
 - slug: commodore-bilgisayar-magazin
   name: Commodore Bilgisayar Magazin
+  corpus: retro
   years: 1991
   issues: unknown
 
 - slug: amiga-dunyasi
   name: Amiga Dünyası
+  corpus: retro
   publisher: Biyat Bilgisayar Yayıncılık
   years: 1990-1992
   issues: {from: 1, to: 31}
@@ -46,8 +52,20 @@
     1990–1992 arasında çıkan aylık Amiga dergisi. Oyun tanıtımları, ipuçları, program ve donanım yazıları.
     Çoğu sayı, dergiden yeniden dizilmiş (OCR ile yazıya dökülmüş) sürümlerden geliyor.
 
+- slug: commodore-amiga
+  name: Commodore Amiga
+  corpus: retro
+  years: 1992
+  issues: {from: 1, to: 9}
+  note: >-
+    All 9 issues (Jan-Sep 1992) from archive.org/details/commodore-amiga, added Oct 2026 and
+    public since 2026-10-30. Its supplement Amiga Profesyonel is not in the scans.
+  aciklama: >-
+    1992'de dokuz sayı çıkan aylık Amiga dergisi.
+
 - slug: amiga-dergisi
   name: Amiga Dergisi
+  corpus: retro
   publisher: Moda Bilgisayar Sistemleri
   years: 1993-1994
   issues: {from: 1, to: 12}
@@ -57,6 +75,7 @@
 
 - slug: megamiga
   name: MegAmiga
+  corpus: retro
   years: 1995
   issues: {from: 0, to: 6}
   aciklama: >-
@@ -64,15 +83,18 @@
 
 - slug: amiga-show
   name: Amiga Show
+  corpus: retro
   years: 1996
   issues: [1, 2]
 
 - slug: amigalife
   name: AmigaLife
+  corpus: retro
   issues: unknown
 
 - slug: c64-turkiye
   name: C64 Türkiye
+  corpus: retro
   publisher: İsmail "Hades" Şahin (fanzine)
   years: 2002-2005
   issues: {from: 1, to: 8}
@@ -84,6 +106,7 @@
 
 - slug: egitimde-bilgisayar
   name: Eğitimde Bilgisayar
+  corpus: retro
   years: 1985-1987
   issues: unknown
   note: >-
@@ -92,5 +115,39 @@
 
 - slug: palladium
   name: Palladium
+  corpus: retro
   format: C64 disk magazine (D64)
   issues: unknown
+
+- slug: matematik-dunyasi
+  name: Matematik Dünyası
+  private: true  # waiting for the rights holder's permission: only on the private site
+  corpus: bilim
+  years: 1991-2002
+  issues: unknown
+  note: >-
+    1–10 from the NAS (books/zines/Matematik Dunyasi): files 1991_1–4 and 1992_1–5_II. 1992_5_I is
+    really 1991 issue 5 (its articles match matematikdunyasi.org's 1991-5), so 1–5 are 1991-1…5
+    and 6–10 are 1992-1…5. 11–45 are the magazine's own PDF archive (matematikdunyasi.org/pdf-arsiv,
+    1993-1 … 2002-5; it has no 1997 and only some of 1993, 1995 and 1999), numbered on in date order.
+    Five issues a year; the scans give no months, so issues are dated by year.
+  aciklama: >-
+    1991–2002 sayıları: geometri, sayılar, kümeler ve mantık, matematik tarihi, problemler; arada
+    bilimkurgu öyküleri.
+
+- slug: laneth
+  name: Laneth
+  private: true  # waiting for the rights holder's permission: only on the private site
+  corpus: metal
+  publisher: fanzin (İstanbul)
+  years: 1991-1994
+  issues: 31
+  note: >-
+    All 31 issues from lanethdergisi.com (the archive Çağlan Tekil's friends put online in March
+    2026), single pages; 26-27 is one double issue (Haziran-Temmuz 93), listed as 26. Monthly from
+    May 1991 to 28 (Ağustos 93) on the covers; 29 has no date (its editorial looks back on '93),
+    30 = Temmuz 94, 31 = Ekim 94. The earlier TAMG scans of 1–9 on the NAS are no longer used.
+  aciklama: >-
+    İstanbul'da çıkan bir metal fanzini: grup röportajları, albüm ve demo incelemeleri, yerli ve
+    yabancı sahneden haberler. "Türkiye'nin en az satan müzik dergisi" 1991–1994 arasında 31 sayı
+    çıktı. Taramalar lanethdergisi.com arşivinden.

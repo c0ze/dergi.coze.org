@@ -20,17 +20,19 @@ let rest = [];            // keyword results beyond FUSE, loaded on demand
 let shown = 0;
 let token = 0;
 
-// Filter menus from the index ("dergi" and "yıl" are set on every article page).
+// Filter menus from the index ("koleksiyon", "dergi" and "yıl" are set on every article page).
 const filters = await pagefind.filters();
 const fill = (select, values, numeric) => {
   const keys = Object.keys(values || {}).sort((a, b) => (numeric ? a - b : a.localeCompare(b, "tr")));
   for (const k of keys) select.append(new Option(`${k} (${values[k]})`, k));
 };
+fill(form.koleksiyon, filters["koleksiyon"]);
 fill(form.dergi, filters["dergi"]);
 fill(form.yil, filters["yıl"], true);
 
 const params = new URLSearchParams(location.search);
 input.value = params.get("q") || "";
+form.koleksiyon.value = params.get("koleksiyon") || "";
 form.dergi.value = params.get("dergi") || "";
 form.yil.value = params.get("yil") || "";
 
@@ -59,6 +61,7 @@ const data = (r) => r.data().catch(() => r.data());
 
 async function meaning(q, chosen) {
   const url = new URLSearchParams({ q, limit: "25" });
+  if (chosen["koleksiyon"]) url.set("koleksiyon", chosen["koleksiyon"]);
   if (chosen["dergi"]) url.set("dergi", chosen["dergi"]);
   if (chosen["yıl"]) url.set("yil", chosen["yıl"]);
   try {
@@ -97,10 +100,12 @@ async function showMore() {
 async function run() {
   const q = input.value.trim();
   const chosen = {};
+  if (form.koleksiyon.value) chosen["koleksiyon"] = form.koleksiyon.value;
   if (form.dergi.value) chosen["dergi"] = form.dergi.value;
   if (form.yil.value) chosen["yıl"] = form.yil.value;
   const url = new URLSearchParams();
   if (q) url.set("q", q);
+  if (form.koleksiyon.value) url.set("koleksiyon", form.koleksiyon.value);
   if (form.dergi.value) url.set("dergi", form.dergi.value);
   if (form.yil.value) url.set("yil", form.yil.value);
   history.replaceState(null, "", `?${url}`);
@@ -129,8 +134,9 @@ async function run() {
 
 form.addEventListener("submit", (e) => { e.preventDefault(); run(); });
 input.addEventListener("input", run);
+form.koleksiyon.addEventListener("change", run);
 form.dergi.addEventListener("change", run);
 form.yil.addEventListener("change", run);
 more.addEventListener("click", showMore);
-if (input.value || form.dergi.value || form.yil.value) run();
+if (input.value || form.koleksiyon.value || form.dergi.value || form.yil.value) run();
 input.focus();

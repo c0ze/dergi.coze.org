@@ -21,6 +21,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import requests
+import yaml
 from rapidfuzz.distance import Levenshtein
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -33,7 +34,7 @@ MAX_CHANGE = 0.20
 BATCH = 20
 URL = "https://aiplatform.googleapis.com/v1/projects/dergi-coze-org/locations/global/publishers/google/models/{model}:generateContent"
 
-INSTRUCTIONS = """You proofread text from Turkish computer magazines (1985–2005) that was read by OCR.
+RETRO = """You proofread text from Turkish computer magazines (1985–2005) that was read by OCR.
 You get a JSON array of text pieces from one article. Return a JSON array of the same length,
 each piece corrected:
 - Fix OCR errors: wrong or missing Turkish letters (ı/i, ş/s, ğ/g, ü/u, ö/o, ç/c, İ/I),
@@ -46,6 +47,31 @@ each piece corrected:
   (e.g. "TURRIİCAN" → "TURRICAN").
 - Keep the original capitalisation style (an all-caps title stays all caps).
 - If a piece is unreadable noise, return it unchanged."""
+
+COMMON = """
+You get a JSON array of text pieces from one article. Return a JSON array of the same length,
+each piece corrected:
+- Fix OCR errors: wrong or missing Turkish letters (ı/i, ş/s, ğ/g, ü/u, ö/o, ç/c, İ/I),
+  confused characters (0/O, 1/l/I, rn/m), words split or joined wrongly, line-break hyphens.
+- Do NOT rephrase, shorten, translate, reorder or add anything. Keep the author's words.
+- Keep the original capitalisation style (an all-caps title stays all caps).
+- If a piece is unreadable noise, return it unchanged."""
+
+# Per corpus (catalog/corpora.yaml). Retro keeps the wording its corrections were made with.
+INSTRUCTIONS = {
+    "retro": RETRO,
+    "bilim": """You proofread text from Turkish science and mathematics magazines (1990s) that was read by OCR.""" + COMMON + """
+- Fix obvious spelling mistakes to standard Turkish (TDK) spelling.
+- Keep mathematical notation exactly: formulas, variables, symbols, sets, intervals, indices,
+  numbers and units. Never "correct" mathematics, only letters garbled by OCR in plain words.
+- Keep people's names and foreign terms as written.""",
+    "metal": """You proofread text from a Turkish heavy metal fanzine (early 1990s, typewritten) that was read by OCR.""" + COMMON + """
+- Fix only clear OCR damage and obvious typos. The fanzine writes informally: keep its slang,
+  exclamations, swearing, playful spellings and English words as they are.
+- Keep band, album, song, label and place names exactly, as well as English lyrics and English
+  sentences, except obvious OCR damage (e.g. "MEGADETII" → "MEGADETH").
+- Keep addresses, PK (post box) numbers, prices and dates exactly.""",
+}
 
 
 _TOKEN = {"value": "", "at": 0.0}
@@ -64,9 +90,9 @@ def key(model: str, text: str) -> str:
     return hashlib.sha1(f"{model}\0{text}".encode()).hexdigest()
 
 
-def ask(model: str, pieces: list[str], tok: str) -> list[str] | None:
+def ask(model: str, pieces: list[str], tok: str, corpus: str = "retro") -> list[str] | None:
     body = {
-        "systemInstruction": {"parts": [{"text": INSTRUCTIONS}]},
+        "systemInstruction": {"parts": [{"text": INSTRUCTIONS[corpus]}]},
         "contents": [{"role": "user", "parts": [{"text": json.dumps(pieces, ensure_ascii=False)}]}],
         "generationConfig": {"temperature": 0, "responseMimeType": "application/json",
                              "responseSchema": {"type": "ARRAY", "items": {"type": "STRING"}}},
@@ -90,7 +116,12 @@ def ask(model: str, pieces: list[str], tok: str) -> list[str] | None:
         if r.status_code in (429, 500, 503):
             time.sleep(min(60, 2 ** attempt))
             continue
-        raise RuntimeError(f"{r.status_code}: {r.text[:300]}")
+        if r.status_code == 400 and attempt < 2:  # seen once, transient: try again
+            time.sleep(2)
+            continue
+        # Anything else: keep this batch's original text (nothing is cached) rather than stop the run.
+        print(f"  ! {r.status_code}: {r.text[:200]}", file=sys.stderr, flush=True)
+        return None
     return None
 
 
@@ -105,14 +136,14 @@ def accept(raw: str, fixed: str) -> bool:
     return change <= MAX_CHANGE and 0.85 <= len(fixed) / max(1, len(raw)) <= 1.15
 
 
-def correct_pieces(model: str, pieces: list[str], tok: str) -> list[str]:
+def correct_pieces(model: str, pieces: list[str], tok: str, corpus: str = "retro") -> list[str]:
     """Corrected pieces (cached); a rejected or failed correction keeps the original."""
     CACHE.mkdir(parents=True, exist_ok=True)
     out = list(pieces)
     todo = [i for i, p in enumerate(pieces) if read_json(CACHE / f"{key(model, p)}.json") is None]
     for start in range(0, len(todo), BATCH):
         idx = todo[start:start + BATCH]
-        fixed = ask(model, [pieces[i] for i in idx], tok)
+        fixed = ask(model, [pieces[i] for i in idx], tok, corpus)
         for n, i in enumerate(idx):
             f = fixed[n] if fixed else pieces[i]
             ok = accept(pieces[i], f)
@@ -123,7 +154,13 @@ def correct_pieces(model: str, pieces: list[str], tok: str) -> list[str]:
     return out
 
 
+def corpus_of(slug: str) -> str:
+    titles = yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())
+    return next((t.get("corpus", "retro") for t in titles if t["slug"] == slug), "retro")
+
+
 def correct_issue(issue: str, model: str, tok: str) -> tuple[int, int]:
+    corpus = corpus_of(issue.split("/")[0])
     path = ROOT / "data" / "issues" / issue / "articles.json"
     articles = read_json(path) or []
     changed = total = 0
@@ -132,7 +169,7 @@ def correct_issue(issue: str, model: str, tok: str) -> tuple[int, int]:
         a["title_raw"] = a.get("title_raw", a["title"])
         items = [x for x in a["body"] if x["type"] in ("p", "h2", "caption") and x.get("text")]
         pieces = [a["title_raw"]] + [x.get("raw", x["text"]) for x in items]
-        fixed = correct_pieces(model, pieces, tok)
+        fixed = correct_pieces(model, pieces, tok, corpus)
         a["title"] = fixed[0]
         for x, f in zip(items, fixed[1:]):
             x["raw"] = x.get("raw", x["text"])

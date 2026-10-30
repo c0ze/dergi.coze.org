@@ -6,7 +6,11 @@
 // (Referrer-Policy strict-origin-when-cross-origin); a page elsewhere, a direct visit or a
 // script without it gets 403. Cross-Origin-Resource-Policy: same-site makes browsers refuse to
 // show the images on other sites even if a Referer were faked. Scans as PDF are never served.
+//
+// The same Worker also serves ozel.dergi.coze.org, the private site behind Cloudflare Access
+// (ozel.js); it shares this bucket and key but reads only its own ozel/ prefix there.
 import { AwsClient } from "aws4fetch";
+import { ozel } from "./ozel.js";
 
 const KEEP = ["content-type", "content-length", "etag", "last-modified"];
 
@@ -20,8 +24,11 @@ function deny(status, text) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.hostname === env.PRIVATE_HOST) return ozel(request, env, ctx);
     if (request.method !== "GET" && request.method !== "HEAD") return deny(405, "Method not allowed");
-    if (!url.pathname.startsWith("/i/") || url.pathname.toLowerCase().endsWith(".pdf")) return deny(404, "Not found");
+    if (!url.pathname.startsWith("/i/") || url.pathname.includes("..") || url.pathname.toLowerCase().endsWith(".pdf")) {
+      return deny(404, "Not found");
+    }
 
     let origin = "";
     try {

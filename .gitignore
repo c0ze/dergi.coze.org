@@ -11,3 +11,4 @@ node_modules/
 *.p8
 *-key.json
 .wrangler/
+firebase-debug.log

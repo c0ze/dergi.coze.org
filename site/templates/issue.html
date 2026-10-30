@@ -2,7 +2,7 @@
 {% block title %}{{ title.name }} {{ issue.number }}{% if issue.human_date %} ({{ issue.human_date }}){% endif %}{% endblock %}
 {% block description %}{{ title.name }} sayı {{ issue.number }}, {{ issue.human_date }}: {% for a in issue.articles[:6] %}{{ a.title }}{% if not loop.last %}, {% endif %}{% endfor %}{% endblock %}
 {% block main %}
-<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › Sayı {{ issue.number }}</nav>
+<nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.corpus }}/">{{ title.corpus_ad }}</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › Sayı {{ issue.number }}</nav>
 <div class="issue">
   <a class="cover" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/1/">
     <img src="{{ A }}/{{ title.slug }}/{{ issue.nn }}/pages/001.webp" alt="{{ title.name }} sayı {{ issue.number }} kapağı" width="400" height="566">

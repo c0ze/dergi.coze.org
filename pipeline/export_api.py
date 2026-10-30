@@ -49,6 +49,7 @@ def article_text(article: dict, byline: str | None) -> str:
 
 def main() -> None:
     titles = {t["slug"]: t for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())}
+    corpora = {c["slug"]: c for c in yaml.safe_load((ROOT / "catalog" / "corpora.yaml").read_text())}
     tax = taxonomy.collect()
     by_url = {a["url"]: a for a in tax["articles"]}
     topic_names = {k: v["ad"] for k, v in tax["topics"].items()}
@@ -60,8 +61,11 @@ def main() -> None:
             continue
         slug, nn = issue_dir.parent.name, issue_dir.name
         t = titles[slug]
+        if t.get("private"):  # waiting for the rights holder's permission: private site only
+            continue
         mag = magazines.setdefault(slug, {
-            "slug": slug, "name": t["name"], "years": str(t.get("years", "")), "publisher": t.get("publisher"),
+            "slug": slug, "name": t["name"], "corpus": t.get("corpus", "retro"),
+            "years": str(t.get("years", "")), "publisher": t.get("publisher"),
             "description": " ".join(str(t.get("aciklama", "")).split()) or None,
             "url": f"{SITE}/{slug}/", "issues": []})
         mag["issues"].append(meta["number"])
@@ -83,6 +87,7 @@ def main() -> None:
             author = tax["authors"].get(tags.get("author_key")) if tags.get("author_key") else None
             articles[SITE + path] = {
                 "title": a["title"], "magazine": slug, "magazine_name": t["name"], "issue": meta["number"],
+                "corpus": t.get("corpus", "retro"), "bands": tags.get("bands", []),
                 "date": meta.get("date"), "pages": a["pages"],
                 "author": author["name"] if author else a.get("author"),
                 "author_url": f"{SITE}/yazar/{author['slug']}/" if author else None,
@@ -100,16 +105,27 @@ def main() -> None:
         g = games.setdefault(taxonomy.slugify(name), {"name": name, "url": f"{SITE}/oyun/{taxonomy.slugify(name)}/",
                                                       "platforms": {}})
         g["platforms"][taxonomy.PLATFORM_NAMES.get(platform, platform)] = urls(arts)
-    topics = {k: {"name": v["ad"], "about": v["about"], "url": f"{SITE}/konu/{k}/", "articles": urls(v["articles"])}
-              for k, v in tax["topics"].items()}
+    topics = {k: {"name": v["ad"], "about": v["about"], "corpus": v.get("corpus", "retro"), "url": f"{SITE}/konu/{k}/",
+                  "articles": urls(v["articles"])} for k, v in tax["topics"].items()}
+    bands = {k: {"name": b["name"], "url": f"{SITE}/grup/{k}/", "articles": urls(b["articles"])}
+             for k, b in tax["bands"].items()}
+    corpus_list = {k: {"name": c["ad"], "description": c["aciklama"], "url": f"{SITE}/{k}/",
+                       "magazines": [m for m, v in magazines.items() if v["corpus"] == k]}
+                   for k, c in corpora.items()}
+    # Without the private titles some entries have nothing left: leave those out entirely.
+    corpus_list = {k: c for k, c in corpus_list.items() if c["magazines"]}
+    authors = {k: a for k, a in authors.items() if a["articles"]}
+    games = {k: g for k, g in games.items() if any(g["platforms"].values())}
+    bands = {k: b for k, b in bands.items() if b["articles"]}
+    topics = {k: tp for k, tp in topics.items() if tp["articles"] or tp["corpus"] in corpus_list}
 
-    catalog = {"magazines": magazines, "issues": issues, "articles": articles,
-               "authors": authors, "games": games, "topics": topics}
+    catalog = {"corpora": corpus_list, "magazines": magazines, "issues": issues, "articles": articles,
+               "authors": authors, "games": games, "bands": bands, "topics": topics}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     tmp = OUT.with_suffix(".tmp")
     tmp.write_bytes(gzip.compress(json.dumps(catalog, ensure_ascii=False).encode(), 9))
     tmp.replace(OUT)
-    print(f"{len(magazines)} magazines, {len(issues)} issues, {len(articles)} articles, {len(authors)} authors, "
+    print(f"{len(corpus_list)} corpora, {len(bands)} bands, {len(magazines)} magazines, {len(issues)} issues, {len(articles)} articles, {len(authors)} authors, "
           f"{len(games)} games, {len(topics)} topics → {OUT} ({OUT.stat().st_size / 1e6:.1f} MB)")
 
 

@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{% endblock %} · dergi</title>
-<meta name="description" content="{% block description %}Türk retro bilgisayar dergileri arşivi: Commodore, 64'ler, Amiga Dünyası ve diğerleri. İndir, oku, ara.{% endblock %}">
+<meta name="description" content="{% block description %}{% if bands_on %}Türkçe dergi arşivi: retro bilgisayar, bilim ve metal dergileri ve fanzinleri. Oku, ara.{% else %}Türk retro bilgisayar dergileri arşivi: Commodore, 64'ler, Amiga Dünyası ve diğerleri. Oku, ara.{% endif %}{% endblock %}">
+{% if private_build %}<meta name="robots" content="noindex, nofollow">{% endif %}
 <script>try{var t=localStorage.getItem("dergi.theme"),z=localStorage.getItem("dergi.size");if(t&&t!=="auto")document.documentElement.dataset.theme=t;if(z&&z!=="m")document.documentElement.dataset.size=z}catch(e){}</script>
 <link rel="stylesheet" href="/static/style.css">
 {% block head %}{% endblock %}
@@ -17,6 +18,7 @@
     <a href="/">Dergiler</a>
     <a href="/konular/">Konular</a>
     <a href="/oyunlar/">Oyunlar</a>
+    {% if bands_on %}<a href="/gruplar/">Gruplar</a>{% endif %}
     <a href="/yazarlar/">Yazarlar</a>
     <a href="/ara/">Ara</a>
     <a href="/hakkinda/">Hakkında</a>
@@ -41,13 +43,25 @@
     </details>
   </nav>
 </header>
+{% if private_build %}<p class="private-note">Özel önizleme: izin bekleyen dergiler yalnızca burada görünür.</p>{% endif %}
 <main id="icerik">
 {% block main %}{% endblock %}
 </main>
 <footer class="site">
-  <p>Reklamsız, izlemesiz bir arşiv. Dergiler eski sahiplerine ve yazarlarına aittir. <a href="/hakkinda/">Kaynaklar ve iletişim</a></p>
+  <p>Reklamsız ve çerezsiz bir arşiv; ziyaretler yalnızca anonim olarak sayılır. Dergiler eski sahiplerine ve yazarlarına aittir. <a href="/hakkinda/">Kaynaklar ve iletişim</a></p>
 </footer>
 <script src="/static/prefs.js" defer></script>
+<script>
+// Cloudflare Web Analytics (cookieless, anonymous page counts), only on the public site: local builds and the
+// private site (ozel.dergi.coze.org) are not counted.
+if (location.hostname === "dergi.coze.org") {
+  var cf = document.createElement("script");
+  cf.defer = true;
+  cf.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  cf.setAttribute("data-cf-beacon", '{"token": "3380721329b349b398da9b29abdfaa95"}');
+  document.body.appendChild(cf);
+}
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

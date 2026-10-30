@@ -1,0 +1,12 @@
+<ul class="shelf">
+{% for t in titles %}
+  {% set first = t.issues_have[0] %}
+  <li>
+    <a href="/{{ t.slug }}/">
+      <img src="{{ A }}/{{ t.slug }}/{{ first.nn }}/thumbs/001.webp" alt="" width="160" height="226" loading="lazy">
+      <strong>{{ t.name }}</strong>
+    </a>
+    <span class="meta">{{ t.years }} · {{ t.issues_have|length }} sayı{% if t.missing %}, {{ t.missing|length }} eksik{% endif %}</span>
+  </li>
+{% endfor %}
+</ul>

@@ -1,4 +1,4 @@
-"""Tag each article with JEV: author, games, platform and topics.
+"""Tag each article with JEV: author, topics, and per corpus games and platform (retro) or bands (metal).
 
 One request per article. The state is the article's title, magazine and date, its headings,
 the start of its text, and candidate lines picked out in code:
@@ -7,9 +7,10 @@ the start of its text, and candidate lines picked out in code:
 - game candidates: the article title and its section headings.
 Questions:
   author           Choice among the name candidates, or none
-  game_<i>         Noul per game candidate: it is the name of a computer game discussed here
-  platform         Choice: which computer the article is about
-  topic_<slug>     Noul per topic in catalog/topics.yaml
+  game_<i>         retro: Noul per heading candidate: it is the name of a computer game discussed here
+  band_<i>         metal: Noul per heading candidate: it is the name of a band or musician covered
+  platform         retro: Choice: which computer the article is about
+  topic_<slug>     Noul per topic of the title's corpus in catalog/topics.yaml
 
 Output: data/issues/<slug>/<NN>/tags.json  {article slug: {author, games, platform, topics}}
 with raw probabilities; thresholds are applied when the site is built. Existing results are
@@ -79,22 +80,33 @@ def game_candidates(article: dict) -> list[str]:
     return out[:MAX_GAMES]
 
 
-def tag_article(client: TypeSafeClient, magazine: str, date: str | None, article: dict, topics: list[dict]) -> dict:
+# What each corpus asks about the heading candidates ("game_candidates" in the state).
+ENTITIES = {
+    "retro": ("games", "game", "is the name of a computer game that this article reviews, explains or gives tips for."),
+    "metal": ("bands", "band", "is the name of a band or musician that this article is about "
+                               "(interview, review, history, news or lyrics)."),
+}
+
+
+def tag_article(client: TypeSafeClient, magazine: str, date: str | None, article: dict, topics: list[dict],
+                corpus: str = "retro") -> dict:
     text = "\n".join(x["text"] for x in article["body"] if x["type"] in ("p", "h2", "caption") and x.get("text"))
     names, games = name_candidates(article), game_candidates(article)
     state = {"magazine": magazine, "date": date, "title": article["title"],
              "headings": [x["text"] for x in article["body"] if x["type"] == "h2"][:20],
              "text_start": text[:TEXT], "text_end": text[-400:] if len(text) > TEXT else "",
              "name_candidates": names, "game_candidates": games}
-    qs = {"platform": Choice(instructions="Which computer is this magazine article mainly about?", criteria=PLATFORMS)}
+    qs = {}
+    if corpus == "retro":
+        qs["platform"] = Choice(instructions="Which computer is this magazine article mainly about?", criteria=PLATFORMS)
     if names:
         qs["author"] = Choice(
             instructions="Which of `name_candidates` is the name of the article's author (byline or sign-off)?",
             criteria={f"n{i}": f"`name_candidates[{i}]`: {n}" for i, n in enumerate(names)}
                      | {"none": "None of them is the author (or the author isn't named)."})
-    for i, g in enumerate(games):
-        qs[f"game_{i}"] = Noul(instructions=f"`game_candidates[{i}]` (\"{g}\") is the name of a computer game "
-                                            "that this article reviews, explains or gives tips for.")
+    key, prefix, what = ENTITIES.get(corpus, (None, None, None))
+    for i, g in enumerate(games if key else []):
+        qs[f"{prefix}_{i}"] = Noul(instructions=f"`game_candidates[{i}]` (\"{g}\") {what}")
     for t in topics:
         qs[f"topic_{t['slug']}"] = Noul(instructions=f"The article is about this topic: {t['about']}")
     resp = client.system_one(state=state, questions=qs)
@@ -102,17 +114,23 @@ def tag_article(client: TypeSafeClient, magazine: str, date: str | None, article
     author = None
     if "author" in a and a["author"].choice != "none":
         author = {"name": names[int(a["author"].choice[1:])], "confidence": a["author"].confidence}
-    return {
+    out = {
         "text_sha": hashlib.sha1(text.encode()).hexdigest(),
-        "platform": {"choice": a["platform"].choice, "confidence": a["platform"].confidence},
+        "platform": {"choice": a["platform"].choice, "confidence": a["platform"].confidence} if "platform" in a else None,
         "author": author,
-        "games": [{"name": g, "p": round(a[f"game_{i}"].noul, 3)} for i, g in enumerate(games)],
+        "games": [],
         "topics": {t["slug"]: round(a[f"topic_{t['slug']}"].noul, 3) for t in topics},
         "tokens": resp.usage.input_tokens,
     }
+    if key:
+        out[key] = [{"name": g, "p": round(a[f"{prefix}_{i}"].noul, 3)} for i, g in enumerate(games)]
+    return out
 
 
 def tag_issue(client: TypeSafeClient, issue: str, topics: list[dict], titles: dict, args) -> None:
+    title = titles[issue.split("/")[0]]
+    corpus = title.get("corpus", "retro")
+    topics = [t for t in topics if t.get("corpus", "retro") == corpus]
     d = ROOT / "data" / "issues" / issue
     meta = read_json(d / "issue.json")
     articles = read_json(d / "articles.json") or []
@@ -124,7 +142,7 @@ def tag_issue(client: TypeSafeClient, issue: str, topics: list[dict], titles: di
 
     work = [a for a in articles if todo(a)]
     with ThreadPoolExecutor(args.jobs) as pool:
-        results = list(pool.map(lambda a: tag_article(client, titles[meta["slug"]], meta.get("date"), a, topics), work))
+        results = list(pool.map(lambda a: tag_article(client, title["name"], meta.get("date"), a, topics, corpus), work))
     tags = {a["slug"]: old[a["slug"]] for a in articles if a["slug"] in old and a not in work}
     tags |= {a["slug"]: r for a, r in zip(work, results)}
     write_json(d / "tags.json", tags, indent=1)
@@ -142,7 +160,7 @@ def main() -> None:
     if not os.environ.get("TYPESAFE_API_KEY"):
         raise SystemExit("TYPESAFE_API_KEY is not set (environment or .env)")
     topics = yaml.safe_load((ROOT / "catalog" / "topics.yaml").read_text())
-    titles = {t["slug"]: t["name"] for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())}
+    titles = {t["slug"]: t for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())}
     with TypeSafeClient(model=MODEL) as client:
         for issue in args.issues:
             tag_issue(client, issue, topics, titles, args)

@@ -82,21 +82,29 @@ def main() -> None:
     if len(sys.argv) < 2:
         raise SystemExit(__doc__)
     titles = {t["slug"]: t["name"] for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())}
+    corpora = {c["slug"]: c["ad"] for c in yaml.safe_load((ROOT / "catalog" / "corpora.yaml").read_text())}
+    corpus_of = {t["slug"]: corpora[t.get("corpus", "retro")]
+                 for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())}
+    private = {t["slug"] for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text()) if t.get("private")}
     meta, texts = [], []
     for slug in sys.argv[1:]:
+        if slug in private:  # the search API is public: private titles are not embedded
+            print(f"{slug}: private, skipped")
+            continue
         for issue_dir in sorted((ROOT / "data" / "issues" / slug).iterdir()):
             arts = issue_dir / "articles.json"
             if not arts.exists():
                 continue
             issue = json.loads((issue_dir / "issue.json").read_text())
             date = issue.get("date")
-            when = f" · {MONTHS[int(date[5:7]) - 1]} {date[:4]}" if date else ""
+            when = (f" · {MONTHS[int(date[5:7]) - 1]} {date[:4]}" if len(date) > 4 else f" · {date}") if date else ""
             for a in json.loads(arts.read_text()):
                 pages = f"s. {a['pages'][0]}" + (f"–{a['pages'][-1]}" if len(a["pages"]) > 1 else "")
                 for t in passages(a):
                     meta.append({"url": f"/{slug}/{issue_dir.name}/{a['slug']}/", "title": a["title"],
                                  "source": f"{titles.get(slug, slug)} · Sayı {issue['number']}{when}",
                                  "pages": pages, "author": a.get("author"), "dergi": titles.get(slug, slug),
+                                 "koleksiyon": corpus_of.get(slug),
                                  "year": date[:4] if date else None,
                                  "cover": f"/{slug}/{issue_dir.name}/thumbs/001.webp", "text": t[:400]})
                     texts.append(t)

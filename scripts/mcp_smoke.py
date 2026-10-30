@@ -4,10 +4,14 @@ answers. Usage: mcp_smoke.py [url]   (default https://dergi.coze.org/mcp)"""
 import asyncio
 import json
 import sys
+from pathlib import Path
 
+import yaml
 from mcp.client.client import Client
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "https://dergi.coze.org/mcp"
+TITLES = yaml.safe_load((Path(__file__).resolve().parent.parent / "catalog" / "titles.yaml").read_text())
+PRIVATE = {t["slug"] for t in TITLES if t.get("private")}
 
 
 async def main() -> None:
@@ -31,8 +35,21 @@ async def main() -> None:
         a = await call("get_article", url=r["results"][0]["url"], max_chars=1000)
         print("get_article:", a["title"], a["author"], a["pages"], a["total_chars"], "chars, next", a["next_offset"])
         assert a["text"]
+        co = await call("list_corpora")
+        print("list_corpora:", [(x["slug"], x["magazines"]) for x in co["corpora"]])
         m = await call("list_magazines")
         print("list_magazines:", [x["name"] for x in m["magazines"]])
+        if "bilim" in [x["slug"] for x in co["corpora"]]:  # private until permission: not in the public API
+            mb = await call("search", query="asal sayılar", corpus="bilim", limit=3)
+            print("search in bilim:", [(x["title"][:30], x["magazine"]) for x in mb["results"]])
+            assert all(x["corpus"] == "bilim" for x in mb["results"])
+        leaked = PRIVATE & {x["slug"] for x in m["magazines"]}
+        assert not leaked, f"private titles in the public API: {leaked}"
+        fb = await call("find_bands", limit=5)
+        print("find_bands:", [(x["name"], x["articles"]) for x in fb["bands"]])
+        if fb["bands"]:
+            gb = await call("get_band", band=fb["bands"][0]["slug"])
+            print("get_band:", gb["name"], gb["total"], "articles")
         li = await call("list_issues", magazine="Amiga Dünyası")
         print("list_issues:", len(li["issues"]), "issues of", li["magazine"])
         i = await call("get_issue", magazine="c64 turkiye", number=7)

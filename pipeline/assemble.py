@@ -7,6 +7,10 @@ Rules:
 - An article starts at a heading JEV calls an article title (or, when unsure, at the
   page's largest heading). Contents pages form one article named by their largest heading.
   Other headings become section headings.
+- A segmentation (segments.json: each article's title, author, first block and the blocks where
+  it resumes after other pages) overrides the heading rules: only its marks start or resume
+  articles, and headings become section headings. A mark on a page without text ("block":
+  "page") starts or continues an article there with the whole page as its picture.
 - Drop caps are put back in front of their paragraph; line-end hyphens are rejoined.
 - Figures are cropped from the PDF and placed before the first text below them.
 
@@ -22,6 +26,7 @@ import json
 import re
 import sys
 import unicodedata
+from difflib import SequenceMatcher
 from pathlib import Path
 
 import pymupdf
@@ -161,10 +166,30 @@ SENTENCE_END = re.compile(r"[.!?:;…)\"”'’]\s*$")
 def join_broken_paragraphs(body: list[dict]) -> list[dict]:
     """Merge paragraphs split at a column or page edge: the first ends in a hyphenated word
     ("oy-" + "namışınızdır") or mid-sentence, and the next starts in lower case. A figure or
-    caption between the two halves moves after the merged paragraph."""
+    caption between the two halves moves after the merged paragraph. A word in capitals split
+    the same way ("SI-" + "LENT SERVİCE") is joined too, without its hyphen when the article
+    spells the word whole elsewhere. Scraps of two letters or less (a page corner's "İk") go."""
+    whole = compact(" ".join(x.get("text", "") for x in body))
     out: list[dict] = []
     for x in body:
-        if x["type"] == "p" and x["text"][:1].islower():
+        if x["type"] in ("p", "h2") and len(re.findall(r"\w", x["text"])) <= 2:
+            continue
+        caps = x["type"] == "p" and re.match(r"([A-ZÇĞİÖŞÜ]{2,})", x["text"])
+        if x["type"] == "p" and (x["text"][:1].islower() or caps):
+            # The paragraph this one continues: the last paragraph, past figures and captions.
+            j = len(out) - 1
+            while j >= 0 and out[j]["type"] in ("figure", "caption"):
+                j -= 1
+            if caps:
+                m = j >= 0 and out[j]["type"] == "p" and re.search(r"([A-ZÇĞİÖŞÜ]+)-$", out[j]["text"])
+                if m:
+                    prev = out[j]
+                    joined = m.group(1) + caps.group(1)
+                    keep = "" if whole.count(compact(joined)) > 1 else "-"
+                    prev["text"] = prev["text"][:-1] + keep + x["text"]
+                    continue
+                out.append(x)
+                continue
             # The paragraph this one continues: the last paragraph, past figures and captions.
             j = len(out) - 1
             while j >= 0 and out[j]["type"] in ("figure", "caption"):
@@ -297,8 +322,13 @@ def split_heading(block: dict) -> tuple[str, list[str]]:
     return clean_text(lines[:n]), lines[n:]
 
 
-def assemble(issue: str) -> None:
+def similar(a: str, b: str, ratio: float = 0.9) -> bool:
+    return SequenceMatcher(None, compact(a), compact(b)).ratio() >= ratio
+
+
+def assemble(issue: str, segments: Path | None = None, out_dir: Path | None = None) -> None:
     issue_dir = ROOT / "data" / "issues" / issue
+    out_dir = out_dir or issue_dir
     meta = json.loads((issue_dir / "issue.json").read_text())
     doc = pymupdf.open(meta["source"])
     articles: list[dict] = []
@@ -346,6 +376,30 @@ def assemble(issue: str) -> None:
                 label_pages.setdefault(lab, set()).add(page)
     running = {lab for lab, pgs in label_pages.items() if len(pgs) >= RUNNING_PAGES}
 
+    # The segmentation's marks: (page, block) → ("start" | "resume", article number).
+    seg_file = segments or issue_dir / "segments.json"
+    seg_articles = json.loads(seg_file.read_text())["articles"] if seg_file.exists() else []
+    marks: dict[tuple[int, str], tuple[str, int]] = {}
+    for n, a in enumerate(seg_articles):
+        marks[(a["start"]["page"], a["start"]["block"])] = ("start", n)
+        for r in a.get("resumes", []):
+            marks.setdefault((r["page"], r["block"]), ("resume", n))
+    made: dict[int, dict] = {}
+
+    def follow(mark: tuple[str, int], page: int) -> str | None:
+        """Start or resume the segmented article a mark names; the title of a new start."""
+        nonlocal current
+        what, n = mark
+        if what == "start":
+            a = seg_articles[n]
+            current = made[n] = {"title": tidy_title(a["title"]), "author": a.get("author") or None,
+                                 "pages": [page], "body": [], "review": 0}
+            articles.append(current)
+            return current["title"]
+        if n in made:
+            current = made[n]
+        return None
+
     for page in range(1, meta["pages"] + 1):
         labels = Labels(issue_dir, page)
         kind = labels.page_kind()
@@ -356,6 +410,17 @@ def assemble(issue: str) -> None:
         bfile = issue_dir / "blocks" / f"{page:03d}.json"
         blocks = json.loads(bfile.read_text())["blocks"] if bfile.exists() else []
         pages[page] = {"kind": kind, "text": [], "articles": []}
+        if (mark := marks.get((page, "page"))) and not blocks:
+            # A page without any text (a map, a full-page title picture) that the segmentation
+            # starts or continues an article on: the whole page is that article's picture.
+            follow(mark, page)
+            name = f"p{page:03d}-page.webp"
+            crop_figure(doc, page, [0, 0, 1, 1], out_dir / "figures" / name)
+            current["body"].append({"type": "figure", "src": name, "page": page})
+            if page not in current["pages"]:
+                current["pages"].append(page)
+            pages[page]["kind"] = "article"
+            continue
         if kind in ("cover", "ads"):
             continue
 
@@ -378,18 +443,18 @@ def assemble(issue: str) -> None:
                 # A picture whose text is a contents entry is a WordArt article title.
                 title = fig.get("ocr_text", "")
                 # WordArt titles are set in capitals; logos ("commoDore") are not.
-                if (toc and 3 <= len(title) <= 40 and title == title.upper()
+                if (toc and not seg_articles and 3 <= len(title) <= 40 and title == title.upper()
                         and in_toc(title, toc, strict=True)):
                     start(title, page)
                     continue
                 name = f"p{page:03d}-{fig['id']}.webp"
-                crop_figure(doc, page, fig["bbox"], issue_dir / "figures" / name)
+                crop_figure(doc, page, fig["bbox"], out_dir / "figures" / name)
                 if current is not None:
                     current["body"].append({"type": "figure", "src": name, "page": page})
 
         contents_title = None
-        if kind == "contents":
-            heads = [b for b in texts if (h := labels.heading(b["id"])) and h[0] != "not_heading"
+        if kind == "contents" and not seg_articles:
+            heads =[b for b in texts if (h := labels.heading(b["id"])) and h[0] != "not_heading"
                      and labels.role(b["id"])[0] == "content"]
             if heads:
                 head = max(heads, key=lambda b: b.get("rel_size") or 1)
@@ -400,6 +465,9 @@ def assemble(issue: str) -> None:
         clusters, absorbed = title_clusters(texts, labels)
 
         for b in texts:
+            seg_title = None
+            if mark := marks.get((page, b["id"])):
+                seg_title = follow(mark, page)
             add_figures(b["id"])
             if b["id"] in absorbed:
                 continue  # part of a heading set on several lines, used with that heading
@@ -411,6 +479,30 @@ def assemble(issue: str) -> None:
             pages[page]["text"].append(b["text"])
             heading = labels.heading(b["id"])
             body_lines = b["text"].split("\n")
+
+            if seg_articles:
+                # The article's own title was read again (segments.json): drop its OCR reading
+                # when it is display type or the same words; a title that opens a sentence
+                # ("Kreator'ın yeni albümü...") stays. Other headings are section headings.
+                # A "heading" is only its title words: prose run into it (a paragraph set large)
+                # goes back to the body, and one of more than 12 words is body text.
+                is_head = heading and heading[0] != "not_heading" and role == "content"
+                if is_head:
+                    h, rest = split_heading(b)
+                    h, tail = prose_tail(tidy_title(clusters.get(b["id"]) or h))
+                    is_head = len(h.split()) <= 12 and not h[:1].islower()
+                    if is_head:
+                        rest = [tail, *rest] if tail else rest
+                if seg_title is not None:
+                    if ((is_head and heading[1] >= ACCEPT and (b.get("rel_size") or 1) >= 2.0)
+                            or similar(h if is_head else body_lines[0], seg_title)):
+                        body_lines = rest if is_head else body_lines[1:]
+                elif is_head:
+                    if current is None:
+                        start("Giriş", page)
+                    current["body"].append({"type": "h2", "text": h, "page": page})
+                    body_lines = rest
+                heading = None
 
             if heading and heading[0] != "not_heading" and role == "content":
                 title, body_lines = split_heading(b)
@@ -452,13 +544,25 @@ def assemble(issue: str) -> None:
                 current["review"] += 1
             if not body_lines:
                 continue
-            if (current["author"] is None and len(body_lines) > 1 and role == "content"
-                    and not any(x["type"] == "p" for x in current["body"]) and is_byline(body_lines[0])):
+            first = not any(x["type"] == "p" for x in current["body"])
+            if seg_articles:
+                # The segmentation decided the author (or that there is none); its printed
+                # byline at the start is metadata.
+                if first and current["author"] and similar(body_lines[0], current["author"], 0.8):
+                    body_lines = body_lines[1:]
+                    if not body_lines:
+                        continue
+            elif current["author"] is None and role == "content" and first and is_byline(body_lines[0]):
+                # A name alone at the start of an article, as its paragraph's first line or as a
+                # block of its own ("Cem Tezer" under the title), is the byline.
                 current["author"] = " ".join(body_lines[0].split())
                 body_lines = body_lines[1:]
+                if not body_lines:
+                    continue
             m = BYLINE_RE.match(body_lines[0])
             if m:
-                current["author"] = current["author"] or m.group(2).strip()
+                if not seg_articles:
+                    current["author"] = current["author"] or m.group(2).strip()
                 # The byline and its contact lines are metadata, not article text.
                 while body_lines and (BYLINE_RE.match(body_lines[0]) or CONTACT_RE.match(body_lines[0])):
                     body_lines = body_lines[1:]
@@ -484,10 +588,13 @@ def assemble(issue: str) -> None:
             pages[p]["articles"].append(a["slug"])
     for a in articles:
         a["body"] = join_broken_paragraphs(a["body"])
-    articles = [a for a in articles if any(x["type"] in ("p", "pre") for x in a["body"])]
+    # An article needs text, except one the segmentation started on a page of pictures only.
+    page_starts = {id(made[n]) for (p, blk), (what, n) in marks.items() if blk == "page" and what == "start" and n in made}
+    articles = [a for a in articles if any(x["type"] in ("p", "pre") for x in a["body"])
+                or (id(a) in page_starts and a["body"])]
 
-    write_json(issue_dir / "articles.json", articles, indent=1)
-    write_json(issue_dir / "pages.json", pages, indent=1)
+    write_json(out_dir / "articles.json", articles, indent=1)
+    write_json(out_dir / "pages.json", pages, indent=1)
     print(f"{issue}: {len(articles)} articles, "
           f"{sum(a['review'] for a in articles)} uncertain blocks kept")
     for a in articles:

@@ -461,3 +461,26 @@ Not done: bucket sync doesn't delete remote assets that disappeared (low impact)
   Cross-Origin-Resource-Policy: same-site; the image bucket is private (public access
   prevention), the old PDF copies deleted.
 - About page: "Nasıl yapıldı", known problems, MCP note, and a graded assessment of each title.
+
+**2026-10-27…30 — Collections, private titles, article split by Claude Haiku, Internet Archive scans**
+
+- Collections (`catalog/corpora.yaml`: retro, bilim, metal) with their own topics, proofreading
+  instructions and tags (bands for metal). Matematik Dünyası (45 issues) and Laneth (31) are
+  processed but `private: true` until the rights holders agree: build.py, export_api.py and
+  embed.py leave them out, deploy.sh refuses if they reach the public build, and they are served
+  only on ozel.dergi.coze.org behind Cloudflare Access (workers/img/src/ozel.js,
+  scripts/deploy-private.sh).
+- OCR: pages where Tesseract finds under 20 words are read again with Apple Vision (~480 pages,
+  ~63,000 words); `display.py --tails-only` adds the column-end lines Tesseract dropped. Both
+  skip themselves off macOS.
+- Article split: one Claude Haiku agent per issue reads every page image and the OCR block list
+  and writes `segments.json` (titles as printed, printed bylines, start and resume blocks);
+  assemble.py uses it when present. Every issue on the site now has one; articles 2,974 →
+  5,782 on the public titles, 12+ page spans almost gone, and no 6-word run of the old text lost.
+  Tools and instructions: `pipeline/segment/`.
+- Internet Archive scans: Amiga Dergisi 6, 7 and 9 (complete run now) and a full 8, a sharper
+  MegAmiga 2 with its last page, two missing pages of Amiga Dünyası 12 (`inserts:` in
+  sources.yaml), Amiga Dergisi CBRs with upside-down odd pages (`turn_odd:`), and a new title,
+  Commodore Amiga (1992, 9 issues). Seven public titles, 189 issues, 12,589 pages.
+- Authors: 78 hand merges and 25 pairs marked as different people in catalog/authors.yaml;
+  817 authors. About page: process, assessment and credits updated.
