@@ -74,6 +74,9 @@ amiga-dunyasi:
   # pair (magazine pages 47-48) that our PDF lacks.
   inserts:
     12: [{after: 35, from: data/sources/ia/dergi-amiga-dunyasi/Amiga-Dunyasi-012-1991.cbr, pages: [36, 37]}]
+  # 28's JPEGs ("Amiga Dunyasi Jpegler/Amiga Dunyasi 28") were scanned sideways, every page a quarter
+  # turn anticlockwise. Its best/ PDF was rebuilt on 2026-10-30 from its own image streams, each
+  # placed turned 90° clockwise (no re-encoding); a --build from the JPEGs would bring the fault back.
 
 amiga-dergisi:
   name: Amiga Dergisi
