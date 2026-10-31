@@ -15,6 +15,6 @@ gcloud --configuration=personal storage rsync -r --checksums-only --delete-unmat
   --exclude='^i/.*' data/site-private $BUCKET/ozel/site
 for s in $private; do
   [[ -d data/site-private/i/$s ]] || { echo "$s: nothing built yet"; continue }
-  gcloud --configuration=personal storage rsync -r --checksums-only data/site-private/i/$s $BUCKET/ozel/i/$s
+  image_sync data/site-private/i/$s $BUCKET/ozel/i/$s
 done
 echo "private site: ${#private} private titles ($private) → https://ozel.dergi.coze.org/"

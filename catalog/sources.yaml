@@ -74,9 +74,13 @@ amiga-dunyasi:
   # pair (magazine pages 47-48) that our PDF lacks.
   inserts:
     12: [{after: 35, from: data/sources/ia/dergi-amiga-dunyasi/Amiga-Dunyasi-012-1991.cbr, pages: [36, 37]}]
+    # Opal Vision (magazine pages 10-11), the end of Civilisation and the Arnie review.
+    28: [{after: 8, from: data/sources/ia/dergi-amiga-dunyasi/Amiga-Dunyasi-028-1992.cbr, pages: [9, 10]},
+         {after: 80, from: data/sources/ia/dergi-amiga-dunyasi/Amiga-Dunyasi-028-1992.cbr, pages: [79, 80]}]
   # 28's JPEGs ("Amiga Dunyasi Jpegler/Amiga Dunyasi 28") were scanned sideways, every page a quarter
   # turn anticlockwise. Its best/ PDF was rebuilt on 2026-10-30 from its own image streams, each
   # placed turned 90° clockwise (no re-encoding); a --build from the JPEGs would bring the fault back.
+  # The inserts above were added to that PDF by hand on 2026-10-31 (insert_pages' method).
 
 amiga-dergisi:
   name: Amiga Dergisi

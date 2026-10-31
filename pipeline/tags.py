@@ -25,6 +25,7 @@ import os
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from difflib import SequenceMatcher
 from pathlib import Path
 
 import yaml
@@ -67,6 +68,14 @@ def name_candidates(article: dict) -> list[str]:
             seen.add(n.lower())
             unique.append(n)
     return unique[:8]
+
+
+def byline_wins(byline: str, picked: str) -> bool:
+    """The byline the article opens with (read off the page by the segmentation, or by assemble)
+    beats a different name JEV picks: those are mostly OCR noise, a quote's attribution or an
+    editor's sign-off. A spelling variant of the byline keeps JEV's pick (authors.yaml merges those)."""
+    fold = lambda n: re.sub(r"\W", "", n.lower())
+    return SequenceMatcher(None, fold(byline), fold(picked)).ratio() < 0.5
 
 
 def game_candidates(article: dict) -> list[str]:
@@ -145,6 +154,9 @@ def tag_issue(client: TypeSafeClient, issue: str, topics: list[dict], titles: di
         results = list(pool.map(lambda a: tag_article(client, title["name"], meta.get("date"), a, topics, corpus), work))
     tags = {a["slug"]: old[a["slug"]] for a in articles if a["slug"] in old and a not in work}
     tags |= {a["slug"]: r for a, r in zip(work, results)}
+    for a in articles:
+        if a.get("author") and (t := tags.get(a["slug"])) and t["author"] and byline_wins(a["author"], t["author"]["name"]):
+            t["author"] = {"name": a["author"], "confidence": 1.0, "from": "byline"}
     write_json(d / "tags.json", tags, indent=1)
     print(f"{issue}: {len(work)} tagged, {len(articles) - len(work)} kept, "
           f"{sum(r['tokens'] or 0 for r in results)} tokens", flush=True)

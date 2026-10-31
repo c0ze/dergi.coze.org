@@ -251,13 +251,21 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
             d, base = issue["dir"], f"{t['slug']}/{issue['nn']}"
             # Assets: reader pages, thumbnails and figures. The scans themselves are not offered
             # for download (decided 2026-10-27).
+            kept = set()
             for sub in ("pages", "thumbs", "figures"):
                 for f in (d / sub).glob("*.webp") if (d / sub).exists() else []:
+                    kept.add(OUT / "i" / base / sub / f.name)
                     copy(f, OUT / "i" / base / sub / f.name)
             for prog in issue["programs"]:
                 for name in (prog["file"], prog.get("screenshot")):
                     if name:
+                        kept.add(OUT / "i" / base / "prg" / name)
                         copy(d / "prg" / name, OUT / "i" / base / "prg" / name)
+            # Figures a re-assembly renamed or dropped must not linger here, nor in the bucket,
+            # which the deploy syncs with deletion.
+            for f in (OUT / "i" / base).rglob("*"):
+                if f.is_file() and f not in kept:
+                    f.unlink()
 
             for a in issue["articles"]:
                 # The author's profile name ("Can Öztürk"), not the byline as printed ("CAN ÖZTÜRK").

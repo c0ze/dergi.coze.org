@@ -384,6 +384,12 @@ def assemble(issue: str, segments: Path | None = None, out_dir: Path | None = No
         marks[(a["start"]["page"], a["start"]["block"])] = ("start", n)
         for r in a.get("resumes", []):
             marks.setdefault((r["page"], r["block"]), ("resume", n))
+    # A page JEV is sure is an ad or a cover is kept when the segmentation starts or resumes an
+    # article on it (an opener page, a review above an ad, a news column running onto an ad page);
+    # classifieds and the subscribers' dealer list stay ads.
+    seg_starts = {m["page"] for a in seg_articles
+                  if not re.search(r"(?i)küçük ilan|abonelerine tenzilat", a["title"])
+                  for m in [a["start"], *a.get("resumes", [])]}
     made: dict[int, dict] = {}
 
     def follow(mark: tuple[str, int], page: int) -> str | None:
@@ -407,6 +413,8 @@ def assemble(issue: str, segments: Path | None = None, out_dir: Path | None = No
             kind = "cover"
         elif kind in ("cover", "ads") and not labels.page_kind_sure():
             kind = "mixed"  # not sure: let the block-level roles decide what is kept
+        if kind in ("cover", "ads") and page in seg_starts:
+            kind = "mixed"
         bfile = issue_dir / "blocks" / f"{page:03d}.json"
         blocks = json.loads(bfile.read_text())["blocks"] if bfile.exists() else []
         pages[page] = {"kind": kind, "text": [], "articles": []}
