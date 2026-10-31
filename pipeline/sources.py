@@ -27,7 +27,7 @@ import yaml
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-IMAGE_EXT = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".gif"}
+IMAGE_EXT = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".gif", ".webp"}
 ARCHIVE_EXT = {".cbr", ".cbz", ".zip", ".rar"}
 CACHE = ROOT / "data" / "cache" / "unpacked"
 MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8,
@@ -318,7 +318,12 @@ def append_images(doc: pymupdf.Document, files: list[Path], turn_odd: bool = Fal
         w, h = Image.open(f).size
         # 300 dpi page size; the image goes in as stored, without re-encoding (turned if need be).
         page = doc.new_page(width=w * 72 / 300, height=h * 72 / 300)
-        page.insert_image(page.rect, stream=f.read_bytes(), rotate=180 if turn_odd and n % 2 else 0)
+        stream = f.read_bytes()
+        if f.suffix.lower() == ".webp":  # MuPDF can't embed WebP (Gameshow CBZs): JPEG at q95
+            buf = io.BytesIO()
+            Image.open(f).convert("RGB").save(buf, "JPEG", quality=95)
+            stream = buf.getvalue()
+        page.insert_image(page.rect, stream=stream, rotate=180 if turn_odd and n % 2 else 0)
 
 
 def insert_pages(out: Path, inserts: list[dict]) -> None:

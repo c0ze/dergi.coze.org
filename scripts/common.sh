@@ -1,5 +1,5 @@
 # Shared by the scripts in this folder (zsh): the titles on the site, and the issues they have.
-SITE_SLUGS=(c64-turkiye commodore 64ler amiga-dunyasi commodore-amiga amiga-dergisi megamiga matematik-dunyasi laneth)
+SITE_SLUGS=(c64-turkiye commodore 64ler amiga-dunyasi commodore-amiga amiga-dergisi megamiga gameshow matematik-dunyasi laneth)
 PY=.venv/bin/python
 ASSET_BASE=https://img.dergi.coze.org/i
 

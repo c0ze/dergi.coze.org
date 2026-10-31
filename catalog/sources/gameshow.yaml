@@ -1,0 +1,426 @@
+1:
+  date: 1995-03
+  chosen:
+    path: data/sources/gameshow/blockmind/001.cbz
+    kind: cbr
+    pages: 20
+    px: 1620
+  supplements: []
+  alternatives: []
+  extras: []
+2:
+  date: 1995-04
+  chosen:
+    path: data/sources/gameshow/blockmind/002.cbz
+    kind: cbr
+    pages: 28
+    px: 1592
+  supplements: []
+  alternatives: []
+  extras: []
+3:
+  date: 1995-05
+  chosen:
+    path: data/sources/gameshow/blockmind/003.cbz
+    kind: cbr
+    pages: 36
+    px: 1598
+  supplements: []
+  alternatives: []
+  extras: []
+4:
+  date: 1995-06
+  chosen:
+    path: data/sources/gameshow/blockmind/004.cbz
+    kind: cbr
+    pages: 56
+    px: 1601
+  supplements: []
+  alternatives: []
+  extras: []
+5:
+  date: 1995-07
+  chosen:
+    path: data/sources/gameshow/blockmind/005.cbz
+    kind: cbr
+    pages: 60
+    px: 1647
+  supplements: []
+  alternatives: []
+  extras: []
+6:
+  date: 1995-08
+  chosen:
+    path: data/sources/gameshow/blockmind/006.cbz
+    kind: cbr
+    pages: 66
+    px: 1586
+  supplements: []
+  alternatives: []
+  extras: []
+7:
+  date: 1995-09
+  chosen:
+    path: data/sources/gameshow/blockmind/007.cbz
+    kind: cbr
+    pages: 68
+    px: 1601
+  supplements: []
+  alternatives: []
+  extras: []
+8:
+  date: 1995-10
+  chosen:
+    path: data/sources/gameshow/blockmind/008.cbz
+    kind: cbr
+    pages: 68
+    px: 1597
+  supplements: []
+  alternatives: []
+  extras: []
+9:
+  date: 1995-11
+  chosen:
+    path: data/sources/gameshow/blockmind/009.cbz
+    kind: cbr
+    pages: 68
+    px: 1914
+  supplements: []
+  alternatives: []
+  extras: []
+10:
+  date: 1995-12
+  chosen:
+    path: data/sources/gameshow/blockmind/010.cbz
+    kind: cbr
+    pages: 68
+    px: 1620
+  supplements: []
+  alternatives: []
+  extras: []
+11:
+  date: 1996-01
+  chosen:
+    path: data/sources/gameshow/blockmind/011.cbz
+    kind: cbr
+    pages: 68
+    px: 1588
+  supplements: []
+  alternatives: []
+  extras: []
+12:
+  date: 1996-02
+  chosen:
+    path: data/sources/gameshow/blockmind/012.cbz
+    kind: cbr
+    pages: 68
+    px: 1598
+  supplements: []
+  alternatives: []
+  extras: []
+13:
+  date: 1996-03
+  chosen:
+    path: data/sources/gameshow/blockmind/013.cbz
+    kind: cbr
+    pages: 66
+    px: 1594
+  supplements: []
+  alternatives: []
+  extras: []
+14:
+  date: 1996-04
+  chosen:
+    path: data/sources/gameshow/blockmind/014.cbz
+    kind: cbr
+    pages: 68
+    px: 1586
+  supplements: []
+  alternatives: []
+  extras: []
+15:
+  date: 1996-05
+  chosen:
+    path: data/sources/gameshow/blockmind/015.cbz
+    kind: cbr
+    pages: 68
+    px: 1585
+  supplements: []
+  alternatives: []
+  extras: []
+16:
+  date: 1996-06
+  chosen:
+    path: data/sources/gameshow/blockmind/016.cbz
+    kind: cbr
+    pages: 68
+    px: 1584
+  supplements: []
+  alternatives: []
+  extras: []
+17:
+  date: 1996-07
+  chosen:
+    path: data/sources/gameshow/blockmind/017.cbz
+    kind: cbr
+    pages: 68
+    px: 1585
+  supplements: []
+  alternatives: []
+  extras: []
+18:
+  date: 1996-08
+  chosen:
+    path: data/sources/gameshow/blockmind/018.cbz
+    kind: cbr
+    pages: 68
+    px: 1587
+  supplements: []
+  alternatives: []
+  extras: []
+19:
+  date: 1996-09
+  chosen:
+    path: data/sources/gameshow/blockmind/019.cbz
+    kind: cbr
+    pages: 68
+    px: 1587
+  supplements: []
+  alternatives: []
+  extras: []
+20:
+  date: 1996-10
+  chosen:
+    path: data/sources/gameshow/blockmind/020.cbz
+    kind: cbr
+    pages: 68
+    px: 1585
+  supplements: []
+  alternatives: []
+  extras: []
+21:
+  date: 1996-11
+  chosen:
+    path: data/sources/gameshow/blockmind/021.cbz
+    kind: cbr
+    pages: 68
+    px: 1581
+  supplements: []
+  alternatives: []
+  extras: []
+22:
+  date: 1996-12
+  chosen:
+    path: data/sources/gameshow/blockmind/022.cbz
+    kind: cbr
+    pages: 68
+    px: 1592
+  supplements: []
+  alternatives: []
+  extras: []
+23:
+  date: 1997-01
+  chosen:
+    path: data/sources/gameshow/blockmind/023.cbz
+    kind: cbr
+    pages: 68
+    px: 2306
+  supplements: []
+  alternatives: []
+  extras: []
+24:
+  date: 1997-02
+  chosen:
+    path: data/sources/gameshow/blockmind/024.cbz
+    kind: cbr
+    pages: 68
+    px: 2315
+  supplements: []
+  alternatives: []
+  extras: []
+25:
+  date: 1997-03
+  chosen:
+    path: data/sources/gameshow/blockmind/025.cbz
+    kind: cbr
+    pages: 68
+    px: 2312
+  supplements: []
+  alternatives: []
+  extras: []
+26:
+  date: 1997-05
+  chosen:
+    path: data/sources/gameshow/blockmind/026.cbz
+    kind: cbr
+    pages: 68
+    px: 2317
+  supplements: []
+  alternatives: []
+  extras: []
+27:
+  date: 1997-06
+  chosen:
+    path: data/sources/gameshow/blockmind/027.cbz
+    kind: cbr
+    pages: 68
+    px: 2281
+  supplements: []
+  alternatives: []
+  extras: []
+28:
+  date: 1997-07
+  chosen:
+    path: data/sources/gameshow/blockmind/028.cbz
+    kind: cbr
+    pages: 68
+    px: 2316
+  supplements: []
+  alternatives: []
+  extras: []
+29:
+  date: 1997-08
+  chosen:
+    path: data/sources/gameshow/blockmind/029.cbz
+    kind: cbr
+    pages: 68
+    px: 2295
+  supplements: []
+  alternatives: []
+  extras: []
+30:
+  date: 1997-09
+  chosen:
+    path: data/sources/gameshow/blockmind/030.cbz
+    kind: cbr
+    pages: 68
+    px: 2294
+  supplements: []
+  alternatives: []
+  extras: []
+31:
+  date: 1997-10
+  chosen:
+    path: data/sources/gameshow/blockmind/031.cbz
+    kind: cbr
+    pages: 68
+    px: 2619
+  supplements: []
+  alternatives: []
+  extras: []
+32:
+  date: 1997-11
+  chosen:
+    path: data/sources/gameshow/blockmind/032.cbz
+    kind: cbr
+    pages: 82
+    px: 2292
+  supplements: []
+  alternatives: []
+  extras: []
+33:
+  date: 1997-12
+  chosen:
+    path: data/sources/gameshow/blockmind/033.cbz
+    kind: cbr
+    pages: 84
+    px: 2295
+  supplements: []
+  alternatives: []
+  extras: []
+34:
+  date: 1998-01
+  chosen:
+    path: data/sources/gameshow/blockmind/034.cbz
+    kind: cbr
+    pages: 84
+    px: 2317
+  supplements: []
+  alternatives: []
+  extras: []
+35:
+  date: 1998-02
+  chosen:
+    path: data/sources/gameshow/blockmind/035.cbz
+    kind: cbr
+    pages: 84
+    px: 2317
+  supplements: []
+  alternatives: []
+  extras: []
+36:
+  date: 1998-03
+  chosen:
+    path: data/sources/gameshow/blockmind/036.cbz
+    kind: cbr
+    pages: 84
+    px: 2317
+  supplements: []
+  alternatives: []
+  extras: []
+37:
+  date: 1998-05
+  chosen:
+    path: data/sources/gameshow/blockmind/037.cbz
+    kind: cbr
+    pages: 84
+    px: 2317
+  supplements: []
+  alternatives: []
+  extras: []
+38:
+  date: 1998-06
+  chosen:
+    path: data/sources/gameshow/blockmind/038.cbz
+    kind: cbr
+    pages: 80
+    px: 2317
+  supplements:
+  - path: data/sources/gameshow/blockmind/OD 01 - GS 38.cbz
+    kind: cbr
+    pages: 16
+    px: 2616
+  alternatives: []
+  extras: []
+39:
+  date: 1998-07
+  chosen:
+    path: data/sources/gameshow/blockmind/039.cbz
+    kind: cbr
+    pages: 84
+    px: 2317
+  supplements:
+  - path: data/sources/gameshow/blockmind/OD 02 - GS 39.cbz
+    kind: cbr
+    pages: 16
+    px: 2625
+  alternatives: []
+  extras: []
+40:
+  date: 1998-08
+  chosen:
+    path: data/sources/gameshow/blockmind/040.cbz
+    kind: cbr
+    pages: 84
+    px: 2317
+  supplements:
+  - path: data/sources/gameshow/blockmind/OD 03 - GS 40.cbz
+    kind: cbr
+    pages: 16
+    px: 2622
+  alternatives: []
+  extras: []
+41:
+  date: 1998-09
+  chosen:
+    path: data/sources/gameshow/blockmind/041.cbz
+    kind: cbr
+    pages: 84
+    px: 2317
+  supplements:
+  - path: data/sources/gameshow/blockmind/OD 04 - GS 41.cbz
+    kind: cbr
+    pages: 12
+    px: 2618
+  alternatives: []
+  extras: []
