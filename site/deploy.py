@@ -82,6 +82,9 @@ def main() -> None:
         if f.is_dir() or ignored(rel, cfg.get("ignore", [])):
             continue
         gz = gzip.compress(f.read_bytes(), compresslevel=9, mtime=0)
+        # The header's OS byte is 3 on Linux and 19 on macOS; pin it so the hashes, and so what
+        # Hosting re-uploads, don't depend on which machine deploys.
+        gz = gz[:9] + b"\x03" + gz[10:]
         files["/" + rel] = (hashlib.sha256(gz).hexdigest(), gz)
     total = sum(len(g) for _, g in files.values())
     print(f"{len(files)} files, {total / 1e6:.1f} MB gzipped")

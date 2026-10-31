@@ -4,7 +4,7 @@
     {
       "name": "site",
       "runtimeExecutable": ".venv/bin/python",
-      "runtimeArgs": ["-m", "http.server", "8642", "--directory", "data/site", "--bind", "127.0.0.1"],
+      "runtimeArgs": ["site/serve.py", "8642", "data/site"],
       "port": 8642
     }
   ]

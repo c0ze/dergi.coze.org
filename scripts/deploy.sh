@@ -12,7 +12,7 @@ for s in $($PY -c 'import yaml; print(" ".join(t["slug"] for t in yaml.safe_load
   [[ -e data/site/$s || -e data/site/i/$s ]] && { print -u2 "private title $s in data/site; not deploying"; exit 1 }
 done
 npx -y pagefind@1.3.0 --site data/site
-gcloud --configuration=personal storage rsync -r data/site/i gs://dergi-coze-org-site/i --cache-control="public, max-age=86400"
+gcloud --configuration=personal storage rsync -r --checksums-only data/site/i gs://dergi-coze-org-site/i --cache-control="public, max-age=86400"
 $PY site/deploy.py
 $PY pipeline/export_api.py
 sh api/deploy.sh

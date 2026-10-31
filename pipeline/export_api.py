@@ -123,7 +123,7 @@ def main() -> None:
                "authors": authors, "games": games, "bands": bands, "topics": topics}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     tmp = OUT.with_suffix(".tmp")
-    tmp.write_bytes(gzip.compress(json.dumps(catalog, ensure_ascii=False).encode(), 9))
+    tmp.write_bytes(gzip.compress(json.dumps(catalog, ensure_ascii=False).encode(), 9, mtime=0))
     tmp.replace(OUT)
     print(f"{len(corpus_list)} corpora, {len(bands)} bands, {len(magazines)} magazines, {len(issues)} issues, {len(articles)} articles, {len(authors)} authors, "
           f"{len(games)} games, {len(topics)} topics → {OUT} ({OUT.stat().st_size / 1e6:.1f} MB)")
