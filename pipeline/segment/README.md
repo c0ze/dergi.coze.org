@@ -30,3 +30,12 @@ the repository root.
 
 `seg_compare.py` assembles into the work folder without touching the issue, for trying a
 segmentation before installing it.
+
+After `display.py`'s title pass rebuilds the blocks of issues that already have a segments.json
+(it adds `v…` title blocks and merges a few), `seg_remap.py <copy of the old blocks dir> <issue
+dir> --write` moves each mark to the matching new block and starts an article at the title
+block the pass added just above it (across page numbers and other scraps); without it the title
+lands at the end of the article before.
+A `"page"` mark on a page that now has a title block moves to that block. Two marks of different
+articles on one merged block stop it from writing; fix those by hand. Checked on Amiga Dünyası 28
+against a Haiku update agent (same marks, bar one section label).

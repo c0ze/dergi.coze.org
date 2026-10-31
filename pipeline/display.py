@@ -124,9 +124,13 @@ def upgrade(issue: str, page_no: int, page: pymupdf.Page, tails_only: bool = Fal
                 # A title Tesseract did not see at all: a new block, before what lies below it.
                 below = [b for b in blocks if b["bbox"][1] >= box[1]]
                 order = min((b["order"] for b in below), default=len(blocks)) - 0.5
+                # Not len(blocks): merged titles removed blocks above, and that number can be taken.
+                n = len(blocks)
+                while any(b["id"] == f"v{n:03d}" for b in blocks):
+                    n += 1
                 blocks.append({"kind": "title", "bbox": [round(v, 4) for v in box], "text": text,
                                "rel_size": round(rel, 2), "line_rel_sizes": [round(rel, 2)],
-                               "id": f"v{len(blocks):03d}", "order": order, "display": "vision"})
+                               "id": f"v{n:03d}", "order": order, "display": "vision"})
                 changed = True
         if tails:
             changed |= tail_lines(blocks, lines, median)
