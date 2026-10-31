@@ -424,3 +424,113 @@
     px: 2618
   alternatives: []
   extras: []
+42:
+  date: 1999-09
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi42.pdf
+    kind: pdf
+    pages: 100
+    px: 1654
+  supplements: []
+  alternatives: []
+  extras: []
+43:
+  date: 1999-10
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi43.pdf
+    kind: pdf
+    pages: 100
+    px: 1832
+  supplements: []
+  alternatives: []
+  extras: []
+44:
+  date: 1999-11
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi44.pdf
+    kind: pdf
+    pages: 101
+    px: 1818
+  supplements: []
+  alternatives: []
+  extras: []
+45:
+  date: 1999-12
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi45.pdf
+    kind: pdf
+    pages: 101
+    px: 1812
+  supplements: []
+  alternatives: []
+  extras: []
+46:
+  date: 2000-01
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi46.pdf
+    kind: pdf
+    pages: 101
+    px: 1813
+  supplements: []
+  alternatives: []
+  extras: []
+47:
+  date: 2000-03
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi47.pdf
+    kind: pdf
+    pages: 100
+    px: 1801
+  supplements: []
+  alternatives: []
+  extras: []
+48:
+  date: 2000-04
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi48.pdf
+    kind: pdf
+    pages: 100
+    px: 1783
+  supplements: []
+  alternatives: []
+  extras: []
+49:
+  date: 2000-05
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi49.pdf
+    kind: pdf
+    pages: 100
+    px: 1800
+  supplements: []
+  alternatives: []
+  extras: []
+50:
+  date: 2000-07
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi50.pdf
+    kind: pdf
+    pages: 116
+    px: 1816
+  supplements: []
+  alternatives: []
+  extras: []
+51:
+  date: 2000-08
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi51.pdf
+    kind: pdf
+    pages: 116
+    px: 1795
+  supplements: []
+  alternatives: []
+  extras: []
+65:
+  date: 2001-10
+  chosen:
+    path: data/sources/gameshow/retrojen/rrj_Gameshow_sayi65.pdf
+    kind: pdf
+    pages: 69
+    px: 1785
+  supplements: []
+  alternatives: []
+  extras: []

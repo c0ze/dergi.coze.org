@@ -64,10 +64,15 @@ gameshow:
     - '(?i)^(?:rrj_gameshow_sayi)?0*(\d+)\.(?:cbz|pdf)$'
   supplements: {overdose: '(?i)^OD \d+'}
   # Monthly from March 1995; no April 1997 issue; 36 is March-April 1998, 41 September-October
-  # 1998 (read off the covers).
+  # 1998 (read off the covers). Then a gap to September 1999 (42). Numbers are retrojen's: the
+  # covers of 46-49 print only 200001, 200003, 200004, 200005 (no February or June 2000 issue),
+  # and from there the printed number is one lower (50 prints "Sayı: 49", 51 "Sayı: 50", 65
+  # "Sayı: 64").
   dates: {first: [1995, 3], 26: "1997-05", 27: "1997-06", 28: "1997-07", 29: "1997-08", 30: "1997-09",
           31: "1997-10", 32: "1997-11", 33: "1997-12", 34: "1998-01", 35: "1998-02", 36: "1998-03",
-          37: "1998-05", 38: "1998-06", 39: "1998-07", 40: "1998-08", 41: "1998-09"}
+          37: "1998-05", 38: "1998-06", 39: "1998-07", 40: "1998-08", 41: "1998-09",
+          42: "1999-09", 43: "1999-10", 44: "1999-11", 45: "1999-12", 46: "2000-01", 47: "2000-03",
+          48: "2000-04", 49: "2000-05", 50: "2000-07", 51: "2000-08", 65: "2001-10"}
 
 commodore-bilgisayar-magazin:
   name: Commodore Bilgisayar Magazin
