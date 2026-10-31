@@ -3,7 +3,7 @@
 {% block main %}
 <section class="intro">
   <h1>Türkçe dergi arşivi</h1>
-  <p>{% if corpora|length > 1 %}Eski Türkçe dergiler ve fanzinler, koleksiyonlara ayrılmış: {% else %}1985'ten 2000'lere Commodore 64 ve Amiga dergileri. {% endif %}Her sayıyı sayfa sayfa okuyabilir, yazılarını reklamsız okuyabilir ve içlerinde arama yapabilirsiniz.</p>
+  <p>{% if corpora|length > 1 %}Eski Türkçe dergiler ve fanzinler, koleksiyonlara ayrılmış: {% else %}1985'ten 2000'lere Commodore 64, Amiga ve PC oyun dergileri. {% endif %}Her sayıyı sayfa sayfa okuyabilir, yazılarını reklamsız okuyabilir ve içlerinde arama yapabilirsiniz.</p>
 </section>
 {% for c in corpora %}
 <section class="corpus" aria-labelledby="k-{{ c.slug }}">

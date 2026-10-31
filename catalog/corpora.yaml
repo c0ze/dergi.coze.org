@@ -2,7 +2,7 @@
 # `ad` is the Turkish name shown on the site, `aciklama` the public description.
 - slug: retro
   ad: "Retro bilgisayar"
-  aciklama: "1985'ten 2000'lere Türkiye'de çıkan Commodore 64 ve Amiga dergileri ve fanzinleri."
+  aciklama: "1985'ten 2000'lere Türkiye'de çıkan Commodore 64, Amiga ve PC oyun dergileri ve fanzinleri."
 - slug: bilim
   ad: "Bilim"
   aciklama: "Bilim ve matematik dergileri."

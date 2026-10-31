@@ -84,11 +84,14 @@
 - slug: gameshow
   name: Gameshow
   corpus: retro
+  publisher: Kamer Bilgisayar Tic. San. Ltd. Şti.
   years: 1995-1998
   issues: {from: 1, to: 65}
   supplements: Overdose (with 38-41)
   note: >-
-    Started in 1995 as a photocopied fanzine at Kamer Bilgisayar in Beşiktaş (Metin Özer). Scans:
+    Started in 1995 as a photocopied fanzine at Kamer Bilgisayar in Beşiktaş (Metin Özer). The
+    masthead names M. Emin Gür as owner for Kamer Bilgisayar; editor Murat 'MAC' Adanç, later Mert
+    Topçu (by 35). Scans:
     1-41 and Overdose 1-4 by blockmind (Cem Tezcan, his public Google Drive); retrojen.org also
     has 42-51 and 65 (a later run; not downloaded yet). No April 1997 issue; 36 is March-April
     1998. Catalog/sources/gameshow.yaml has the scan per issue.
