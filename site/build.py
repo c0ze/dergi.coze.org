@@ -77,6 +77,9 @@ def load_issue(slug: str, number: str) -> dict:
     for n, info in meta["page_info"].items():
         if n in by_page:
             info["text"] = by_page[n]
+    # The issue as it was published (PDF, or the diskmag's zip), for titles with `downloads: true`.
+    meta["originals"] = [{"name": f.name, "mb": round(f.stat().st_size / 1e6, 1)}
+                         for f in sorted((d / "original").glob("*")) if f.is_file()] if (d / "original").exists() else []
     progs = json.loads((d / "prg" / "prg.json").read_text()) if (d / "prg" / "prg.json").exists() else []
     # Only programs whose every line passed its checksum are published.
     meta["programs"] = [p for p in progs if p["verified"]]
@@ -250,7 +253,8 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
         for issue in issues:
             d, base = issue["dir"], f"{t['slug']}/{issue['nn']}"
             # Assets: reader pages, thumbnails and figures. The scans themselves are not offered
-            # for download (decided 2026-10-27).
+            # for download (decided 2026-10-27); a title with `downloads: true` offers its own
+            # published files (Plazma's PDFs and diskmags) from the site, under indir/.
             kept = set()
             for sub in ("pages", "thumbs", "figures"):
                 for f in (d / sub).glob("*.webp") if (d / sub).exists() else []:
@@ -271,6 +275,11 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
                 # The author's profile name ("Can Öztürk"), not the byline as printed ("CAN ÖZTÜRK").
                 tags = article_tags(f"/{base}/{a['slug']}/")
                 a["author_name"] = (tags and tags["author"] and tags["author"]["name"]) or a.get("author")
+            # The issue as published, served by the site itself (the image host never serves PDFs).
+            if not t.get("downloads"):
+                issue["originals"] = []
+            for f in issue["originals"]:
+                copy(d / "original" / f["name"], OUT / base / "indir" / f["name"])
             render(base, "issue.html", title=t, issue=issue)
             arts = issue["articles"]
             for i, a in enumerate(arts):

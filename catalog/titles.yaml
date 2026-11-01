@@ -16,7 +16,9 @@
   publisher: Teleteknik A.Ş.
   years: 1986-1992
   issues: {from: 1, to: 79}
-  supplements: Program Döküm Eki (78 issues had one)
+  supplements: >-
+    Program Döküm Eki (78 issues had one); Commodore Amiga Bülteni (2 is appended to issue 54
+    on the site, from retrojen.org; 1 not found)
   aciklama: >-
     Commodore 64 ve Amiga'yı Türkiye'ye getiren Teleteknik'in aylık dergisi. Program
     dökümleri, donanım ve yazılım yazıları, oyun tanıtımları ve okur mektupları.
@@ -99,6 +101,28 @@
     PC oyunlarına adanmış aylık dergi. 1995'te Beşiktaş'ta bir bilgisayar dükkânında fotokopiyle
     başladı, okurlarıyla birlikte büyüdü: oyun tanıtımları, çözümler, hileler, okur köşeleri ve
     Overdose eki.
+
+- slug: plazma
+  name: Plazma
+  corpus: retro
+  publisher: Plazma ekibi (Türk demoscene'i)
+  years: 2006-2012
+  issues: {from: 1, to: 8}
+  downloads: true
+  note: >-
+    Free Turkish demoscene e-zine (plazma-dergi.org), published with Arda's permission. 1-3 are
+    Windows diskmags (2006-01, 2006-04, 2007-02; zips from the Wayback Machine, 2013 captures);
+    pipeline/diskmag.py turns their text files and pictures into a digital edition PDF, one
+    article per section. 4-8 are PDFs made with FOP from DocBook (no usable text layer: rasterized
+    and OCR'd): 4 (4 Feb 2008) and 5 (Apr 2008) from retrojen.org, 6-7 from Arda's NAS, 8 from
+    retrojen. 6, 7 and 8 are dated Sep 2009, 2010 and 2011 on their covers but all came out in
+    January 2012 (editorial of 6). The PDFs open with a plain title page: the reader shows the
+    issue's own cover instead (plazma_NN_cover_large.jpg, Wayback). The originals (zip or PDF)
+    are offered for download on each issue page. Sources: data/sources/plazma/.
+  aciklama: >-
+    Türk demoscene'inin ücretsiz e-dergisi. İlk üç sayı Windows için diskmag olarak, sonrakiler
+    PDF olarak çıktı: parti raporları, demo incelemeleri, röportajlar, Commodore 64, Amiga, Amstrad,
+    Atari ve PC üzerine eğitici yazılar ve programlama kursları.
 
 - slug: amiga-show
   name: Amiga Show

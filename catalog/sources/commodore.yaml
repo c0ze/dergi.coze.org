@@ -918,6 +918,10 @@
     kind: pdf
     pages: 32
     px: 1604
+  - path: data/sources/commodore/bulten/Commodore Amiga Bülteni - 02 (08-1990).pdf
+    kind: pdf
+    pages: 16
+    px: 2264
   alternatives:
   - path: data/sources/commodore/Commodore/Commodore - 54 (08-1990).pdf
     kind: pdf

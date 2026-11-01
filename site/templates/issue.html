@@ -12,7 +12,9 @@
     <p class="lede">{{ issue.human_date }} · {{ issue.pages }} sayfa</p>
     <p class="actions">
       <a class="button" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/1/">Sayfaları oku</a>
+      {% for f in issue.originals %}<a class="button secondary" href="/{{ title.slug }}/{{ issue.nn }}/indir/{{ f.name }}" download>{% if f.name.endswith('.zip') %}Diskmag'ı indir{% else %}PDF'i indir{% endif %} ({{ f.mb|string|replace('.', ',') }} MB)</a>{% endfor %}
     </p>
+    {% if issue.originals and issue.originals[0].name.endswith('.zip') %}<p class="meta">Bu sayı Windows için bir diskmag (program) olarak çıktı. Burada yazıları ve resimleri okunur bir düzende veriyoruz; programın kendisi zip içinde.</p>{% endif %}
     <h2>Bu sayıda</h2>
     <ol class="toc">
     {% for a in issue.articles %}
