@@ -321,6 +321,7 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
     render("hakkinda", "about.html", shelf=shelf, corpora=corpora, stats=stats)
     for f in (SITE / "static").iterdir():
         copy(f, OUT / "static" / f.name)
+    copy(SITE / "favicon.ico", OUT / "favicon.ico")  # browsers ask for /favicon.ico on their own
     print(f"built {OUT} ({sum(len(t['issues_have']) for t in shelf)} issues)")
 
 
