@@ -1,17 +1,27 @@
-{# Type-in programs: verified line by line against the magazine's checksums, tried in VICE. #}
+{# Type-in programs extracted from the listings: checked line by line against the magazine's
+   checksums where it printed them, tried in VICE. Ones with something wrong say what. #}
 <section class="programs" data-pagefind-ignore aria-labelledby="programlar">
   <h2 id="programlar">{{ heading }}</h2>
-  <p class="meta">Dergideki dökümlerden çıkarıldı. Her satırın kontrol toplamı doğrulandı ve program VICE emülatöründe denendi.
-  Emülatöre sürükleyip bırakabilir ya da gerçek bir C64'te <code>LOAD "AD",8,1</code> ile yükleyebilirsiniz.</p>
+  <p class="meta">Dergideki dökümlerden çıkarıldı; satırlar derginin kontrol toplamlarıyla doğrulandı ve programlar VICE emülatöründe denendi.
+  Tarayıcıdaki C64'te çalıştırabilir, indirip bir emülatöre sürükleyip bırakabilir ya da gerçek bir C64'te <code>LOAD "AD",8,1</code> ile yükleyebilirsiniz.
+  "Sorun bulundu" yazanlarda bazı satırlar okunamadı ya da tutmadı; düzeltilmiş bir sürümünüz varsa <a href="mailto:contact@coze.org">contact@coze.org</a> adresine gönderin.</p>
   <ul>
   {% for p in programs %}
-    <li>
-      {% if p.screenshot %}<img src="{{ A }}/{{ title.slug }}/{{ issue.nn }}/prg/{{ p.screenshot }}" alt="{{ p.name }} çalışırken (VICE ekran görüntüsü)" width="384" height="272" loading="lazy">{% endif %}
+    {% set shot = p.screenshot %}
+    <li{% if not shot %} class="noshot"{% endif %}>
+      {% if shot %}<img src="{{ A }}/{{ title.slug }}/{{ issue.nn }}/prg/{{ p.screenshot }}" alt="{{ p.name }}, VICE'ta (ekran görüntüsü)" width="384" height="272" loading="lazy">{% endif %}
       <div>
         <strong>{{ p.name }}</strong>
         {% if show_article %}<span class="meta"><a href="/{{ title.slug }}/{{ issue.nn }}/{{ p.article }}/">{{ p.article_title }}</a></span>{% endif %}
-        <p class="meta">{{ p.bytes }} bayt, {{ p.load }}–{{ p.end }} · {{ p.lines }} satır{% if p.start %} · çalıştırmak için <code>{{ p.start }}</code>{% endif %}</p>
-        <a class="button secondary" href="{{ A }}/{{ title.slug }}/{{ issue.nn }}/prg/{{ p.file }}" download>{{ p.file }} indir</a>
+        <p class="meta">{% if p.dialect == "c128" %}Commodore 128 (BASIC 7.0) · {% elif p.dialect == "simon" %}Simons' BASIC · {% endif %}{{ p.bytes }} bayt, {{ p.load }}–{{ p.end }} · {{ p.lines }} satır{% if p.start %} · çalıştırmak için <code>{{ p.start }}</code>{% endif %}</p>
+        <p class="meta">{% if p.verified %}Bütün satırlar kontrol toplamıyla doğrulandı.{% endif %}
+          {% if p.tested and not p.part %}{{ "x128" if p.dialect == "c128" else ("Simons' BASIC kartuşuyla VICE" if p.dialect == "simon" else "VICE") }}'ta denendi: {% if p.screen_error %}<code>{{ p.screen_error }}</code> hatası verdi.{% else %}hata vermedi.{% endif %}{% endif %}
+          {% for n in p.notes %}{{ n }} {% endfor %}
+          {% if p.dialect == "simon" %}Çalıştırmak için Simons' BASIC kartuşu gerekiyor: tarayıcıda kendi kartuş dosyanızla (.crt) çalıştırabilirsiniz.{% endif %}</p>
+        {% if p.issues %}<div class="prg-issues"><strong class="badge">Sorun bulundu</strong><ul>{% for i in p.issues %}<li>{{ i }}</li>{% endfor %}</ul></div>{% endif %}
+        {% set prg = "/" ~ title.slug ~ "/" ~ issue.nn ~ "/prg/" ~ p.file %}
+        {% if p.standalone and not p.issues %}<a class="button" href="/c64/?{{ {'p': prg, 'ad': p.name, 's': p.start or '', 'm': p.dialect if p.dialect in ('c128', 'simon') else ''}|urlencode }}">Tarayıcıda çalıştır</a>{% endif %}
+        <a class="button secondary" href="{{ prg }}" download>{{ p.file }} indir</a>
       </div>
     </li>
   {% endfor %}

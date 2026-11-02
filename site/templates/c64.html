@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Tarayıcıda C64{% endblock %}
+{% block description %}Dergilerdeki program dökümlerini tarayıcıda, bir Commodore 64 emülatöründe çalıştırın.{% endblock %}
+{% block main %}
+<h1 class="c64-title">Tarayıcıda C64</h1>
+<p class="lede c64-lede">Program yükleniyor…</p>
+<div class="c64-frame"><div id="c64"></div></div>
+<p class="meta c64-help">Klavyeniz C64 klavyesi gibi çalışır: <kbd>RUN/STOP</kbd> için <kbd>Esc</kbd>, <kbd>RETURN</kbd> için <kbd>Enter</kbd>.
+Program kendiliğinden başlamazsa ekrana gösterilen komutu yazıp <kbd>Enter</kbd>'a basın.</p>
+<p class="meta">Emülatör: <a href="https://emulatorjs.org">EmulatorJS</a> ve <a href="https://github.com/EmulatorJS/vice-libretro">VICE</a> (GPL; kaynak kodları bağlantılarda).</p>
+<noscript><p>Emülatör için JavaScript gerekiyor. Programı indirip VICE ile de çalıştırabilirsiniz.</p></noscript>
+{% endblock %}
+{% block scripts %}<script src="/static/c64.js"></script>{% endblock %}

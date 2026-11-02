@@ -5,10 +5,13 @@ Each article's items go to the model in batches as a JSON array, and come back a
 of the same length. A correction is accepted only when it stays close to the original
 (edit distance ≤ MAX_CHANGE of its length): the model may fix letters and words, not rewrite.
 The original text stays in the article as `raw`; results are cached by (model, text) hash,
-so re-assembling an issue and correcting again costs nothing.
+so re-assembling an issue and correcting again costs nothing. The model is Claude Haiku, run
+through the `claude` CLI (Gemini no more, Arda 2026-11-02); corrections Gemini made earlier
+stay good from the cache, so only new text costs anything. Articles read from the page images
+(prose.py, `read`) are not OCR and are skipped.
 
 Output: data/issues/<slug>/<NN>/articles.json, corrected in place (items gain `raw`).
-Usage:  correct.py <slug>/<NN> [...] [--model gemini-3.1-flash-lite] [--jobs 4]
+Usage:  correct.py <slug>/<NN> [...] [--model haiku] [--jobs 4]
 """
 
 import argparse
@@ -29,7 +32,8 @@ from fsutil import read_json, write_json  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "data" / "corrections"
-MODEL = "gemini-3.1-flash-lite"
+MODEL = "haiku"
+LEGACY = "gemini-3.1-flash-lite"  # its cached corrections still count
 MAX_CHANGE = 0.20
 BATCH = 20
 URL = "https://aiplatform.googleapis.com/v1/projects/dergi-coze-org/locations/global/publishers/google/models/{model}:generateContent"
@@ -91,6 +95,23 @@ def key(model: str, text: str) -> str:
 
 
 def ask(model: str, pieces: list[str], tok: str, corpus: str = "retro") -> list[str] | None:
+    """The corrected pieces from Claude (`claude -p`, the model by its alias), or None."""
+    if not model.startswith("gemini"):
+        prompt = INSTRUCTIONS[corpus] + "\n\nAnswer with the JSON array only, no other text."
+        for attempt in range(3):
+            try:
+                r = subprocess.run(["claude", "-p", "--model", model, "--output-format", "json", "--system-prompt", prompt],
+                                   input=json.dumps(pieces, ensure_ascii=False), capture_output=True, text=True, timeout=300)
+                text = json.loads(r.stdout)["result"].strip()
+                out = json.loads(text[text.index("["):text.rindex("]") + 1])
+                return out if isinstance(out, list) and len(out) == len(pieces) and all(isinstance(x, str) for x in out) else None
+            except (subprocess.TimeoutExpired, json.JSONDecodeError, KeyError, ValueError):
+                time.sleep(2 ** attempt)
+        return None
+    return ask_gemini(model, pieces, tok, corpus)
+
+
+def ask_gemini(model: str, pieces: list[str], tok: str, corpus: str = "retro") -> list[str] | None:
     body = {
         "systemInstruction": {"parts": [{"text": INSTRUCTIONS[corpus]}]},
         "contents": [{"role": "user", "parts": [{"text": json.dumps(pieces, ensure_ascii=False)}]}],
@@ -140,17 +161,21 @@ def correct_pieces(model: str, pieces: list[str], tok: str, corpus: str = "retro
     """Corrected pieces (cached); a rejected or failed correction keeps the original."""
     CACHE.mkdir(parents=True, exist_ok=True)
     out = list(pieces)
-    todo = [i for i, p in enumerate(pieces) if read_json(CACHE / f"{key(model, p)}.json") is None]
+    def cached(p: str) -> dict | None:
+        return read_json(CACHE / f"{key(model, p)}.json") or read_json(CACHE / f"{key(LEGACY, p)}.json")
+    todo = [i for i, p in enumerate(pieces) if cached(p) is None]
     for start in range(0, len(todo), BATCH):
         idx = todo[start:start + BATCH]
         fixed = ask(model, [pieces[i] for i in idx], tok, corpus)
+        if fixed is None:  # the model failed: keep the original this time, cache nothing
+            continue
         for n, i in enumerate(idx):
             f = fixed[n] if fixed else pieces[i]
             ok = accept(pieces[i], f)
             write_json(CACHE / f"{key(model, pieces[i])}.json",
                        {"raw": pieces[i], "fixed": f if ok else pieces[i], "accepted": ok, "proposed": f})
     for i, p in enumerate(pieces):
-        out[i] = read_json(CACHE / f"{key(model, p)}.json")["fixed"]
+        out[i] = (cached(p) or {"fixed": p})["fixed"]
     return out
 
 
@@ -165,6 +190,8 @@ def correct_issue(issue: str, model: str, tok: str) -> tuple[int, int]:
     articles = read_json(path) or []
     changed = total = 0
     for a in articles:
+        if a.get("read"):  # read from the page images (prose.py), not OCR: nothing to correct
+            continue
         # Work from the raw text, so correcting twice (or with another model) starts clean.
         a["title_raw"] = a.get("title_raw", a["title"])
         items = [x for x in a["body"] if x["type"] in ("p", "h2", "caption") and x.get("text")]
@@ -186,7 +213,7 @@ def main() -> None:
     ap.add_argument("--model", default=MODEL)
     ap.add_argument("--jobs", type=int, default=4)
     args = ap.parse_args()
-    tok = token()
+    tok = token() if args.model.startswith("gemini") else ""
     with ThreadPoolExecutor(args.jobs) as pool:
         for issue, (changed, total) in zip(args.issues, pool.map(lambda i: correct_issue(i, args.model, tok), args.issues)):
             print(f"{issue}: {changed}/{total} pieces corrected", flush=True)

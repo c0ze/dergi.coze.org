@@ -23,6 +23,29 @@
     Commodore 64 ve Amiga'yı Türkiye'ye getiren Teleteknik'in aylık dergisi. Program
     dökümleri, donanım ve yazılım yazıları, oyun tanıtımları ve okur mektupları.
 
+- slug: commodore-pde
+  name: Program Döküm Eki
+  corpus: retro
+  publisher: Teleteknik A.Ş.
+  years: 1986-1992
+  issues: {from: 1, to: 78}
+  supplement_of: commodore
+  site_upto: 20
+  search: brief
+  note: >-
+    Commodore's listing supplement, numbered as the magazine (PDE NN came with Commodore NN), cut
+    from the archive's Commodore PDFs into data/sources/commodore/pde/ (PDE 6 held the supplement
+    twice: cut to its 24 pages). The listings are read by Haiku agents from page crops, failing
+    lines again by Sonnet (pipeline/listings.py), checked by MDE/BDE checksums (c64basic.py);
+    programs split per article by pipeline/pde.py. Only programs whose every line passes are
+    published as .prg. Goes on the site in batches (site_upto: the last issue checked end to end).
+    search: brief: the article text is mostly the listings themselves, so search (Pagefind, the
+    Vertex index) and the API get only title, author and program names (Arda, 2026-11-02).
+  aciklama: >-
+    Commodore dergisiyle birlikte verilen program dökümleri: oyunlar, araçlar, eğitim ve grafik
+    programları, makine dili ve BASIC listeleri, her biri kısa bir açıklamayla. Kontrol
+    toplamlarıyla satır satır doğrulanan programlar .prg olarak indirilebilir.
+
 - slug: 64ler
   name: 64'ler
   corpus: retro

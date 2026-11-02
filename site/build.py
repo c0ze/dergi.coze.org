@@ -13,6 +13,7 @@ Then:  npx -y pagefind@1.3.0 --site data/site   (search index)
 
 import argparse
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -81,9 +82,58 @@ def load_issue(slug: str, number: str) -> dict:
     meta["originals"] = [{"name": f.name, "mb": round(f.stat().st_size / 1e6, 1)}
                          for f in sorted((d / "original").glob("*")) if f.is_file()] if (d / "original").exists() else []
     progs = json.loads((d / "prg" / "prg.json").read_text()) if (d / "prg" / "prg.json").exists() else []
-    # Only programs whose every line passed its checksum are published.
-    meta["programs"] = [p for p in progs if p["verified"]]
+    # Every program is offered; one with failing or missing lines, or a BASIC program that stops
+    # in VICE on an error saying it was put together from the wrong lines (test_prg.py), carries
+    # what was found. A machine-code part may answer its bare SYS with an error: not the bytes.
+    progs = [p for p in progs if (d / "prg" / p["file"]).exists()]
+    for p in progs:
+        p["issues"] = program_issues(p)
+        p["notes"] = (["Dökümde kontrol toplamı yok: satırlar doğrulanamadı."] if p.get("format") == "basic" else []) + (
+            ["Tek başına çalışan bir program değil: yazıdaki öteki parçalarıyla birlikte kullanılıyor."] if p.get("part") else []) + (
+            printed_note(p))
+    meta["programs"] = progs
+
     return meta
+
+
+def program_issues(p: dict) -> list[str]:
+    """What is known to be wrong with an extracted program, for the reader (pde.py `failed`:
+    line numbers or addresses whose checksum fails, "gap A-B", "start $X", "no line N",
+    "symbol N"). A line printed blank ("printed N") is a note, not a fault: `printed_note`."""
+    failed = p.get("failed") or []
+    bad = [f for f in failed if not f.startswith(("gap ", "start ", "no line ", "symbol ", "printed "))]
+    symbols = [f[7:] for f in failed if f.startswith("symbol ")]
+    spans = [[int(x, 16) for x in f[4:].split("-")] for f in failed if f.startswith("gap ")]
+    gaps = [f"{a:04X}–${b - 1:04X}" for a, b in spans if b > a and (b - a) % 8 == 0]
+    odd = len(spans) - len(gaps)  # a line whose address is off the 8-byte steps: misread address
+    starts = [f[6:] for f in failed if f.startswith("start ")]
+    missing = [f[8:] for f in failed if f.startswith("no line ")]
+    out = []
+    if bad:
+        out.append(f"{len(bad)} satırın kontrol toplamı tutmuyor: {', '.join(bad[:8])}{'…' if len(bad) > 8 else ''}.")
+    if gaps:
+        out.append(f"Eksik satırlar: ${', $'.join(gaps[:4])}{'…' if len(gaps) > 4 else ''}.")
+    if odd:
+        out.append(f"{odd} satırın adresi yanlış okunmuş (8 baytlık adımlara uymuyor).")
+    if starts:
+        out.append(f"Makine dilinin ilk satırları okunamadı (döküm {starts[0]} adresinden başlıyor).")
+    if symbols:
+        out.append(f"{len(symbols)} satırda okunamayan işaretler var: {', '.join(symbols[:8])}{'…' if len(symbols) > 8 else ''}.")
+    if missing:
+        out.append(f"Programın atladığı satırlar dökümde yok: {', '.join(missing[:8])}{'…' if len(missing) > 8 else ''}.")
+    if p.get("start") == "RUN" and not p.get("part") and p.get("screen_error") and re.search(r"STATEMENT|WITHOUT|SYNTAX|PROC NOT FOUND",
+                                                                         p["screen_error"]):
+        out.append(f"VICE'ta hata verdi: {p['screen_error']}.")
+    return out
+
+
+def printed_note(p: dict) -> list[str]:
+    """Lines printed as (almost) nothing whose checksum says there was more: kept as printed."""
+    printed = [f[8:] for f in p.get("failed") or [] if f.startswith("printed ")]
+    if not printed:
+        return []
+    return [f"{len(printed)} satır dergide eksik basılmış (kontrol toplamı fazlasını gösteriyor); basıldığı gibi alındı"
+            f" ({', '.join(printed[:8])}{'…' if len(printed) > 8 else ''})."]
 
 
 def copy(src: Path, dst: Path) -> None:
@@ -240,6 +290,9 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
     for t in titles:
         have = sorted(p.name for p in (ISSUES / t["slug"]).glob("*") if (p / "issue.json").exists()) \
             if (ISSUES / t["slug"]).exists() else []
+        # A title published in batches shows only the issues checked so far (`site_upto`).
+        if t.get("site_upto"):
+            have = [nn for nn in have if int(nn) <= t["site_upto"]]
         if not have:
             continue
         corpus = CORPORA[t.get("corpus", "retro")]
@@ -247,7 +300,7 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
         issues = [load_issue(t["slug"], nn) for nn in have]
         numbers = {i["number"] for i in issues}
         t["issues_have"] = issues
-        t["missing"] = [n for n in known_issues(t) if n not in numbers]
+        t["missing"] = [n for n in known_issues(t) if n not in numbers and n <= t.get("site_upto", n)]
         shelf.append(t)
 
         for issue in issues:
@@ -260,11 +313,13 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
                 for f in (d / sub).glob("*.webp") if (d / sub).exists() else []:
                     kept.add(OUT / "i" / base / sub / f.name)
                     copy(f, OUT / "i" / base / sub / f.name)
+            # Programs: the screenshot on the image host, the .prg on the site itself, where the
+            # in-browser C64 (/c64/) can fetch it.
             for prog in issue["programs"]:
-                for name in (prog["file"], prog.get("screenshot")):
-                    if name:
-                        kept.add(OUT / "i" / base / "prg" / name)
-                        copy(d / "prg" / name, OUT / "i" / base / "prg" / name)
+                if prog.get("screenshot"):
+                    kept.add(OUT / "i" / base / "prg" / prog["screenshot"])
+                    copy(d / "prg" / prog["screenshot"], OUT / "i" / base / "prg" / prog["screenshot"])
+                copy(d / "prg" / prog["file"], OUT / base / "prg" / prog["file"])
             # Figures a re-assembly renamed or dropped must not linger here, nor in the bucket,
             # which the deploy syncs with deletion.
             for f in (OUT / "i" / base).rglob("*"):
@@ -275,6 +330,13 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
                 # The author's profile name ("Can Öztürk"), not the byline as printed ("CAN ÖZTÜRK").
                 tags = article_tags(f"/{base}/{a['slug']}/")
                 a["author_name"] = (tags and tags["author"] and tags["author"]["name"]) or a.get("author")
+            # A supplement title (`supplement_of`) and its magazine link to each other, issue by
+            # issue: the supplement's numbers are the magazine's.
+            issue["companions"] = [
+                {"slug": o["slug"], "name": o["name"], "nn": issue["nn"], "supplement": o.get("supplement_of") == t["slug"]}
+                for o in titles if (o["slug"] == t.get("supplement_of") or o.get("supplement_of") == t["slug"])
+                and (ISSUES / o["slug"] / issue["nn"] / "issue.json").exists()
+                and int(issue["nn"]) <= o.get("site_upto", int(issue["nn"]))]
             # The issue as published, served by the site itself (the image host never serves PDFs).
             if not t.get("downloads"):
                 issue["originals"] = []
@@ -319,6 +381,10 @@ def build(asset_base: str, only: set[str] | None, private: bool) -> None:
              "authors": sum(any(x["slug"] in only for x in a["articles"]) for a in TAX["authors"].values()),
              "games": sum(any(x["slug"] in only for x in arts) for arts in TAX["games"].values())}
     render("hakkinda", "about.html", shelf=shelf, corpora=corpora, stats=stats)
+    # The in-browser C64 for the programs (scripts/emulator.sh fetches it into data/emu).
+    if (ROOT / "data" / "emu").exists():
+        render("c64", "c64.html")
+        shutil.copytree(ROOT / "data" / "emu", OUT / "emu", dirs_exist_ok=True)
     for f in (SITE / "static").iterdir():
         copy(f, OUT / "static" / f.name)
     copy(SITE / "favicon.ico", OUT / "favicon.ico")  # browsers ask for /favicon.ico on their own

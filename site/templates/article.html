@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ article.title }} · {{ title.name }} {{ issue.number }}{% endblock %}
-{% block description %}{% for x in article.body if x.type == "p" %}{% if loop.first %}{{ x.text[:155] }}{% endif %}{% endfor %}{% endblock %}
+{% block description %}{% if title.search == "brief" %}{{ article.title }}: {{ title.name }} {{ issue.number }}{% if programs %}, {{ programs|map(attribute="name")|unique|join(", ") }}{% endif %}{% else %}{% for x in article.body if x.type == "p" %}{% if loop.first %}{{ x.text[:155] }}{% endif %}{% endfor %}{% endif %}{% endblock %}
 {% block main %}
 <nav class="crumbs" aria-label="Konum"><a href="/">Dergiler</a> › <a href="/{{ title.corpus }}/">{{ title.corpus_ad }}</a> › <a href="/{{ title.slug }}/">{{ title.name }}</a> › <a href="/{{ title.slug }}/{{ issue.nn }}/">Sayı {{ issue.number }}</a></nav>
 <article class="prose" data-pagefind-body>
@@ -25,6 +25,8 @@
     {% for t in tags.topics %}<li><a class="tag" href="{{ t.url }}">{{ t.name }}</a></li>{% endfor %}
   </ul>
   {% endif %}
+  {# A title with `search: brief` (listing supplements): the listing text stays out of search. #}
+  {% if title.search == "brief" %}{% if programs %}<p class="meta">Program dökümü: {{ programs|map(attribute="name")|unique|join(", ") }}</p>{% endif %}<div data-pagefind-ignore>{% endif %}
   {% for x in article.body %}
     {% if x.type == "p" %}<p>{{ x.text }}</p>
     {% elif x.type == "h2" %}<h2>{{ x.text }}</h2>
@@ -33,7 +35,7 @@
     {% elif x.type == "figure" %}<figure><img src="{{ A }}/{{ title.slug }}/{{ issue.nn }}/figures/{{ x.src }}" alt="" loading="lazy"></figure>
     {% endif %}
   {% endfor %}
-  <div class="folded" aria-hidden="true">{{ article|fold }}</div>
+  {% if title.search == "brief" %}</div>{% else %}<div class="folded" aria-hidden="true">{{ article|fold }}</div>{% endif %}
 </article>
 {% if programs %}{% with heading="Bu yazıdaki programlar", show_article=false %}{% include "_programs.html" %}{% endwith %}{% endif %}
 <aside class="source" data-pagefind-ignore>

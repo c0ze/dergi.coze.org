@@ -17,6 +17,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent))
 import taxonomy  # noqa: E402
 from fsutil import read_json  # noqa: E402
+from pde import brief  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = "https://dergi.coze.org"
@@ -63,6 +64,8 @@ def main() -> None:
         t = titles[slug]
         if t.get("private"):  # waiting for the rights holder's permission: private site only
             continue
+        if int(nn) > t.get("site_upto", int(nn)):  # published in batches: not on the site yet
+            continue
         mag = magazines.setdefault(slug, {
             "slug": slug, "name": t["name"], "corpus": t.get("corpus", "retro"),
             "years": str(t.get("years", "")), "publisher": t.get("publisher"),
@@ -93,7 +96,9 @@ def main() -> None:
                 "author_url": f"{SITE}/yazar/{author['slug']}/" if author else None,
                 "games": [f"{n} ({taxonomy.PLATFORM_NAMES.get(p, p)})" for n, p in tags.get("games", [])],
                 "topics": [topic_names[s] for s in tags.get("topics", [])],
-                "text": article_text(a, tags.get("author"))}
+                # `search: brief` (listing supplements): not the listings, only what they hold.
+                "text": brief(issue_dir, a, meta["number"]) if t.get("search") == "brief"
+                else article_text(a, tags.get("author"))}
 
     def urls(arts: list[dict]) -> list[str]:
         return [SITE + a["url"] for a in arts if SITE + a["url"] in articles]

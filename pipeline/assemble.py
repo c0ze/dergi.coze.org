@@ -35,6 +35,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).parent))
 from fsutil import write_json  # noqa: E402
+from prose import apply as apply_prose  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 ACCEPT = 0.6
@@ -601,6 +602,7 @@ def assemble(issue: str, segments: Path | None = None, out_dir: Path | None = No
     articles = [a for a in articles if any(x["type"] in ("p", "pre") for x in a["body"])
                 or (id(a) in page_starts and a["body"])]
 
+    apply_prose(issue_dir, articles)  # article text the readers read from the pages, where there is any
     write_json(out_dir / "articles.json", articles, indent=1)
     write_json(out_dir / "pages.json", pages, indent=1)
     print(f"{issue}: {len(articles)} articles, "

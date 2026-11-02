@@ -25,6 +25,9 @@ import numpy as np
 import requests
 import yaml
 
+sys.path.insert(0, str(Path(__file__).parent))
+from pde import brief  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "search"
 CACHE = OUT / "cache"
@@ -86,6 +89,10 @@ def main() -> None:
     corpus_of = {t["slug"]: corpora[t.get("corpus", "retro")]
                  for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())}
     private = {t["slug"] for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text()) if t.get("private")}
+    briefs = {t["slug"] for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())
+              if t.get("search") == "brief"}
+    upto = {t["slug"]: t["site_upto"] for t in yaml.safe_load((ROOT / "catalog" / "titles.yaml").read_text())
+            if t.get("site_upto")}
     meta, texts = [], []
     for slug in sys.argv[1:]:
         if slug in private:  # the search API is public: private titles are not embedded
@@ -93,14 +100,15 @@ def main() -> None:
             continue
         for issue_dir in sorted((ROOT / "data" / "issues" / slug).iterdir()):
             arts = issue_dir / "articles.json"
-            if not arts.exists():
+            if not arts.exists() or int(issue_dir.name) > upto.get(slug, int(issue_dir.name)):
                 continue
             issue = json.loads((issue_dir / "issue.json").read_text())
             date = issue.get("date")
             when = (f" · {MONTHS[int(date[5:7]) - 1]} {date[:4]}" if len(date) > 4 else f" · {date}") if date else ""
             for a in json.loads(arts.read_text()):
                 pages = f"s. {a['pages'][0]}" + (f"–{a['pages'][-1]}" if len(a["pages"]) > 1 else "")
-                for t in passages(a):
+                # A title with `search: brief` (listing supplements): one passage, no listing text.
+                for t in [brief(issue_dir, a, issue["number"])] if slug in briefs else passages(a):
                     meta.append({"url": f"/{slug}/{issue_dir.name}/{a['slug']}/", "title": a["title"],
                                  "source": f"{titles.get(slug, slug)} · Sayı {issue['number']}{when}",
                                  "pages": pages, "author": a.get("author"), "dergi": titles.get(slug, slug),

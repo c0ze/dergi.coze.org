@@ -10,6 +10,7 @@
   <div>
     <h1>{{ title.name }} <span>Sayı {{ issue.number }}</span></h1>
     <p class="lede">{{ issue.human_date }} · {{ issue.pages }} sayfa</p>
+    {% for c in issue.companions %}<p class="meta">{% if c.supplement %}Bu sayının eki: <a href="/{{ c.slug }}/{{ c.nn }}/">{{ c.name }} {{ issue.number }}</a>{% else %}<a href="/{{ c.slug }}/{{ c.nn }}/">{{ c.name }} sayı {{ issue.number }}</a> ile birlikte verilen ek{% endif %}</p>{% endfor %}
     <p class="actions">
       <a class="button" href="/{{ title.slug }}/{{ issue.nn }}/sayfa/1/">Sayfaları oku</a>
       {% for f in issue.originals %}<a class="button secondary" href="/{{ title.slug }}/{{ issue.nn }}/indir/{{ f.name }}" download>{% if f.name.endswith('.zip') %}Diskmag'ı indir{% else %}PDF'i indir{% endif %} ({{ f.mb|string|replace('.', ',') }} MB)</a>{% endfor %}

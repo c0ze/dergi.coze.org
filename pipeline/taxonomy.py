@@ -127,6 +127,8 @@ def collect() -> dict:
     for tags_file in sorted((ROOT / "data" / "issues").glob("*/*/tags.json")):
         issue_dir = tags_file.parent
         slug, nn = issue_dir.parent.name, issue_dir.name
+        if int(nn) > titles.get(slug, {}).get("site_upto", int(nn)):  # not on the site yet
+            continue
         meta = read_json(issue_dir / "issue.json")
         tags = read_json(tags_file) or {}
         for a in read_json(issue_dir / "articles.json") or []:

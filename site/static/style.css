@@ -182,13 +182,14 @@ h2 { font-size: var(--step-1); margin: 2rem 0 0.5rem; }
 
 /* Type-in programs */
 .programs { max-width: 46rem; margin-top: 2.5rem; font-family: var(--sans); }
-.programs ul { list-style: none; padding: 0; display: grid; gap: 1.25rem; }
-.programs li { display: grid; grid-template-columns: minmax(0, 12rem) 1fr; gap: 1rem; align-items: start; }
+.programs > ul { list-style: none; padding: 0; display: grid; gap: 1.25rem; }
+.programs > ul > li { display: grid; grid-template-columns: minmax(0, 12rem) 1fr; gap: 1rem; align-items: start; }
+.programs > ul > li.noshot { grid-template-columns: 1fr; }
 .programs img { image-rendering: pixelated; border: 1px solid var(--rule); width: 100%; }
 .programs strong { display: block; font-size: var(--step-0); }
 .programs .button { margin-top: 0.25rem; }
 .programs code { font-family: var(--mono); font-size: 0.9em; background: var(--paper-2); padding: 0 0.25em; }
-@media (max-width: 30rem) { .programs li { grid-template-columns: 1fr; } }
+@media (max-width: 30rem) { .programs > ul > li { grid-template-columns: 1fr; } }
 
 /* Görünüm (appearance) menu in the header */
 .prefs { position: relative; font-family: var(--sans); }
@@ -250,3 +251,14 @@ h2 { font-size: var(--step-1); margin: 2rem 0 0.5rem; }
 .corpus h2 a { color: inherit; text-decoration: none; }
 .corpus h2 a:hover, .corpus h2 a:focus-visible { text-decoration: underline; }
 .corpus > .meta { margin: 0 0 1rem; }
+
+/* The in-browser C64 (/c64/) */
+.c64-frame { max-width: 48rem; aspect-ratio: 4 / 3; background: #000; margin: 1rem 0; }
+.c64-frame #c64 { width: 100%; height: 100%; }
+.c64-help kbd { font-family: var(--mono); font-size: 0.85em; border: 1px solid var(--rule); border-radius: 3px; padding: 0 0.3em; }
+.programs .prg-issues { font-size: var(--step--1); margin: 0.4rem 0; padding: 0.4rem 0.6rem; border-left: 3px solid var(--accent); background: var(--paper-2); }
+.programs .prg-issues .badge { font-size: inherit; }
+.programs .prg-issues ul { list-style: disc; padding-left: 1.2rem; margin: 0.2rem 0 0; }
+.c64-cart { max-width: 48rem; border-left: 3px solid var(--accent); background: var(--paper-2); padding: 0.6rem 1rem; margin: 1rem 0; }
+.c64-cart p { margin: 0.4rem 0; }
+.c64-cart .error { font-weight: 600; }
