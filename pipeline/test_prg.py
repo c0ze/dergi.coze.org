@@ -62,17 +62,18 @@ def charset() -> dict[tuple, str]:
 
 
 def screen_text(shot: Path, table: dict[tuple, str]) -> str:
-    """The text screen in a VICE screenshot (384x272, the 320x200 screen at 32,35): each 8x8
-    cell against the character ROM, the most common colour taken as background. A cell that
-    matches no character (a bitmap screen, say) reads as '~'."""
+    """The text screen in a VICE screenshot (384x272, the 320x200 screen at 32,35; x128's VDC
+    856x288, 640x200 at 112,39): each 8x8 cell against the character ROM, the most common
+    colour taken as background. A cell that matches no character (a bitmap screen, say) reads as '~'."""
     im = Image.open(shot).convert("RGB")
     px = im.load()
-    bg = Counter(px[32 + x, 35 + y] for x in range(320) for y in range(200)).most_common(1)[0][0]
+    x0, y0, cols = (112, 39, 80) if im.width == 856 else (32, 35, 40)
+    bg = Counter(px[x0 + x, y0 + y] for x in range(cols * 8) for y in range(200)).most_common(1)[0][0]
     rows = []
     for r in range(25):
         line = ""
-        for c in range(40):
-            bits = tuple(int(px[32 + c * 8 + x, 35 + r * 8 + y] != bg) for y in range(8) for x in range(8))
+        for c in range(cols):
+            bits = tuple(int(px[x0 + c * 8 + x, y0 + r * 8 + y] != bg) for y in range(8) for x in range(8))
             line += table.get(bits, "~") if any(bits) else " "
         rows.append(line.rstrip())
     return "\n".join(rows)
@@ -117,18 +118,25 @@ def needs_other_part(prg: bytes) -> bool:
 # A monitor's disassembly typed as numbered lines: "8010 20 50 FD JSR $FD50" (keywords in the
 # mnemonics, such as the OR of ORA, are tokens).
 DISASSEMBLY = re.compile(rb"^(?:[0-9A-F]{1,2} ){2,4}\s*[A-Z\x80-\xcb]")
+# Source for an assembler with ".EQ" and ";" lines (21's GRAPHIC+TEXT): a directive, a comment, or
+# a mnemonic after an optional label ("INIT LDA#", AND typed in as BASIC's token).
+MNEMONIC = (b"ADC|AND|ASL|BCC|BCS|BEQ|BIT|BMI|BNE|BPL|BRK|BVC|BVS|CLC|CLD|CLI|CLV|CMP|CPX|CPY|DEC|DEX|DEY|EOR|"
+            b"INC|INX|INY|JMP|JSR|LDA|LDX|LDY|LSR|NOP|ORA|PHA|PHP|PLA|PLP|ROL|ROR|RTI|RTS|SBC|SEC|SED|SEI|STA|"
+            b"STX|STY|TAX|TAY|TSX|TXA|TXS|TYA|\xaf|\xb0A")
+SOURCE = re.compile(rb"^(?:[;.]|(?:[A-Z][A-Z0-9]* +)?(?:" + MNEMONIC + rb"))")
 
 
 def assembler_source(prg: bytes) -> bool:
     """Numbered lines that start with "-": source for an assembler that lives in BASIC (Super
-    Assembler), or a disassembly; to read, not a program of its own."""
+    Assembler), other assembler source (SOURCE), or a disassembly; to read, not a program of its own."""
     lines, i = 0, 2
     dashed = 0
     while i + 4 <= len(prg) and (prg[i] or prg[i + 1]):
         j = prg.index(0, i + 4) if 0 in prg[i + 4:] else len(prg)
         lines += 1
         text = prg[i + 4:j].lstrip(b" ")
-        dashed += text[:1] in (b"-", b"\xab") or bool(DISASSEMBLY.match(text))  # typed in, the dash is BASIC's minus token
+        # typed in, the dash is BASIC's minus token
+        dashed += text[:1] in (b"-", b"\xab") or bool(DISASSEMBLY.match(text) or SOURCE.match(text))
         i = j + 1
     return lines > 0 and dashed > lines / 2
 
@@ -140,9 +148,11 @@ def part(e: dict, text: str, prg: bytes) -> bool:
         return idle(text) or err == "SYNTAX ERROR"
     if e.get("dialect") == "soundmaster":
         return True  # runs once Sound Master is loaded and started first (13)
+    if assembler_source(prg):
+        return True  # whatever BASIC it was taken for (21's GRAPHIC+TEXT came out c128)
     if e.get("dialect", "c64") != "c64":
         return False
-    return assembler_source(prg) or patch(prg) or needs_other_part(prg) and (idle(text) or "FILE NOT FOUND" in err)
+    return patch(prg) or needs_other_part(prg) and (idle(text) or "FILE NOT FOUND" in err)
 
 
 def patch(prg: bytes) -> bool:
@@ -162,8 +172,12 @@ def run_command(e: dict) -> str:
     name, load = e["file"][:-4], int(e["load"].lstrip("$"), 16)
     which = e.get("dialect", "c64")
     if which == "c128":
-        return (f"timeout 120 xvfb-run -a x128 -default -silent +sound -warp -40col -autostartprgmode 1 "
-                f"-autostart {e['file']} -limitcycles {CYCLES} -exitscreenshotvicii {name}.png >/dev/null 2>&1")
+        keys = "" if load == 0x1C01 else f'-keybuf "sys{load}\\n"'  # machine code (23's C 128 EK)
+        # A program for the 80-column screen (pde.py `eighty`) runs there; its screenshot is the VDC's.
+        screen = "-80col" if e.get("columns") == 80 else "-40col"
+        shot = "-exitscreenshot" if e.get("columns") == 80 else "-exitscreenshotvicii"
+        return (f"timeout 120 xvfb-run -a x128 -default -silent +sound -warp {screen} -autostartprgmode 1 "
+                f"-autostart {e['file']} {keys} -limitcycles {CYCLES} {shot} {name}.png >/dev/null 2>&1")
     if which == "simon":
         return (f"timeout 120 xvfb-run -a x64sc -default -silent +sound -warp -cartcrt simons.crt "
                 f"-autostartprgmode 1 -autostart {e['file']} -limitcycles {CYCLES} -exitscreenshot {name}.png "

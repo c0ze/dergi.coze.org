@@ -43,7 +43,8 @@ from fsutil import read_json, write_json  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 
-MDE_LINE = re.compile(r"^([0-9A-F]{4})\s*[:;]\s*((?:[0-9A-F]{2}\s+){1,8})([0-9A-F]{2})$")
+# "??" for a checksum the reader could not make out (22 SÜPER ETİKET prints them as reverse blocks).
+MDE_LINE = re.compile(r"^([0-9A-F]{4})\s*[:;]\s*((?:[0-9A-F]{2}\s+){1,8})([0-9A-F]{2}|\?\?)$")
 BDE_LINE = re.compile(r"^(\d{1,5}) ?(.*?)\s*<\s*(\d{3})\s*>$")
 BASIC_LINE = re.compile(r"^(\d{1,5}) ?(\S.*)$")
 
@@ -62,7 +63,7 @@ def check(text: str) -> dict:
     if m := MDE_LINE.match(t):
         data = bytes(int(x, 16) for x in m.group(2).split())
         addr = int(m.group(1), 16)
-        return {"kind": "mde", "key": addr, "ok": mde(addr, data) == int(m.group(3), 16)}
+        return {"kind": "mde", "key": addr, "ok": None if m.group(3) == "??" else mde(addr, data) == int(m.group(3), 16)}
     if m := BDE_LINE.match(t):
         tokens = crunch(m.group(2))
         number, want = int(m.group(1)), int(m.group(3))
@@ -132,6 +133,27 @@ def gutter(im: Image.Image) -> tuple[float, float] | None:
     return best[1]
 
 
+def cut_pieces(spec, small: Image.Image) -> list[tuple]:
+    """A hand cut from layout.json "cuts" as (column, band, x0, x1, y0, y1) pieces, fractions
+    of the page: "1" one full-width column in the three bands; [y0, y1] two columns from y0 to
+    y1, split where gutter finds it in that stretch (else the middle), in one band to three by
+    its height; [y0, y1, gx] the same with the gutter at gx; [[c, b, x0, x1, y0, y1], ...] the
+    pieces themselves (mixed pages)."""
+    if spec == "1":
+        return [(0, b, 0, 1, y0, y1) for b, (y0, y1) in enumerate(BANDS)]
+    if isinstance(spec[0], list):
+        return [tuple(p) for p in spec]
+    y0, y1 = spec[:2]
+    if len(spec) > 2:
+        g = (spec[2] - .03, spec[2] + .03)
+    else:
+        g = gutter(small.crop((0, int(small.height * y0), small.width, int(small.height * y1)))) or (.47, .53)
+    nb = 1 if y1 - y0 <= .4 else 2 if y1 - y0 <= .72 else 3
+    step = (y1 - y0) / nb
+    bands = [(max(y0, y0 + k * step - .035), min(y1, y0 + (k + 1) * step + .035)) for k in range(nb)]
+    return [(c, b, x0, x1, a, z) for c, (x0, x1) in enumerate([(0, g[1]), (g[0], 1)]) for b, (a, z) in enumerate(bands)]
+
+
 def prep(issue: str) -> None:
     """Page images and listing crops for the readers. Which pages hold listings comes from the
     Tesseract blocks (listing_layout); read/layout.json, when there, adds what that misses on
@@ -141,7 +163,8 @@ def prep(issue: str) -> None:
     the page height}): bands c0b0... down to there, then each column's own band below; "whole"
     lists full-width pages that gutter takes for two columns but are not (assembler source with
     its comments out to the right), "two" pages that are two columns although gutter misses them
-    (columns over the whole page, in the usual three bands)."""
+    (columns over the whole page, in the usual three bands), and "cuts" ({page: spec}) cuts a page
+    by hand (see cut_pieces)."""
     d = ROOT / "data" / "issues" / issue
     doc = pymupdf.open(ROOT / read_json(d / "issue.json")["source"])
     out = d / "read"
@@ -150,6 +173,7 @@ def prep(issue: str) -> None:
     extra, rotate = set(layout.get("listing", [])), {int(k): v for k, v in layout.get("rotate", {}).items()}
     split = {int(k): v for k, v in layout.get("split", {}).items()}
     whole, two = set(layout.get("whole", [])), set(layout.get("two", []))
+    cuts = {int(k): v for k, v in layout.get("cuts", {}).items()}
     manifest = []
     for f in sorted((d / "blocks").glob("*.json")):
         pno = int(f.stem)
@@ -173,11 +197,15 @@ def prep(issue: str) -> None:
             manifest.append({"page": pno, "crops": crops, "rotate": rotate[pno]})
             continue
         small = Image.open(out / f"p{pno:03d}.png")
-        if y := split.get(pno):
+        for old in out.glob(f"p{pno:03d}-c*b*.png"):
+            old.unlink()
+        if pno in cuts:
+            pieces = cut_pieces(cuts[pno], small)
+        elif (y := split.get(pno)) is not None:
             g = gutter(small.crop((0, int(small.height * y), small.width, small.height))) or (.48, .52)
             top = [(y0, min(y1, y + .03)) for y0, y1 in BANDS if y0 < y]
             pieces = [(0, b, 0, 1, y0, y1) for b, (y0, y1) in enumerate(top)]
-            pieces += [(c, len(top), x0, x1, y - .02, 1) for c, (x0, x1) in enumerate([(0, g[1]), (g[0], 1)])]
+            pieces += [(c, len(top), x0, x1, max(0, y - .02), 1) for c, (x0, x1) in enumerate([(0, g[1]), (g[0], 1)])]
         else:
             # A full-width listing may still be two columns that Tesseract read across; "two" pages
             # are, even where gutter misses it (the columns' halves at the middle, then).
@@ -193,7 +221,7 @@ def prep(issue: str) -> None:
             clip = pymupdf.Rect(r.width * x0, r.height * y0, r.width * x1, r.height * y1)
             page.get_pixmap(dpi=190 if x1 - x0 > .6 else 300, clip=clip).save(out / name)
             crops.append(name)
-        manifest.append({"page": pno, "crops": crops} | ({"bands": {f"c{c}b{b}": [y0, y1] for c, b, _, _, y0, y1 in pieces}} if pno in split else {}))
+        manifest.append({"page": pno, "crops": crops} | ({"bands": {f"c{c}b{b}": [y0, y1] for c, b, _, _, y0, y1 in pieces}} if pno in split or pno in cuts else {}))
     write_json(out / "manifest.json", manifest, indent=1)
     print(f"{issue}: {len(manifest)} pages, {sum(bool(m['crops']) for m in manifest)} with listings")
 
@@ -319,12 +347,17 @@ def join_wrapped(lines: list[dict], before: list[dict]) -> None:
         else:
             left = [x for x in lines if x["crop"][:2] < col and x["key"] is not None]
             head = left[-1] if left else None
-        if not head or head["ok"] or first["ok"] or first["key"] is None or first["key"] >= head["key"]:
+        if not head or head["ok"] or first["ok"] or first["key"] is None:
             continue
-        joined = head["text"] + first["text"]
-        if check(joined)["ok"] and check(joined)["key"] == head["key"]:
-            head.update({"text": joined, **check(joined), "via": "joined"})
-            del lines[mine[0]]
+        # The rest may read as a higher number ("150) <201>" after "20 ...CHR$(", 34) when the
+        # head is unfinished, with no checksum of its own.
+        if first["key"] >= head["key"] and head["kind"] != "basic":
+            continue
+        for joined in (head["text"] + first["text"], head["text"] + " " + first["text"]):
+            if check(joined)["ok"] and check(joined)["key"] == head["key"]:
+                head.update({"text": joined, **check(joined), "via": "joined"})
+                del lines[mine[0]]
+                break
 
 
 def hand_read(f: Path, lines: list[dict]) -> None:
@@ -353,9 +386,40 @@ def hand_read(f: Path, lines: list[dict]) -> None:
                 lines.insert(max(before) + 1 if before else min(mine, default=len(lines)), y)
 
 
+LOOKALIKE = {frozenset(p) for p in ("39", "38", "89", "08", "0D", "8B", "BD", "CE", "EF", "17", "68")}
+
+
+def readdress(lines: list[dict]) -> None:
+    """A run of passing lines can still sit at a misread address: the checksum takes only the
+    address's low byte (35 p19 2901-2919 read as 2301-2319). Where the runs before and after it
+    put it elsewhere, every address there one look-alike digit away, the run moves there."""
+    mde = [x for x in lines if x["kind"] == "mde"]
+    runs: list[list[dict]] = []
+    for x in mde:
+        if runs and x["key"] == runs[-1][-1]["key"] + 8:
+            runs[-1].append(x)
+        else:
+            runs.append([x])
+    keys = {x["key"] for x in mde}
+    for n, run in enumerate(runs):
+        before, after = runs[n - 1] if n else None, runs[n + 1] if n + 1 < len(runs) else None
+        near = ([before[-1]["key"] + 8] if before else []) + ([after[0]["key"] - 8 * len(run)] if after else [])
+        # One neighbour alone is trusted only when its run is the longer one.
+        if not near or len(set(near)) > 1 or (len(near) == 1 and len(before or after) <= len(run)):
+            continue
+        moved = [(x, f"{near[0] + 8 * i & 0xFFFF:04X}") for i, x in enumerate(run)]
+        if all(int(a, 16) not in keys and sum(c != d for c, d in zip(a, f"{x['key']:04X}")) == 1
+               and all(c == d or frozenset((c, d)) in LOOKALIKE for c, d in zip(a, f"{x['key']:04X}"))
+               and check(a + x["text"].strip()[4:])["ok"] is not False for x, a in moved):
+            for x, a in moved:
+                t = a + x["text"].strip()[4:]
+                x.update({"text": t, **check(t), "via": "address"})
+
+
 def merge(issue: str) -> None:
     d = ROOT / "data" / "issues" / issue
-    out, titles, missing = {}, {}, []
+    out, titles, missing, look = {}, {}, [], []
+    split = (read_json(d / "read" / "layout.json") or {}).get("split", {})
     for m in read_json(d / "read" / "manifest.json"):
         pno = m["page"]
         f = d / "read" / f"p{pno:03d}.txt"
@@ -423,7 +487,16 @@ def merge(issue: str) -> None:
                     if check(t)["ok"]:
                         x.update({"text": t, **check(t), "via": "address"})
                         break
+        readdress(lines)
         out[str(pno)] = lines
+        # Worth a look: crops the reader wrote no section for (32 p8: no c1, the left column's 57
+        # lines only), and listing lines in a split page's full-width bands (the split is too low).
+        if skipped := [c[5:9] for c in m["crops"] if c[5:9] not in crops]:
+            look.append(f"p{pno}: no reading for {', '.join(skipped)}")
+        if str(pno) in split:
+            wide = {c for c in m["bands"] if f"c1{c[2:]}" not in m["bands"]}
+            if (n := sum(x["crop"] in wide and x["kind"] != "other" for x in lines)) >= 3:
+                look.append(f"p{pno}: {n} listing lines in the full-width bands (split {split[str(pno)]})")
     write_json(d / "listings.json", out, indent=1)
     write_json(d / "titles.json", titles, indent=1)
     checked = [x for v in out.values() for x in v if x["kind"] in ("mde", "bde")]
@@ -431,6 +504,8 @@ def merge(issue: str) -> None:
     print(f"{issue}: {len(checked) - bad}/{len(checked)} checked lines ok, "
           f"{sum(x['kind'] == 'basic' for v in out.values() for x in v)} unchecked BASIC"
           + (f"; no reading for pages {missing}" if missing else ""))
+    for x in look:
+        print(f"  look: {x}")
 
 
 def tasks(issue: str) -> None:

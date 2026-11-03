@@ -40,7 +40,7 @@ ISSUES = ROOT / "data" / "issues" / "commodore-pde"
 C128_WORDS = {"GRAPHIC", "SCNCLR", "SSHAPE", "GSHAPE", "MOVSPR", "SPRDEF", "SPRCOLOR", "SPRSAV", "DLOAD",
               "DSAVE", "DIRECTORY", "RDOT", "RGR", "BEND", "RSPPOS", "PUDEF", "DOPEN", "DCLOSE", "SCRATCH",
               "BANK", "FAST", "SLOW", "BEGIN", "TRAP", "WINDOW", "COLLISION", "TEMPO", "FILTER", "SLEEP",
-              "GO64", "LOCATE", "SCALE", "BOX", "BLOAD", "BSAVE"}
+              "GO64", "LOCATE", "SCALE", "BOX", "BLOAD", "BSAVE", "COLOR", "DRAW", "PAINT"}
 C128_STRONG = {"GRAPHIC", "SCNCLR", "SSHAPE", "GSHAPE", "MOVSPR", "SPRDEF", "SPRCOLOR", "SPRSAV", "DLOAD",
                "DSAVE", "DIRECTORY", "RDOT", "RGR", "BEND", "RSPPOS", "PUDEF", "DOPEN", "DCLOSE"}
 SIMON_WORDS = {"HIRES", "PLOT", "CENTRE", "PROC", "EXEC", "COLOUR", "LOWCOL", "HICOL", "NRM", "CSET",
@@ -169,6 +169,12 @@ def machine_code(lines: list[dict], title: str) -> list[dict]:
     if any(a[0] < b[1] and b[0] < a[1] for j, a in enumerate(spans) for b in spans[j + 1:]):
         cuts = [0] + [i for i, _ in heads[1:]] + [len(lines)]
         return [p for a, b in zip(cuts, cuts[1:]) for p in machine_code(lines[a:b], title)]
+    # A monitor dump (C128's "1A00:AD 04 03 AE 05 03 8D C8", 23's C 128 EK) has eight bytes a
+    # line and no checksum: when no line has a ninth byte, the last one is data, unchecked.
+    mde = [x for x in lines if x["kind"] == "mde"]
+    if len(mde) >= 4 and all(len((m := MDE_LINE.match(x["text"].strip())).group(2).split()) < 8 and m.group(3) != "??"
+                             for x in mde):
+        lines = [{**x, "ok": None, "dump": True} if x["kind"] == "mde" else x for x in lines]
     by_addr: dict[int, dict] = {}
     for x in lines:
         if x["kind"] == "mde" and (x["key"] not in by_addr or x["ok"] and not by_addr[x["key"]]["ok"]):
@@ -251,11 +257,17 @@ def by_source(p: dict) -> list[dict]:
 def split(lines: list[dict], title: str) -> list[dict]:
     progs: list[dict] = machine_code(lines, title)
     name, group = title, []
-    for line in lines + [{"text": "PROGRAM ADI : -", "kind": "other"}]:  # a last header ends the last group
+    lines = lines + [{"text": "PROGRAM ADI : -", "kind": "other"}]  # a last header ends the last group
+    for i, line in enumerate(lines):
         if m := HEADER.match(line["text"].strip()) or PIECE.match(line["text"].strip()):
             new = (m.group(1) or m.group(2)).strip()
-            if group and new == name:
-                continue  # the same header read again where two crops overlap
+            # The same header read again where two crops overlap (lines read twice there may follow
+            # it, a few lines placed above it may come before), unless a whole program came before
+            # and the numbers start again below it: another program under the same name (23's
+            # two TELSIRA).
+            after = next((x["key"] for x in lines[i + 1:] if x["kind"] in ("bde", "basic")), None)
+            if group and new == name and (len(group) < 10 or after is None or after >= min(x["key"] for x in group[-8:])):
+                continue
             if group:
                 progs += basic(group, name)
             name, group = new, []
@@ -286,22 +298,47 @@ def failing(p: dict) -> list[str]:
             out.append(f"{x['key']:04X}")
             continue
         m = BDE_LINE.match(x["text"].strip())
-        out.append(f"printed {x['key']}" if m and BARE.match(m.group(2).strip().upper()) else str(x["key"]))
+        out.append(f"printed {x['key']}" if m and BARE.match(m.group(2).strip().upper()) or rem_symbols(x) else str(x["key"]))
     return out
+
+
+def rem_symbols(x: dict) -> bool:
+    """A line whose only untypable symbols ("<?>") sit in its REM: the page printed bytes there
+    that no reader can name (23 TELSIRA 0-8). Running, the program never sees them: kept as printed."""
+    m = BDE_LINE.match(x["text"].strip()) or BASIC_LINE.match(x["text"].strip())
+    if not m or crunch(m.group(2)) is not None:
+        return False
+    body, quote = m.group(2), False
+    for i, c in enumerate(body):
+        if c == '"':
+            quote = not quote
+        elif not quote and body[i:i + 3].upper() == "REM":
+            return crunch(body[:i]) is not None
+    return False
+
+
+def eighty(p: dict) -> bool:
+    """C128 BASIC written for the 80-column screen: WINDOW out past column 39, or RGR(..) tested
+    against 5 (the 80-column mode)."""
+    code = " ".join(m.group(2).upper() for x in p["lines"] if (m := BDE_LINE.match(x["text"].strip()) or BASIC_LINE.match(x["text"].strip())))
+    return any(int(c) > 39 for c in re.findall(r"WINDOW\s*\d+\s*,\s*\d+\s*,\s*(\d+)", code)) or bool(
+        re.search(r"RGR\s*\(\s*\d*\s*\)\s*(?:<>|=)\s*5", code))
 
 
 def program_bytes(p: dict) -> tuple[int, bytes]:
     if p["kind"] == "mde":
-        data = b"".join(bytes(int(v, 16) for v in MDE_LINE.match(x["text"].strip()).group(2).split()) for x in p["lines"])
+        data = b"".join(bytes(int(v, 16) for v in " ".join(MDE_LINE.match(x["text"].strip()).groups()[1:3 if x.get("dump") else 2]).split())
+                        for x in p["lines"])
         return p["lines"][0]["key"], data
     return 0x0801, basic_prg(basic_lines(p))[2:]
 
 
 def dialect(p: dict, title: str, text: str = "") -> str:
     """c64, c128 or simon: the BASIC a program is written in (machine code is c64). The article
-    `text` can say so too: "128 modunda çalışan" (Oyun in 19)."""
+    `text` can say so too: "128 modunda çalışan" (Oyun in 19). Machine code is C128's only under a
+    128 title (23's C 128 EK)."""
     if p["kind"] == "mde":
-        return "c64"
+        return "c128" if "128" in f"{p['name']} {title}" else "c64"
     code = ""
     for x in p["lines"]:
         m = BDE_LINE.match(x["text"].strip()) or BASIC_LINE.match(x["text"].strip())
@@ -409,7 +446,7 @@ def unreadable(p: dict) -> list[str]:
     out = []
     for x in p["lines"]:
         m = BDE_LINE.match(x["text"].strip()) or BASIC_LINE.match(x["text"].strip())
-        if m and crunch(m.group(2)) is None:
+        if m and crunch(m.group(2)) is None and not rem_symbols(x):
             out.append(m.group(1).lstrip("0") or "0")
     return out
 
@@ -438,9 +475,25 @@ def programs(nn: str) -> None:
     out_dir = d / "prg"
     before = {e["file"]: e for e in read_json(out_dir / "prg.json") or []}
     starts = read_json(out_dir / "starts.json") or {}
+    # prg/dialects.json {file: "c128"} where the listing does not tell (27 THE WORD MAP);
+    # read/misprints.json {key: why}, the magazine's own mistakes in a program otherwise right
+    # (Arda, 2026-11-03): a clearly printed line under a wrong checksum, by address (27 AYNALAR
+    # 0911) or line number (24 KDV 350), and a line the program jumps to that was never printed
+    # ("no line 100", 23 JOYSTICK TEST). Kept as "misprint KEY", a note on the site, not a fault.
+    dialects = read_json(out_dir / "dialects.json") or {}
+    misprints = read_json(d / "read" / "misprints.json") or {}
+    # prg/patches.json {file: base file}: lines to type over another program (23 mastermind.prg,
+    # the C64 changes to the C128 MASTERMIND); the lines it jumps to may be the base program's.
+    patches = read_json(out_dir / "patches.json") or {}
+    numbers: dict[str, set[int]] = {}
+    checked: dict[str, bool] = {}
     # A program printed over two issues (read/continued.json): in the first, file → the next
     # issue and its pages, whose lines it takes; in the next, file → "" (not a program there).
     continued = read_json(d / "read" / "continued.json") or {}
+    # Errata printed in a later issue (read/errata.json): file → {"issue", "pages", "from", "to"};
+    # that issue's lines in the range replace these, passing or not (37 p31 reprints $C6A0-$C6F8
+    # of 31's EPROMMER, where 31 printed AA filler that passes).
+    errata = read_json(d / "read" / "errata.json") or {}
     marks = read_json(d / "segments.json")["articles"]
     # The assembled article for each mark, by title in order (assemble.py makes the slugs).
     articles = read_json(d / "articles.json")
@@ -482,9 +535,19 @@ def programs(nn: str) -> None:
                 p["lines"] = [have[k] for k in sorted(have)]
                 p["failed"] = [f for f in p["failed"] if not f.isdigit() and not f.startswith("printed")] + failing(p)
                 p["checked"] = all(x["ok"] is not None for x in p["lines"])
+            if fix := errata.get(fname):
+                mde = p["kind"] == "mde"
+                lo, hi = (int(fix[k], 16 if mde else 10) for k in ("from", "to"))
+                more = [{**x, "from": fix["issue"]} for x in listing_lines(ISSUES / fix["issue"])
+                        if x["page"] in fix["pages"] and (x["kind"] == "mde") == mde and lo <= x["key"] <= hi]
+                was = failing(p)
+                have = {x["key"]: x for x in p["lines"]} | {x["key"]: x for x in more}
+                p["lines"] = [have[k] for k in sorted(have)]
+                p["failed"] = [f for f in p["failed"] if f not in was] + failing(p)
+                p["checked"] = all(x["ok"] is not None for x in p["lines"])
             load, data = program_bytes(p)
             # C128 BASIC 7.0 and Simons' BASIC have their own tokens: petcat crunches those.
-            which = dialect(p, a["title"], article_text(a))
+            which = dialects.get(fname) or dialect(p, a["title"], article_text(a))
             # "PROGRAM 2" under the C 128 tips (20) is in the BASIC of the programs before it.
             if re.fullmatch(r"PROGRAM \d+", (m["title"] if not m["article"] else a["title"]).upper()):
                 which = which if which != "c64" else last
@@ -492,7 +555,7 @@ def programs(nn: str) -> None:
                 last = which
             if which == "soundmaster":
                 data = sound_master(data, load)
-            elif which != "c64" and (prg := petcat(p, which)):
+            elif which != "c64" and p["kind"] != "mde" and (prg := petcat(p, which)):
                 load, data = prg[0] | prg[1] << 8, prg[2:]
             # Machine code that starts off a page boundary is missing its first lines (the
             # checksums pass line by line, but the start went unread), unless the article itself
@@ -501,8 +564,10 @@ def programs(nn: str) -> None:
                 p["failed"].append(f"start ${load:04X}")
             # BASIC that jumps to a line it does not have is missing a line nobody read.
             if p["kind"] != "mde":
+                numbers[fname], checked[fname] = {n for n, _ in basic_lines(p)}, p["checked"]
                 p["failed"] += [f"no line {n}" for n in missing_targets(basic_lines(p))]
                 p["failed"] += [f"symbol {n}" for n in unreadable(p)]
+            p["failed"] = [f"misprint {f}" if f in misprints else f for f in p["failed"]]
             entry = {"name": p["name"], "file": fname, "article": a["slug"], "article_title": a["title"],
                      "pages": sorted({x["page"] for x in p["lines"] if "from" not in x}), "load": f"${load:04X}",
                      "end": f"${load + len(data):04X}", "bytes": len(data), "lines": len(p["lines"]),
@@ -513,6 +578,12 @@ def programs(nn: str) -> None:
             if not data:
                 continue
             entry["dialect"] = which
+            # C128 BASIC for the 80-column screen: a WINDOW wider than 40 columns, a test of RGR's 5
+            # (25 C-128 İÇİN PÜF NOKTALARI); test_prg runs it on the VDC.
+            if which == "c128" and eighty(p):
+                entry["columns"] = 80
+            if fname in errata:
+                entry["errata"] = {"issue": errata[fname]["issue"], "lines": sum("from" in x for x in p["lines"])}
             # How the article says to start it, where that is not plain RUN or the load address
             # (prg/starts.json, by file: Data Yaratıcı in 16 is "RUN 500").
             entry["start"] = starts.get(fname) or ("RUN" if p["kind"] != "mde" or load == 0x0801 else f"SYS {load}")
@@ -528,6 +599,10 @@ def programs(nn: str) -> None:
     for f in list(out_dir.glob("*.prg")) + list(out_dir.glob("*.png")) if out_dir.exists() else []:
         if f.with_suffix(".prg").name not in used:
             f.unlink()
+    for e in found:
+        if base := patches.get(e["file"]):
+            e["failed"] = [f for f in e["failed"] if not (f.startswith("no line ") and int(f[8:]) in numbers.get(base, ()))]
+            e["verified"] = checked[e["file"]] and not e["failed"]
     write_json(out_dir / "prg.json", found, indent=1)
     ok = sum(e["verified"] for e in found)
     print(f"commodore-pde/{nn}: {ok}/{len(found)} programs verified")

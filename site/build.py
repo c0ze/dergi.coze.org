@@ -99,9 +99,10 @@ def load_issue(slug: str, number: str) -> dict:
 def program_issues(p: dict) -> list[str]:
     """What is known to be wrong with an extracted program, for the reader (pde.py `failed`:
     line numbers or addresses whose checksum fails, "gap A-B", "start $X", "no line N",
-    "symbol N"). A line printed blank ("printed N") is a note, not a fault: `printed_note`."""
+    "symbol N"). A line printed blank ("printed N") or a misprint ("misprint ADDR", "misprint N",
+    "misprint no line N") is a note, not a fault: `printed_note`."""
     failed = p.get("failed") or []
-    bad = [f for f in failed if not f.startswith(("gap ", "start ", "no line ", "symbol ", "printed "))]
+    bad = [f for f in failed if not f.startswith(("gap ", "start ", "no line ", "symbol ", "printed ", "misprint "))]
     symbols = [f[7:] for f in failed if f.startswith("symbol ")]
     spans = [[int(x, 16) for x in f[4:].split("-")] for f in failed if f.startswith("gap ")]
     gaps = [f"{a:04X}–${b - 1:04X}" for a, b in spans if b > a and (b - a) % 8 == 0]
@@ -128,12 +129,31 @@ def program_issues(p: dict) -> list[str]:
 
 
 def printed_note(p: dict) -> list[str]:
-    """Lines printed as (almost) nothing whose checksum says there was more: kept as printed."""
+    """Lines printed as (almost) nothing whose checksum says there was more: kept as printed; the
+    magazine's misprints (read/misprints.json): a clearly printed line under a wrong checksum, and
+    a line the program jumps to that was never printed; lines taken from errata in a later issue."""
     printed = [f[8:] for f in p.get("failed") or [] if f.startswith("printed ")]
-    if not printed:
-        return []
-    return [f"{len(printed)} satır dergide eksik basılmış (kontrol toplamı fazlasını gösteriyor); basıldığı gibi alındı"
-            f" ({', '.join(printed[:8])}{'…' if len(printed) > 8 else ''})."]
+    misprint = [f[9:] for f in p.get("failed") or [] if f.startswith("misprint ") and not f.startswith("misprint no line ")]
+    unprinted = [f[17:] for f in p.get("failed") or [] if f.startswith("misprint no line ")]
+    out = []
+    if printed:
+        out.append(f"{len(printed)} satır dergide eksik basılmış (kontrol toplamı fazlasını gösteriyor); basıldığı gibi alındı"
+                   f" ({', '.join(printed[:8])}{'…' if len(printed) > 8 else ''}).")
+    if misprint and p.get("format") == "mde":
+        out.append(f"{len(misprint)} satırın kontrol toplamı dergide yanlış basılmış; baytları doğru"
+                   f" (${', $'.join(misprint[:8])}{'…' if len(misprint) > 8 else ''}).")
+    elif misprint:
+        one = len(misprint) == 1
+        out.append(f"{', '.join(misprint)} numaralı {'satırın' if one else 'satırların'} kontrol toplamı dergide yanlış basılmış;"
+                   f" {'satır' if one else 'satırlar'} açıkça okunuyor, basıldığı gibi alındı.")
+    if unprinted:
+        one = len(unprinted) == 1
+        out.append(f"Program {', '.join(unprinted)} numaralı {'satıra' if one else 'satırlara'} atlıyor, ama"
+                   f" {'bu satır' if one else 'bu satırlar'} dergide hiç basılmamış; program basıldığı gibi alındı."
+                   f" Çalışırken {'oraya' if one else 'oralara'} gelirse hata verip durur.")
+    if e := p.get("errata"):
+        out.append(f"{e['lines']} satır {int(e['issue'])}. sayıda basılan düzeltmeden alındı.")
+    return out
 
 
 def copy(src: Path, dst: Path) -> None:
