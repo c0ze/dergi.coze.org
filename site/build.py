@@ -133,9 +133,12 @@ def printed_note(p: dict) -> list[str]:
     magazine's misprints (read/misprints.json): a clearly printed line under a wrong checksum, and
     a line the program jumps to that was never printed, machine-code rows never printed ("misprint gap
     A-B"); lines taken from errata in a later issue;
-    box graphics the printer left out, put back in the .prg by checksum (read/graphics.json)."""
+    box graphics the printer left out, put back in the .prg by checksum (read/graphics.json); C128
+    keywords printed 76 tokens low ("misprint token N"), put right in the .prg."""
     printed = [f[8:] for f in p.get("failed") or [] if f.startswith("printed ")]
-    misprint = [f[9:] for f in p.get("failed") or [] if f.startswith("misprint ") and not f.startswith(("misprint no line ", "misprint gap "))]
+    misprint = [f[9:] for f in p.get("failed") or [] if f.startswith("misprint ")
+                and not f.startswith(("misprint no line ", "misprint gap ", "misprint token "))]
+    shifted = [f[15:] for f in p.get("failed") or [] if f.startswith("misprint token ")]
     skipped = [[int(a, 16) for a in f[13:].split("-")] for f in p.get("failed") or [] if f.startswith("misprint gap ")]
     unprinted = [f[17:] for f in p.get("failed") or [] if f.startswith("misprint no line ")]
     out = []
@@ -158,6 +161,10 @@ def printed_note(p: dict) -> list[str]:
         spans = ", ".join(f"${a:04X}–${b - 1:04X}" for a, b in skipped)
         out.append(f"Programın {spans} arasındaki satırları dergide hiç basılmamış; PRG'de o satırlar sıfırla dolduruldu,"
                    " program basıldığı gibi alındı.")
+    if shifted:
+        one = len(shifted) == 1
+        out.append(f"{', '.join(shifted)} numaralı {'satırda' if one else 'satırlarda'} dergi BASIC 7.0 komutlarını C64"
+                   " komutu olarak basmış (DEC yerine INPUT, ELSE yerine GOTO: 76 kod aşağı); PRG'de düzeltildi.")
     if e := p.get("errata"):
         out.append(f"{e['lines']} satır {int(e['issue'])}. sayıda basılan düzeltmeden alındı.")
     if c := p.get("continued"):

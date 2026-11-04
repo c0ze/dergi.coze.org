@@ -478,6 +478,35 @@ def join_wrapped(lines: list[dict], before: list[dict], wrap: int = WRAP) -> lis
     return notes
 
 
+def join_rests(lines: list[dict], before: list[dict], wrap: int = WRAP) -> list[str]:
+    """A rest that no join made pass: a row with no number of its own and a checksum at its end
+    (",4,1,0,1,2,2,0,4,0,7,7,6,6,7,8,9,8 <230>"), right after a numbered line with none (38 p11
+    BAR BLUES 300-322, each DATA line printed on two rows; 20 p6 135, 51 p4 6, 58 p18 895), whether
+    in the middle of a crop (the reader kept the two rows apart) or at its top. Left alone it is
+    no line, and the head an unchecked one: the program silently loses what the rest holds. Joined
+    anyway, the line is checked, and fails when misread. Returns look notes."""
+    notes = []
+    i = 0
+    while i < len(lines):
+        x = lines[i]
+        if x["key"] is None and LOOKS_BDE.search(x["text"]) and not HEADER_LINE.match(x["text"]) \
+                and not LOOKS_BASIC.match(x["text"]):
+            prior = [y for y in (before if i == 0 or x["crop"] != lines[i - 1]["crop"] and x["crop"][:2] == "c0" else []) + lines[:i]
+                     if y["key"] is not None or y["kind"] != "other"]
+            head = prior[-1] if prior else None
+            if head and head["kind"] == "basic" and head["key"] is not None:
+                rest = x["text"].strip()
+                blank = rest[0] not in ",:;" and blank_at_wrap(head["text"], rest, wrap)[0]
+                joined = head["text"] + (" " if blank else "") + rest
+                if (c := check(joined))["kind"] == "bde" and c["key"] == head["key"]:
+                    head.update({"text": joined, **c, "via": "joined"})
+                    notes.append(f"{head['key']} joined to its rest" + ("" if c["ok"] else " (fails: check the scan)"))
+                    del lines[i]
+                    continue
+        i += 1
+    return notes
+
+
 def ghosts(lines: list[dict]) -> list[str]:
     """Rows read again where crop bands overlap can come out under a wrong number (50 p18: "00215
     IF DI$(A)="NW" ... <063>", the passing 220 again; p30: 1B88-1C38, the rows of 1AD8-1B80 again).
@@ -564,26 +593,52 @@ def readdress(lines: list[dict]) -> None:
 
 
 # Characters a reader of the print can take for each other (wider than LOOKALIKE: also 5/6/S, 1/7/I...).
-ALIKE = {frozenset(p) for p in ("08", "06", "09", "0B", "0D", "0O", "0Q", "38", "39", "36", "89", "8B", "86", "B3", "B6",
+ALIKE = {frozenset(p) for p in ("08", "06", "09", "0D", "0O", "0Q", "38", "39", "36", "89", "8B", "86",
                                 "56", "5S", "6G", "17", "1I", "CG", "C0", "EF", "4A", "D8", "2Z", "69", "OQ")}
 
 
-def rewritten(text: str, raw: list[str]) -> bool:
-    """A reread whose checksum is no look-alike (ALIKE, digit by digit) of any first reading's: the
-    fix reader may have changed what is printed to make the line pass (50 INTERRUPT 15B8: "4B 1D ...
-    B4" made "F8 14 ... AE", JMP $104B made $14F8; MATRİS HESABI 270 "<167>" made "<169>"), or the
-    first reading misread the checksum, which is common: dropping such rereads lost genuine fixes
-    across 01-40 and in 46-48 (CRUNCH, SUPERCOPY, EX-MON, BARBUT). So merge only flags them and
-    prefers another passing reading with the printed checksum (`merge`)."""
-    def check_field(t):
-        m = MDE_LINE.match(t.strip()) or BDE_LINE.match(t.strip())
-        return m.group(3) if m else None
+def rewritten(text: str, raw: list[str], nearby: tuple[str, ...] = ()) -> str | None:
+    """Why a reread (fix file, old reading) may not be taken for a failing line, or None. The 8-bit
+    checksums let a reader make a line pass by changing what is printed: the checksum itself (30
+    FINGERCOUNT 1561 "... 20 ... BF" made "... 03 ... BA"; MATRİS HESABI 270 "<167>" made "<169>"), or
+    two machine-code bytes whose errors cancel in the sum (30 0D69 "4C 23 1D 20 F3" made "4C 29 10 20
+    F7"). So (coordinator, 2026-11-04) a reread must keep the checksum of a first reading of the line,
+    up to look-alike digits (ALIKE), and change at most one machine-code byte unless every changed byte
+    is a look-alike. A line in doubt stays failing (a hand line settles it). First readings are the
+    page's reading and second readers' (pNNN.txt, pNNN.r2.txt); with none that has a checksum, any
+    reread goes. A checksum the first reading gave the row just above or below (`nearby`) is printed
+    too: the first reading slipped the checksums by a row (25 p24 WORD SEARCH 260 <030>, 270 <031>...,
+    the page prints 260 <031>, 270 <032>)."""
+    def fields(t):
+        if m := MDE_LINE.match(t.strip()):
+            return m.group(2).split(), m.group(3)
+        if m := BDE_LINE.match(t.strip()):
+            return None, m.group(3)
+        return None, None
 
     def alike(a, b):
         return len(a) == len(b) and all(c == d or frozenset((c, d)) in ALIKE for c, d in zip(a, b))
 
-    mine, seen = check_field(text), [c for t in raw if (c := check_field(t))]
-    return bool(mine and seen) and not any(alike(mine, c) for c in seen)
+    data, ck = fields(text)
+    seen = [f for t in raw if (f := fields(t))[1]]
+    if not ck or not seen:
+        return None
+    if not any(alike(ck, c) for _, c in seen) and ck not in nearby:
+        return f"checksum {'/'.join(dict.fromkeys(c for _, c in seen))} → {ck}"
+    if data is None:
+        return None
+    changes = [[(u, v) for u, v in zip(data, d) if u != v] for d, c in seen if d and len(d) == len(data)
+               and (alike(ck, c) or ck in nearby)]
+    if changes and not any(len(ch) < 2 or all(alike(u, v) for u, v in ch) for ch in changes):
+        ch = min(changes, key=len)
+        return f"{len(ch)} bytes " + " ".join(f"{v}→{u}" for u, v in ch)
+    return None
+
+
+def first_check(text: str) -> str | None:
+    """The checksum printed at the end of a BDE or MDE line, as read."""
+    found = MDE_LINE.match(text.strip()) or BDE_LINE.match(text.strip())
+    return found.group(3) if found else None
 
 
 def merge(issue: str) -> None:
@@ -636,20 +691,30 @@ def merge(issue: str) -> None:
                             i = max(near)[1]
                     if i is not None:
                         lines[i]["readings"].append(text)
-                        if ".fix" in other.name:
+                        # Rereadings of failing lines, and old readings moved aside (pNNN.rold.txt:
+                        # 38 p10 has 130-150 there with checksums printed nowhere), are checked
+                        # against the first readings (rewritten). Not the full-resolution rereads
+                        # (pNNN.fixhr.txt, data/pde-work/audit/reread.py), kept only when they meet
+                        # that test or agree with an earlier reread.
+                        if ".fixhr" in other.name:
+                            lines[i].setdefault("trusted", []).append(text)
+                        elif ".fix" in other.name or ".rold" in other.name:
                             lines[i].setdefault("fixed", []).append(text)
-        for x in lines:
+        # The first reading's checksum of each line (its neighbours' are printed on the page too).
+        printed = [first_check(x["readings"][0]) for x in lines]
+        for i, x in enumerate(lines):
             if x["ok"] is False and (fixed := x.pop("fixed", None)):
                 raw = [t for t in x["readings"] if t not in fixed]
-                odd = [t for t in dict.fromkeys(fixed) if t not in raw and rewritten(t, raw)]
-                # Readings that keep the printed checksum are tried first; a fix that changed it
-                # is still taken when nothing else passes, flagged for a look at the scan.
-                x["readings"] = [t for t in x["readings"] if t not in odd] + odd
-                if odd and not any(check(t)["ok"] for t in x["readings"] if t not in odd) \
-                        and (t := next((t for t in odd if check(t)["ok"]), None)):
+                fixed = [t for t in fixed if t not in x.get("trusted", [])]
+                nearby = tuple(printed[j] for j in (i - 1, i + 1) if 0 <= j < len(lines) and lines[j]["crop"] == x["crop"]
+                               and lines[j]["kind"] == x["kind"] and printed[j])
+                odd = {t: why for t in dict.fromkeys(fixed) if t not in raw and (why := rewritten(t, raw, nearby))}
+                x["readings"] = [t for t in x["readings"] if t not in odd]
+                if odd and not any(check(t)["ok"] for t in x["readings"]) and any(check(t)["ok"] for t in odd):
                     k = x["key"] if x["kind"] == "bde" else f"{x['key']:04X}"
-                    look.append(f"p{pno}: {k} checksum changed by a fix ({raw[0].strip()[-12:]} → {t.strip()[-12:]})")
+                    look.append(f"p{pno}: {k} reread not taken: {next(w for t, w in odd.items() if check(t)['ok'])}")
             x.pop("fixed", None)
+            x.pop("trusted", None)
             if x["ok"] is False:
                 best = next((t for t in x["readings"] if check(t)["ok"]), None) or combine(x["readings"]) \
                     or next((g for t in dict.fromkeys(x["readings"]) if (g := graphics(t))), None) \
@@ -662,6 +727,7 @@ def merge(issue: str) -> None:
             del x["readings"]
         look += [f"p{pno}: {g}" for g in ghosts(lines)]
         look += [f"p{pno}: {n}" for n in join_wrapped(lines, out.get(str(pno - 1), []), wrap)]
+        look += [f"p{pno}: {n}" for n in join_rests(lines, out.get(str(pno - 1), []), wrap)]
         hand_read(d / "read" / f"p{pno:03d}.hand.txt", lines)
         # A misread address (0D08 for 0D09) checks out at the address its neighbours imply.
         for i, x in enumerate(lines):

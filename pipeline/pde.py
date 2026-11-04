@@ -459,14 +459,43 @@ def sound_master(data: bytes, load: int) -> bytes:
     return basic_prg(lines, load)[2:]
 
 
+# A C64 lister printing a C128 program shows a BASIC 7.0 token ($CC-$FE) as the V2 keyword $4C
+# (76, the V2 keyword count) lower: DEC as INPUT, ELSE as GOTO (15 PROGRAM 4/5: "A=INPUT("D600")",
+# ":GOTO PRINT "."";). Where the V2 keyword cannot stand (a statement used as a function, GOTO with
+# no line number), the 7.0 one is meant: a misprint, put right in the .prg.
+C128_SHIFTED = [(re.compile(r"\bINPUT#\s*\("), "RDOT("), (re.compile(r"\bINPUT\s*\("), "DEC("),
+                (re.compile(r"\bDIM\s*\("), "HEX$("), (re.compile(r"\bREAD\s*\("), "ERR$("),
+                (re.compile(r"\bLET\s*\("), "INSTR("), (re.compile(r"\bEND\s*\("), "RGR("),
+                (re.compile(r"\bFOR\s*\("), "RCLR("), (re.compile(r"\bGOTO(?!\s*\d)"), "ELSE")]
+
+
+def c128_shifted(body: str) -> str:
+    """A C128 line's text with the keywords printed 76 tokens low put back (`C128_SHIFTED`);
+    strings and REMs are left as they are."""
+    parts = re.split(r'("[^"]*"?)', body)
+    for i in range(0, len(parts), 2):
+        code, rem, after = parts[i].partition("REM")
+        for pattern, keyword in C128_SHIFTED:
+            code = pattern.sub(keyword, code)
+        parts[i] = code + rem + after
+        if rem:
+            break
+    return "".join(parts)
+
+
 def petcat(p: dict, which: str) -> bytes | None:
     """The program tokenized by VICE's petcat (on cachyos) in another BASIC: load address
-    and all (untypable bits dropped, see `unreadable`). None when petcat fails."""
+    and all (untypable bits dropped, see `unreadable`). None when petcat fails. C128 keywords
+    printed 76 tokens low are put right (`c128_shifted`), their lines in p["shifted"]."""
     version, load = DIALECTS[which]
     src, lower = [], lower_case(p)
     for x in p["lines"]:
         m = BDE_LINE.match(x["text"].strip()) or BASIC_LINE.match(x["text"].strip())
-        src.append(petcat_line(int(m.group(1)), m.group(2), lower) or petcat_line(int(m.group(1)), scrub(m.group(2)), lower))
+        body = m.group(2)
+        if which == "c128" and (fixed := c128_shifted(body)) != body:
+            p.setdefault("shifted", []).append(int(m.group(1)))
+            body = fixed
+        src.append(petcat_line(int(m.group(1)), body, lower) or petcat_line(int(m.group(1)), scrub(body), lower))
     cmd = f"f=$(mktemp); petcat -w{version} -l {load:x} -o $f -- /dev/stdin >/dev/null 2>&1 && cat $f; rm -f $f"
     out = subprocess.run(["ssh", "cachyos", cmd], input="\n".join(src).encode() + b"\n", capture_output=True).stdout
     bde = {int(m.group(1)) for x in p["lines"] if (m := BDE_LINE.match(x["text"].strip()))}
@@ -666,6 +695,7 @@ def programs(nn: str) -> None:
                 p["failed"] += [f"no line {n}" for n in missing_targets(basic_lines(p))]
                 p["failed"] += [f"symbol {n}" for n in unreadable(p)]
             p["failed"] = [f"misprint {f}" if misprinted(f, misprints) else f for f in p["failed"]]
+            p["failed"] += [f"misprint token {n}" for n in p.get("shifted", [])]
             entry = {"name": p["name"], "file": fname, "article": a["slug"], "article_title": a["title"],
                      "pages": sorted({x["page"] for x in p["lines"] if "from" not in x}), "load": f"${load:04X}",
                      "end": f"${load + len(data):04X}", "bytes": len(data), "lines": len(p["lines"]),

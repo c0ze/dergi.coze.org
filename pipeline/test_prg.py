@@ -176,21 +176,21 @@ def run_command(e: dict) -> str:
         # A program for the 80-column screen (pde.py `eighty`) runs there; its screenshot is the VDC's.
         screen = "-80col" if e.get("columns") == 80 else "-40col"
         shot = "-exitscreenshot" if e.get("columns") == 80 else "-exitscreenshotvicii"
-        return (f"timeout 120 xvfb-run -a x128 -default -silent +sound -warp {screen} -autostartprgmode 1 "
+        return (f"timeout 120 xvfb-run -a x128 -default -silent +sound -warp {screen} +autostart-delay-random -autostartprgmode 1 "
                 f"-autostart {e['file']} {keys} -limitcycles {CYCLES} {shot} {name}.png >/dev/null 2>&1")
     if which == "simon":
         return (f"timeout 120 xvfb-run -a x64sc -default -silent +sound -warp -cartcrt simons.crt "
-                f"-autostartprgmode 1 -autostart {e['file']} -limitcycles {CYCLES} -exitscreenshot {name}.png "
+                f"+autostart-delay-random -autostartprgmode 1 -autostart {e['file']} -limitcycles {CYCLES} -exitscreenshot {name}.png "
                 ">/dev/null 2>&1")
     # One loaded above BASIC is started by typing its SYS (lowercase: the key buffer shifts capitals),
     # one the article starts otherwise ("RUN 500") is loaded and that typed.
     start = e.get("start") or "RUN"
     if start != "RUN" and not start.startswith("SYS"):
-        return (f"timeout 120 xvfb-run -a x64sc -default -silent +sound -warp -autostartprgmode 1 "
+        return (f"timeout 120 xvfb-run -a x64sc -default -silent +sound -warp +autostart-delay-random -autostartprgmode 1 "
                 f'-autoload {e["file"]} -keybuf "{start.lower().replace(" ", "")}\\n" -limitcycles {CYCLES} '
                 f"-exitscreenshot {name}.png >/dev/null 2>&1")
     keys = "" if load == 0x0801 else f'-keybuf "sys{load}\\n"'
-    return (f"timeout 120 xvfb-run -a x64sc -default -silent +sound -warp -autostartprgmode 1 "
+    return (f"timeout 120 xvfb-run -a x64sc -default -silent +sound -warp +autostart-delay-random -autostartprgmode 1 "
             f"-autostart {e['file']} {keys} -limitcycles {CYCLES} -exitscreenshot {name}.png >/dev/null 2>&1")
 
 
