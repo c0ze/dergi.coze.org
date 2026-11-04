@@ -131,9 +131,12 @@ def program_issues(p: dict) -> list[str]:
 def printed_note(p: dict) -> list[str]:
     """Lines printed as (almost) nothing whose checksum says there was more: kept as printed; the
     magazine's misprints (read/misprints.json): a clearly printed line under a wrong checksum, and
-    a line the program jumps to that was never printed; lines taken from errata in a later issue."""
+    a line the program jumps to that was never printed, machine-code rows never printed ("misprint gap
+    A-B"); lines taken from errata in a later issue;
+    box graphics the printer left out, put back in the .prg by checksum (read/graphics.json)."""
     printed = [f[8:] for f in p.get("failed") or [] if f.startswith("printed ")]
-    misprint = [f[9:] for f in p.get("failed") or [] if f.startswith("misprint ") and not f.startswith("misprint no line ")]
+    misprint = [f[9:] for f in p.get("failed") or [] if f.startswith("misprint ") and not f.startswith(("misprint no line ", "misprint gap "))]
+    skipped = [[int(a, 16) for a in f[13:].split("-")] for f in p.get("failed") or [] if f.startswith("misprint gap ")]
     unprinted = [f[17:] for f in p.get("failed") or [] if f.startswith("misprint no line ")]
     out = []
     if printed:
@@ -151,8 +154,17 @@ def printed_note(p: dict) -> list[str]:
         out.append(f"Program {', '.join(unprinted)} numaralı {'satıra' if one else 'satırlara'} atlıyor, ama"
                    f" {'bu satır' if one else 'bu satırlar'} dergide hiç basılmamış; program basıldığı gibi alındı."
                    f" Çalışırken {'oraya' if one else 'oralara'} gelirse hata verip durur.")
+    if skipped:
+        spans = ", ".join(f"${a:04X}–${b - 1:04X}" for a, b in skipped)
+        out.append(f"Programın {spans} arasındaki satırları dergide hiç basılmamış; PRG'de o satırlar sıfırla dolduruldu,"
+                   " program basıldığı gibi alındı.")
     if e := p.get("errata"):
         out.append(f"{e['lines']} satır {int(e['issue'])}. sayıda basılan düzeltmeden alındı.")
+    if c := p.get("continued"):
+        out.append(f"Programın {c['lines']} satırı {int(c['issue'])}. sayıda basılan devamından alındı.")
+    if g := p.get("graphics"):
+        out.append(f"{len(g)} satırdaki çerçeve grafikleri dergide basılmamış; PRG'ye kontrol toplamıyla geri kondu"
+                   f" ({', '.join(map(str, g[:8]))}{'…' if len(g) > 8 else ''}).")
     return out
 
 

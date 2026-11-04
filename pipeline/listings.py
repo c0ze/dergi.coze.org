@@ -133,6 +133,42 @@ def gutter(im: Image.Image) -> tuple[float, float] | None:
     return best[1]
 
 
+def ink_below(im: Image.Image, bands: dict[str, list[float]]) -> list[str]:
+    """Crops of a cut page whose listing goes on under their lower edge (61-70 lost rows on 11
+    pages so: 63 p9 cut at .85 above EKRAN C.K.'s last lines). Under each crop's y1, unless another
+    crop of its column carries on from there: the first row of type, in the column's half of the
+    page image, cut by y1 or within 1.35 line pitches of the crop's last row. A heading (taller
+    than the crop's rows), a rule or the footer bar (a few long strokes, or mostly ink) is no row."""
+    a = np.asarray(im.convert("L")).astype(int)
+    h, w = a.shape
+    two = any(k.startswith("c1") for k in bands)
+    out = []
+    for crop, (y0, y1) in bands.items():
+        if y1 >= .955 or any(k[:2] == crop[:2] and k != crop and b0 <= y1 + .005 < b1 for k, (b0, b1) in bands.items()):
+            continue
+        x0, x1 = ((0, .5) if crop[1] == "0" else (.5, 1)) if two else (0, 1)
+        sub = a[int(h * y0):int(h * min(.985, y1 + .06)), int(w * (x0 + .04)):int(w * (x1 - .04))]
+        med = np.median(sub)
+        dark = sub < med - max(18, .4 * (med - np.percentile(sub, 1)))
+        share = dark.mean(axis=1)
+        on = np.concatenate([[0], (share > .012).astype(int), [0]])
+        rows = [(s, e) for s, e in zip(np.flatnonzero(np.diff(on) == 1), np.flatnonzero(np.diff(on) == -1)) if e - s >= 3]
+        cut = int(h * y1) - int(h * y0)
+        mine, nxt = [r for r in rows if r[1] <= cut], [r for r in rows if r[1] > cut]
+        if not mine or not nxt:
+            continue
+        tall = np.median([e - s for s, e in mine])
+        pitch = np.median(np.diff([s for s, _ in mine])) if len(mine) >= 2 else 1.7 * tall
+        s, e = nxt[0]
+        strokes = np.median([(np.diff(r.astype(int)) == 1).sum() for r in dark[s:e]])
+        if e - s > 1.6 * tall + 1 or strokes < 8 or share[s:e].mean() > .45:
+            continue
+        if s < cut or s - mine[-1][0] <= 1.35 * pitch:
+            out.append(f"{crop} y1={y1:.3f}: listing ink below the cut at {(s + int(h * y0)) / h:.3f}"
+                       + (" (a row cut in two)" if s < cut else ""))
+    return out
+
+
 def cut_pieces(spec, small: Image.Image) -> list[tuple]:
     """A hand cut from layout.json "cuts" as (column, band, x0, x1, y0, y1) pieces, fractions
     of the page: "1" one full-width column in the three bands; [y0, y1] two columns from y0 to
@@ -235,7 +271,9 @@ def parse_reading(text: str) -> tuple[list[dict], dict[str, list[str]]]:
         elif m := re.match(r"^TITLE:\s*(.+?)\s*(?:\|\s*(.*))?$", s):
             titles.append({"title": m.group(1), "author": (m.group(2) or "").strip() or None})
         elif s and cur is not None:
-            cur.append(re.sub(r"\s+", " ", s))
+            # A BDE checksum written in parentheses by the reader ("00500 PRINT ... (222)", 53, 60):
+            # three digits after a blank at the end of a numbered line ("CHR$(147)" has no blank).
+            cur.append(re.sub(r"^(\d{1,5} .*\S)\s+\((\d{3})\)$", r"\1 <\2>", re.sub(r"\s+", " ", s)))
     return titles, crops
 
 
@@ -332,32 +370,141 @@ def repair(text: str) -> str | None:
     return passing.pop() if len(passing) == 1 else None
 
 
-def join_wrapped(lines: list[dict], before: list[dict]) -> None:
-    """A line that runs from the bottom of one column (or page) to the top of the next: the
-    first row there was read as a line of its own, numbered by its first digits (Futbol Ligi in
-    17: "50+24,15 <..>" and "1 TO HS:..."). Joined to the unfinished last line before it when
-    the two make a line that passes its checksum."""
-    for col in sorted({x["crop"][:2] for x in lines}):
-        mine = [i for i, x in enumerate(lines) if x["crop"][:2] == col]
-        if not mine:
+# BDE's listing rows: the line number and a blank (6), then 35 characters a row, every row after the
+# first indented to match (25 of the 33 joins across 01-78 have heads of 41 or 76 characters).
+# read/layout.json "wrap" sets another row width.
+WRAP = 35
+_WORDS: set[str] | None = None
+
+
+def words() -> set[str]:
+    """Words of the magazines' article text, upper case, Turkish letters as the listings print them
+    (Ç→C ...), seen at least three times: for telling "VE"+"TEK" from "GEREKTIGI V"+"E" at a wrap.
+    Cached in data/words.txt."""
+    global _WORDS
+    if _WORDS is None:
+        cache = ROOT / "data" / "words.txt"
+        if not cache.exists():
+            fold, count = str.maketrans("ÇĞİÖŞÜçğıöşüâîû", "CGIOSUCGIOSUAIU"), {}
+            for f in (ROOT / "data" / "issues").glob("*/*/articles.json"):
+                for a in read_json(f) or []:
+                    for b in a.get("body") or []:
+                        for w in re.findall(r"[A-Za-zÇĞİÖŞÜçğıöşüâîû]+", b.get("text") or "" if isinstance(b, dict) else ""):
+                            w = w.translate(fold).upper()
+                            count[w] = count.get(w, 0) + 1
+            cache.write_text("\n".join(sorted(w for w, n in count.items() if n >= 3)))
+        _WORDS = set(cache.read_text().split())
+    return _WORDS
+
+
+def in_text(head: str) -> bool:
+    """Whether a line read up to here ends inside a string, a REM or DATA, where a blank is a byte."""
+    quote, rem, data = False, False, False
+    body = head.split(None, 1)[1] if " " in head.strip() else ""
+    for i, c in enumerate(body):
+        if c == '"':
+            quote = not quote
+        elif not quote and body.startswith("REM", i):
+            rem = True
+        elif not quote and body.startswith("DATA", i):
+            data = True
+        elif not quote and c == ":" and data:
+            data = False
+    return quote or rem or data
+
+
+def blank_at_wrap(head: str, rest: str, wrap: int) -> tuple[bool, str | None]:
+    """Whether a blank stood where a line wraps, when the join passes with and without one (the
+    checksum skips blanks). From the row width: a head one character short of whole rows (6 + n x
+    wrap characters) lost a trailing blank. A head of whole rows can still be followed by a blank
+    at the start of the next row (readers strip it), and other lengths mean the reader merged
+    blanks: there, inside a string, REM or DATA between two letters, the words decide: a blank when
+    the joined word is no word and a half of two letters or more is ("VE"+"TEK",
+    "SALDIRACAGININ"+"YAZIMI"; inflected Turkish is often missing from the list), else none; those
+    are flagged (second value). Outside text a blank is no byte: none."""
+    if (len(head) - 6) % wrap == wrap - 1:
+        return True, None
+    if not in_text(head) or not (head[-1:].isalpha() and rest[:1].isalpha()):
+        return False, None
+    a, b = re.search(r"[A-Z]+$", head.upper()).group(0), re.match(r"[A-Z]+", rest.upper()).group(0)
+    blank = a + b not in words() and (a in words() or b in words()) and min(len(a), len(b)) >= 2
+    return blank, f"{head.split()[0]} joined at {a}|{b} {'with' if blank else 'without'} a blank (by the words; check the scan)"
+
+
+def join_wrapped(lines: list[dict], before: list[dict], wrap: int = WRAP) -> list[str]:
+    """A line that runs from the bottom of one crop to the top of the next (column, page, or the
+    next band of a column): the first row there was read as a line of its own, numbered by its
+    first digits (Futbol Ligi in 17: "50+24,15 <..>" and "1 TO HS:..."; 59 "1:POKE ...", 60 "1 SOLA
+    <236>"), or as no line ("," first, or "W:NEXT <178>", "? <184>": 59, 60). Joined to the
+    unfinished line before it (one of the last few, bands overlap) when the two make a line that
+    passes its checksum. A rest whose whole line already passes in the band above (60 p14: "0 65:NEXT
+    ..." under a whole 00048) goes. Where the join passes with and without a blank, `blank_at_wrap`
+    decides. Returns look notes for joins decided by words."""
+    notes = []
+    starts = [i for i, x in enumerate(lines) if i == 0 or x["crop"] != lines[i - 1]["crop"]]
+    for crop in [lines[i]["crop"] for i in starts]:
+        i = next(i for i, x in enumerate(lines) if x["crop"] == crop)
+        first = lines[i]
+        if first["ok"] or first["key"] is None and (not LOOKS_BDE.search(first["text"]) or HEADER_LINE.match(first["text"])):
             continue
-        first = lines[mine[0]]
-        if col == "c0":
-            head = next((x for x in reversed(before) if x["key"] is not None), None)
-        else:
-            left = [x for x in lines if x["crop"][:2] < col and x["key"] is not None]
-            head = left[-1] if left else None
-        if not head or head["ok"] or first["ok"] or first["key"] is None:
+        prior = [x for x in (before if crop[:2] == "c0" and crop[2:] == "b0" else []) + lines[:i] if x["key"] is not None]
+        if not prior:
             continue
-        # The rest may read as a higher number ("150) <201>" after "20 ...CHR$(", 34) when the
-        # head is unfinished, with no checksum of its own.
-        if first["key"] >= head["key"] and head["kind"] != "basic":
-            continue
-        for joined in (head["text"] + first["text"], head["text"] + " " + first["text"]):
-            if check(joined)["ok"] and check(joined)["key"] == head["key"]:
+        last = prior[-1]
+        heads = [x for x in reversed(prior[-6:]) if x["kind"] == "basic"]
+        if not last["ok"] and last not in heads and (first["key"] is None or first["key"] < last["key"]):
+            heads.insert(0, last)
+        rest = first["text"].strip()
+        done = False
+        for head in heads:
+            if first["key"] is not None and first["key"] >= head["key"] and head["kind"] != "basic":
+                continue
+            fits = [j for j in (head["text"] + rest, head["text"] + " " + rest)
+                    if (c := check(j))["ok"] and c["key"] == head["key"]]
+            if fits:
+                joined = fits[0]
+                if len(fits) == 2:
+                    blank, note = blank_at_wrap(head["text"], rest, wrap)
+                    joined = fits[1] if blank else fits[0]
+                    notes += [note] if note else []
                 head.update({"text": joined, **check(joined), "via": "joined"})
-                del lines[mine[0]]
+                del lines[i]
+                done = True
                 break
+        tail = re.sub(r"^\S{1,3}\s?", "", rest)
+        if not done and len(tail) >= 12 and (first["key"] is None or first["key"] < last["key"]) \
+                and any(x["ok"] and x["text"].strip().endswith(tail) for x in prior[-6:]):
+            del lines[i]
+    return notes
+
+
+def ghosts(lines: list[dict]) -> list[str]:
+    """Rows read again where crop bands overlap can come out under a wrong number (50 p18: "00215
+    IF DI$(A)="NW" ... <063>", the passing 220 again; p30: 1B88-1C38, the rows of 1AD8-1B80 again).
+    A failing line whose printed checksum is a passing line's on the same page, its number near
+    (100 lines, $200 bytes) and its content mostly the same (BASIC 85% alike, 6 of 8 bytes), is that
+    line read again: it goes; not a line printed as almost nothing (12 p2 "32320 : <106>", a real
+    line whose checksum happens to be 32390's ":"). Returns what went, "ghost KEY = KEY"."""
+    def parts(x):
+        m = (MDE_LINE if x["kind"] == "mde" else BDE_LINE).match(x["text"].strip())
+        return (m.group(2).split(), m.group(3)) if x["kind"] == "mde" else (m.group(2), m.group(3))
+
+    gone = []
+    for x in [x for x in lines if x["ok"] is False and x["kind"] in ("mde", "bde")]:
+        (a, ck), near = parts(x), 0x200 if x["kind"] == "mde" else 100
+        if x["kind"] == "bde" and len(re.sub(r"\s", "", a)) < 3:
+            continue
+        for y in lines:
+            if not (y["ok"] and y["kind"] == x["kind"] and 0 < abs(y["key"] - x["key"]) <= near):
+                continue
+            b, ck2 = parts(y)
+            if ck == ck2 and (sum(u == v for u, v in zip(a, b)) >= 6 if x["kind"] == "mde"
+                              else SequenceMatcher(None, a, b).ratio() >= .85):
+                lines.remove(x)
+                gone.append(f"ghost {x['key'] if x['kind'] == 'bde' else format(x['key'], '04X')} = "
+                            f"{y['key'] if y['kind'] == 'bde' else format(y['key'], '04X')}")
+                break
+    return gone
 
 
 def hand_read(f: Path, lines: list[dict]) -> None:
@@ -416,10 +563,34 @@ def readdress(lines: list[dict]) -> None:
                 x.update({"text": t, **check(t), "via": "address"})
 
 
+# Characters a reader of the print can take for each other (wider than LOOKALIKE: also 5/6/S, 1/7/I...).
+ALIKE = {frozenset(p) for p in ("08", "06", "09", "0B", "0D", "0O", "0Q", "38", "39", "36", "89", "8B", "86", "B3", "B6",
+                                "56", "5S", "6G", "17", "1I", "CG", "C0", "EF", "4A", "D8", "2Z", "69", "OQ")}
+
+
+def rewritten(text: str, raw: list[str]) -> bool:
+    """A reread whose checksum is no look-alike (ALIKE, digit by digit) of any first reading's: the
+    fix reader may have changed what is printed to make the line pass (50 INTERRUPT 15B8: "4B 1D ...
+    B4" made "F8 14 ... AE", JMP $104B made $14F8; MATRİS HESABI 270 "<167>" made "<169>"), or the
+    first reading misread the checksum, which is common: dropping such rereads lost genuine fixes
+    across 01-40 and in 46-48 (CRUNCH, SUPERCOPY, EX-MON, BARBUT). So merge only flags them and
+    prefers another passing reading with the printed checksum (`merge`)."""
+    def check_field(t):
+        m = MDE_LINE.match(t.strip()) or BDE_LINE.match(t.strip())
+        return m.group(3) if m else None
+
+    def alike(a, b):
+        return len(a) == len(b) and all(c == d or frozenset((c, d)) in ALIKE for c, d in zip(a, b))
+
+    mine, seen = check_field(text), [c for t in raw if (c := check_field(t))]
+    return bool(mine and seen) and not any(alike(mine, c) for c in seen)
+
+
 def merge(issue: str) -> None:
     d = ROOT / "data" / "issues" / issue
     out, titles, missing, look = {}, {}, [], []
     split = (read_json(d / "read" / "layout.json") or {}).get("split", {})
+    wrap = (read_json(d / "read" / "layout.json") or {}).get("wrap", WRAP)
     for m in read_json(d / "read" / "manifest.json"):
         pno = m["page"]
         f = d / "read" / f"p{pno:03d}.txt"
@@ -465,7 +636,20 @@ def merge(issue: str) -> None:
                             i = max(near)[1]
                     if i is not None:
                         lines[i]["readings"].append(text)
+                        if ".fix" in other.name:
+                            lines[i].setdefault("fixed", []).append(text)
         for x in lines:
+            if x["ok"] is False and (fixed := x.pop("fixed", None)):
+                raw = [t for t in x["readings"] if t not in fixed]
+                odd = [t for t in dict.fromkeys(fixed) if t not in raw and rewritten(t, raw)]
+                # Readings that keep the printed checksum are tried first; a fix that changed it
+                # is still taken when nothing else passes, flagged for a look at the scan.
+                x["readings"] = [t for t in x["readings"] if t not in odd] + odd
+                if odd and not any(check(t)["ok"] for t in x["readings"] if t not in odd) \
+                        and (t := next((t for t in odd if check(t)["ok"]), None)):
+                    k = x["key"] if x["kind"] == "bde" else f"{x['key']:04X}"
+                    look.append(f"p{pno}: {k} checksum changed by a fix ({raw[0].strip()[-12:]} → {t.strip()[-12:]})")
+            x.pop("fixed", None)
             if x["ok"] is False:
                 best = next((t for t in x["readings"] if check(t)["ok"]), None) or combine(x["readings"]) \
                     or next((g for t in dict.fromkeys(x["readings"]) if (g := graphics(t))), None) \
@@ -476,7 +660,8 @@ def merge(issue: str) -> None:
                 if best := next((t for t in x["readings"] if typable(t)), None):
                     x.update({"text": best, **check(best), "via": "readings"})
             del x["readings"]
-        join_wrapped(lines, out.get(str(pno - 1), []))
+        look += [f"p{pno}: {g}" for g in ghosts(lines)]
+        look += [f"p{pno}: {n}" for n in join_wrapped(lines, out.get(str(pno - 1), []), wrap)]
         hand_read(d / "read" / f"p{pno:03d}.hand.txt", lines)
         # A misread address (0D08 for 0D09) checks out at the address its neighbours imply.
         for i, x in enumerate(lines):
@@ -493,6 +678,8 @@ def merge(issue: str) -> None:
         # lines only), and listing lines in a split page's full-width bands (the split is too low).
         if skipped := [c[5:9] for c in m["crops"] if c[5:9] not in crops]:
             look.append(f"p{pno}: no reading for {', '.join(skipped)}")
+        if "bands" in m and (img := d / "read" / f"p{pno:03d}.png").exists():
+            look += [f"p{pno}: {x}" for x in ink_below(Image.open(img), m["bands"])]
         if str(pno) in split:
             wide = {c for c in m["bands"] if f"c1{c[2:]}" not in m["bands"]}
             if (n := sum(x["crop"] in wide and x["kind"] != "other" for x in lines)) >= 3:

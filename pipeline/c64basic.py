@@ -70,6 +70,10 @@ def control(name: str) -> list[int] | None:
 
 
 def petscii(c: str) -> int:
+    """A character's PETSCII byte. Half-width katakana are the byte of their JIS X 0201 code: some
+    printers print the graphics $A1-$DF so (43 PARACOMMANDER's ｽ is $BD, C=X; 50's ｶ is $B6, C=L)."""
+    if "\uff61" <= c <= "\uff9f":
+        return ord(c) - 0xFF61 + 0xA1
     return 0x5C if c == "£" else 0x5E if c == "↑" else 0x5F if c == "←" else 0xFF if c == "π" else ord(c)
 
 

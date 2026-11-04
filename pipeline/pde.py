@@ -125,6 +125,10 @@ def listing_lines(d: Path) -> list[dict]:
     out = []
     pages = read_json(d / "listings.json") or {}
     bands = {str(m["page"]): m["bands"] for m in read_json(d / "read" / "manifest.json") or [] if "bands" in m}
+    # read/graphics.json {"page:line": line}: a failing BDE line with the box graphics the printer
+    # left out put back (data/pde-work/graphics.py, or by hand; Arda, 2026-11-03). The .prg is
+    # built from it when it passes; listings.json, and the site's listing, keep the line as printed.
+    graphics = read_json(d / "read" / "graphics.json") or {}
     for page in sorted(pages, key=int):
         lines = pages[page]
         count: dict[str, int] = {}
@@ -143,6 +147,9 @@ def listing_lines(d: Path) -> list[dict]:
             # reading order a column only goes down.
             y = max(y, low.get(col, 0) + 1e-4)
             low[col] = y
+            if x["kind"] == "bde" and x["ok"] is False and (g := graphics.get(f"{page}:{x['key']}")) \
+                    and check(g) == {"kind": "bde", "key": x["key"], "ok": True}:
+                x = {**x, "text": g, "ok": True, "graphics": True}
             out.append({**x, "page": int(page), "at": (int(page), col if two else 0, y), "wide": not two})
     return out
 
@@ -156,6 +163,56 @@ def under_titles(lines: list[dict], marks: list[dict]) -> None:
         above = [m["at"] for m in marks if m["at"][0] == page and m["at"][2] <= y]
         if x["wide"] and above:
             x["at"] = (page, max(above)[1], y)  # the last above it in reading order
+
+
+def stacked(lines: list[dict]) -> None:
+    """Two programs stacked on a two-column page, each across both columns (50 p4: ANIMATOR.BOOT
+    over the top of both, ANIMATOR.DEMO below it over both; p5: the end of DEMO, then ANIMATOR.ML;
+    31 p16: the end of EPROMMER, then MR.TINY EPROMM). Column by column, the right column's first
+    lines, which finish the BASIC program above the left column's header, would come after that
+    header. They move up to just before it: the BASIC lines at the top of the right column, before
+    any header there, numbered on from the upper program's last line and not from the lower
+    program (machine code, or BASIC that has already reached that number in the left column);
+    a number read again where bands overlap goes with them. Machine code needs none of this: it
+    is put together by address."""
+    for page in sorted({x["page"] for x in lines}):
+        idx = [i for i, x in enumerate(lines) if x["page"] == page]
+        left = [i for i in idx if x_col(lines[i]) == 0]
+        right = [i for i in idx if x_col(lines[i]) == 1]
+        head = next((i for i in left if HEADER.match(lines[i]["text"].strip())
+                     and any(lines[j]["kind"] != "other" for j in left if j < i)), None)
+        if head is None or not right:
+            continue
+        upper = [lines[j] for j in left if j < head and lines[j]["kind"] != "other"]
+        name = HEADER.match(lines[head]["text"].strip()).group(1)  # the same header read again (band overlap) is no end
+        nxt = next((j for j in left if j > head and (m := HEADER.match(lines[j]["text"].strip())) and m.group(1) != name), len(lines))
+        lower = [lines[j] for j in left if head < j < nxt and lines[j]["kind"] != "other"]
+        if not lower or upper[-1]["kind"] == "mde":
+            continue
+        last, have = upper[-1]["key"], {x["key"] for x in upper}
+        reach = None if lower[0]["kind"] == "mde" else max(x["key"] for x in lower)
+        run, keys = [], set()
+        for i in right:
+            x = lines[i]
+            if x["kind"] not in ("bde", "basic") or x["key"] in have:
+                break
+            if x["key"] not in keys and (x["key"] <= last or reach is not None and x["key"] > reach):
+                break
+            run.append(i)
+            keys.add(x["key"])
+            last = max(last, x["key"])
+        if not run:
+            continue
+        at = lines[head]["at"]
+        moved = [{**lines[i], "at": (at[0], at[1], at[2] - 1e-6 * (len(run) - k))} for k, i in enumerate(run)]
+        rest = [x for i, x in enumerate(lines) if i not in set(run)]
+        k = rest.index(lines[head])
+        lines[:] = rest[:k] + moved + rest[k:]
+
+
+def x_col(x: dict) -> int:
+    """The column a listing line was read in (its crop's)."""
+    return int(x["crop"][1])
 
 
 def machine_code(lines: list[dict], title: str) -> list[dict]:
@@ -184,15 +241,34 @@ def machine_code(lines: list[dict], title: str) -> list[dict]:
     for addr in sorted(by_addr):
         x = by_addr[addr]
         if progs and addr - progs[-1]["lines"][-1]["key"] <= 0x400:
-            p = progs[-1]
-            last = p["lines"][-1]["key"]
-            if addr != last + 8:
-                p["failed"].append(f"gap {last + 8:04X}-{addr:04X}")
-            p["lines"].append(x)
+            progs[-1]["lines"].append(x)
         else:
             name = names[len(progs)] if len(progs) < len(names) else title
             progs.append({"name": name, "kind": "mde", "lines": [x], "failed": []})
+    for p in progs:
+        p["failed"] = gaps(p["lines"])
     return progs
+
+
+def misprinted(f: str, misprints: dict) -> bool:
+    """A failure read/misprints.json lists: by its own name ("3000", "0911", "no line 98"), or for a
+    gap in machine code ("gap 0F01-1001": the rows from $0F01 up to $1000 missing) any key naming a
+    row in it, "gap 0F01-1001", "0F01-0FF9" or "0F01" (Arda, 2026-11-04: rows the magazine never
+    printed count like a BASIC line never printed, when VICE runs the program)."""
+    if f in misprints:
+        return True
+    if m := re.fullmatch(r"gap ([0-9A-F]{4})-([0-9A-F]{4})", f):
+        lo, hi = int(m.group(1), 16), int(m.group(2), 16)
+        return any(lo <= int(k.group(1), 16) < hi for key in misprints
+                   if (k := re.fullmatch(r"(?:gap )?\$?([0-9A-F]{4})(?:\s*[-–]\s*\$?[0-9A-F]{4})?", key.strip().upper())))
+    return False
+
+
+def gaps(lines: list[dict]) -> list[str]:
+    """The missing lines in a program's machine code, sorted by address: "gap A-B" from the
+    first address missing to the next one there."""
+    keys = [x["key"] for x in lines]
+    return [f"gap {a + 8:04X}-{b:04X}" for a, b in zip(keys, keys[1:]) if b != a + 8]
 
 
 def stored(x: dict) -> list[int] | str:
@@ -327,9 +403,14 @@ def eighty(p: dict) -> bool:
 
 def program_bytes(p: dict) -> tuple[int, bytes]:
     if p["kind"] == "mde":
-        data = b"".join(bytes(int(v, 16) for v in " ".join(MDE_LINE.match(x["text"].strip()).groups()[1:3 if x.get("dump") else 2]).split())
-                        for x in p["lines"])
-        return p["lines"][0]["key"], data
+        # Rows missing between two addresses (never printed, or not read yet: "gap A-B") are written
+        # as zeros, so every later byte loads at its printed address (Arda, 2026-11-04).
+        load, data = p["lines"][0]["key"], bytearray()
+        for x in p["lines"]:
+            if (at := x["key"] - load) > len(data):
+                data += bytes(at - len(data))
+            data += bytes(int(v, 16) for v in " ".join(MDE_LINE.match(x["text"].strip()).groups()[1:3 if x.get("dump") else 2]).split())
+        return load, bytes(data)
     return 0x0801, basic_prg(basic_lines(p))[2:]
 
 
@@ -490,7 +571,7 @@ def programs(nn: str) -> None:
     # A program printed over two issues (read/continued.json): in the first, file → the next
     # issue and its pages, whose lines it takes; in the next, file → "" (not a program there).
     continued = read_json(d / "read" / "continued.json") or {}
-    # Errata printed in a later issue (read/errata.json): file → {"issue", "pages", "from", "to"};
+    # Errata printed in a later issue (read/errata.json): file → {"issue", "pages", "from", "to"} or a list of them;
     # that issue's lines in the range replace these, passing or not (37 p31 reprints $C6A0-$C6F8
     # of 31's EPROMMER, where 31 printed AA filler that passes).
     errata = read_json(d / "read" / "errata.json") or {}
@@ -505,6 +586,7 @@ def programs(nn: str) -> None:
             pool.remove(a)
     lines = listing_lines(d)
     under_titles(lines, marks)
+    stacked(lines)
     found, used = [], set()
     prev, last = None, "c64"
     for i, m in enumerate(marks):
@@ -526,24 +608,40 @@ def programs(nn: str) -> None:
                 used.discard(fname)  # its old file goes too
                 continue
             if nxt := continued.get(fname):
-                more = [{**x, "from": nxt["issue"]} for x in listing_lines(ISSUES / nxt["issue"])
-                        if x["page"] in nxt["pages"] and x["kind"] in ("bde", "basic")]
+                # Lines of the program's kind (machine code too: 70 COMOZOR goes on in 71), within
+                # "from"/"to" when given (hex for machine code, as in errata.json: 75 p4 also prints
+                # GRF KOMUTLARI below the rest of 74's SPRITE BASIC).
+                mde = p["kind"] == "mde"
+                lo, hi = (int(nxt[k], 16 if mde else 10) if k in nxt else None for k in ("from", "to"))
+                more = [{**x, "from": nxt["issue"], "continued": True} for x in listing_lines(ISSUES / nxt["issue"])
+                        if x["page"] in nxt["pages"] and (x["kind"] == "mde" if mde else x["kind"] in ("bde", "basic"))
+                        and (lo is None or x["key"] >= lo) and (hi is None or x["key"] <= hi)]
+                was = failing(p)
                 have = {x["key"]: x for x in p["lines"]}
                 for x in more:
                     if x["key"] not in have or x["ok"] and not have[x["key"]]["ok"]:
                         have[x["key"]] = x
                 p["lines"] = [have[k] for k in sorted(have)]
-                p["failed"] = [f for f in p["failed"] if not f.isdigit() and not f.startswith("printed")] + failing(p)
+                p["failed"] = [f for f in p["failed"] if f not in was] + failing(p)
+                if mde:
+                    p["failed"] = gaps(p["lines"]) + [f for f in p["failed"] if not f.startswith("gap ")]
                 p["checked"] = all(x["ok"] is not None for x in p["lines"])
-            if fix := errata.get(fname):
-                mde = p["kind"] == "mde"
-                lo, hi = (int(fix[k], 16 if mde else 10) for k in ("from", "to"))
-                more = [{**x, "from": fix["issue"]} for x in listing_lines(ISSUES / fix["issue"])
-                        if x["page"] in fix["pages"] and (x["kind"] == "mde") == mde and lo <= x["key"] <= hi]
+            if fixes := errata.get(fname):
+                # One entry, or a list of them (58 BYTE-COMPACTOR from 59: p10-13 $0801-$15D1, then only
+                # $15D9-$17E9 from p14, which also prints DİSK DOKTORU's first rows at $0801-).
+                fixes = fixes if isinstance(fixes, list) else [fixes]
+                mde, more = p["kind"] == "mde", []
+                for fix in fixes:
+                    lo, hi = (int(fix[k], 16 if mde else 10) for k in ("from", "to"))
+                    more += [{**x, "from": fix["issue"]} for x in listing_lines(ISSUES / fix["issue"])
+                             if x["page"] in fix["pages"] and (x["kind"] == "mde" if mde else x["kind"] in ("bde", "basic"))
+                             and lo <= x["key"] <= hi]  # not headers or numberless rows (54 JUNGLE from 55 p28)
                 was = failing(p)
                 have = {x["key"]: x for x in p["lines"]} | {x["key"]: x for x in more}
                 p["lines"] = [have[k] for k in sorted(have)]
                 p["failed"] = [f for f in p["failed"] if f not in was] + failing(p)
+                if mde:  # the lines may fill a gap (48 EX-MON C568-C578 from 50)
+                    p["failed"] = gaps(p["lines"]) + [f for f in p["failed"] if not f.startswith("gap ")]
                 p["checked"] = all(x["ok"] is not None for x in p["lines"])
             load, data = program_bytes(p)
             # C128 BASIC 7.0 and Simons' BASIC have their own tokens: petcat crunches those.
@@ -567,7 +665,7 @@ def programs(nn: str) -> None:
                 numbers[fname], checked[fname] = {n for n, _ in basic_lines(p)}, p["checked"]
                 p["failed"] += [f"no line {n}" for n in missing_targets(basic_lines(p))]
                 p["failed"] += [f"symbol {n}" for n in unreadable(p)]
-            p["failed"] = [f"misprint {f}" if f in misprints else f for f in p["failed"]]
+            p["failed"] = [f"misprint {f}" if misprinted(f, misprints) else f for f in p["failed"]]
             entry = {"name": p["name"], "file": fname, "article": a["slug"], "article_title": a["title"],
                      "pages": sorted({x["page"] for x in p["lines"] if "from" not in x}), "load": f"${load:04X}",
                      "end": f"${load + len(data):04X}", "bytes": len(data), "lines": len(p["lines"]),
@@ -583,7 +681,12 @@ def programs(nn: str) -> None:
             if which == "c128" and eighty(p):
                 entry["columns"] = 80
             if fname in errata:
-                entry["errata"] = {"issue": errata[fname]["issue"], "lines": sum("from" in x for x in p["lines"])}
+                first = errata[fname][0] if isinstance(errata[fname], list) else errata[fname]
+                entry["errata"] = {"issue": first["issue"], "lines": sum("from" in x and not x.get("continued") for x in p["lines"])}
+            if fname in continued and (n := sum(bool(x.get("continued")) for x in p["lines"])):
+                entry["continued"] = {"issue": continued[fname]["issue"], "lines": n}
+            if restored := [x["key"] for x in p["lines"] if x.get("graphics")]:
+                entry["graphics"] = restored
             # How the article says to start it, where that is not plain RUN or the load address
             # (prg/starts.json, by file: Data Yaratıcı in 16 is "RUN 500").
             entry["start"] = starts.get(fname) or ("RUN" if p["kind"] != "mde" or load == 0x0801 else f"SYS {load}")
